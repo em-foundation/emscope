@@ -1,0 +1,29 @@
+{
+    "name": "em-flux",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "esbuild --bundle --external:vscode --external:joulescope_driver ./src//Main --outdir=out --platform=node --format=cjs",
+        "watch": "npm run build -- --sourcemap --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/em-foundation/em-flux.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/em-foundation/em-flux/issues"
+    },
+    "homepage": "https://github.com/em-foundation/em-flux#readme",
+    "dependencies": {
+        "commander": "^14.0.0",
+        "serialport": "^13.0.0",
+        "ts-node": "^10.9.2"
+    },
+    "devDependencies": {
+        "esbuild": "^0.25.8"
+    }
+}
