@@ -19,8 +19,10 @@
     },
     "homepage": "https://github.com/em-foundation/em-flux#readme",
     "dependencies": {
+        "@types/js-yaml": "^4.0.9",
         "commander": "^14.0.0",
         "joulescope_driver": "^1.10.0",
+        "js-yaml": "^4.1.0",
         "serialport": "^13.0.0",
         "ts-node": "^10.9.2"
     },

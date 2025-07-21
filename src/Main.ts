@@ -24,4 +24,9 @@ CMD.command('display')
     .option('-e --event-number <value>', 'event number', parseFloat, 0)
 // 
 
-CMD.parse(process.argv)
+try {
+    CMD.parse(process.argv)
+} catch (err) {
+    console.log(err)
+    process.exit(1)
+}

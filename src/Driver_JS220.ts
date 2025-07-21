@@ -12,12 +12,14 @@ export function exec(opts: any) {
         process.exit(1)
     }
 
-    const current_ds = new Utils.SampleSet(opts.duration * 1_000_000)
-    // const voltage_ds = new Utils.SampleSet(opts.duration * 1_000_000)
+    const cap = new Utils.Capture(opts.capture, opts.duration, 'JS220')
+
+    const progress = new Utils.Progress('capturing: ')
 
     const sampleCb = (topic: string, value: Value) => {
-        if (current_ds.is_full) {
-            current_ds.save(opts.capture, 'current')
+        if (cap.current_ds.is_full) {
+            progress.done()
+            cap.save()
             drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
             drv.publish(dev.concat('/s/v/ctrl'), 0, 0);
             drv.close(dev);
@@ -26,15 +28,15 @@ export function exec(opts: any) {
 
         }
         if (topic.indexOf('/s/i/') != -1) {
-            process.stdout.write(`\r${(current_ds.length / 1_000_000).toFixed(3)} s ...`)
+            progress.update(`${(cap.current_ds.length / 1_000_000).toFixed(3)} s`)
             for (const v of value.data) {
-                current_ds.add(v)
+                cap.current_ds.add(v)
             }
             return
         }
         if (topic.indexOf('/s/v/') != -1) {
             for (const v of value.data) {
-                // voltage_ds.add(v)
+                cap.voltage_ds.add(v)
             }
             return
         }
