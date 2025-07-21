@@ -20,6 +20,7 @@
     "homepage": "https://github.com/em-foundation/em-flux#readme",
     "dependencies": {
         "commander": "^14.0.0",
+        "joulescope_driver": "^1.10.0",
         "serialport": "^13.0.0",
         "ts-node": "^10.9.2"
     },
