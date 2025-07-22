@@ -1,1 +1,1 @@
-import * as Capture from './Capture'
+import * as Core from './Core'

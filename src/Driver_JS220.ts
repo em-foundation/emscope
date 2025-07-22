@@ -1,9 +1,9 @@
-import * as Utils from './Utils'
+import * as Analyzer from './Analyzer'
+import * as Core from './Core'
 
-import Fs from 'fs'
 import JoulescopeDriver, { Value } from 'joulescope_driver'
 
-export function exec(opts: any) {
+export async function exec(opts: any) {
     const drv = new JoulescopeDriver
     const dev = drv.device_paths()[0]
     if (!dev) {
@@ -12,13 +12,14 @@ export function exec(opts: any) {
         process.exit(1)
     }
 
-    const cap = new Utils.Capture(opts.capture, opts.duration, 'JS220')
+    const cap = new Core.Capture(opts.capture, opts.duration, 'JS220')
 
-    const progress = new Utils.Progress('capturing: ')
+    const progress = new Core.Progress('capturing: ')
 
     const sampleCb = (topic: string, value: Value) => {
         if (cap.current_ds.is_full) {
             progress.done()
+            Analyzer.exec(cap)
             cap.save()
             drv.publish(dev.concat('/s/i/ctrl'), 0, 0);
             drv.publish(dev.concat('/s/v/ctrl'), 0, 0);
@@ -42,8 +43,10 @@ export function exec(opts: any) {
         }
     }
 
-    drv.open(dev);
-    drv.publish(dev.concat("/s/i/range/mode"), "auto");
+    drv.open(dev)
+    drv.publish(dev.concat("/s/i/range/mode"), "auto")
+    await progress.spin(2000)
+    // await new Promise(r => setTimeout(r, 2000))
     drv.subscribe(dev.concat("/s/v/!data"), 2, sampleCb)
     drv.subscribe(dev.concat("/s/i/!data"), 2, sampleCb)
     drv.publish(dev.concat("/s/i/ctrl"), 1, 0)

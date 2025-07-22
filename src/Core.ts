@@ -9,8 +9,13 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
     ['PPK2', 100_000],
 ])
 
+export interface Marker {
+    sample_offset: number
+    sample_count: number
+}
+
 export class Capture {
-    private static INFO_KEYS = [
+    static #INFO_KEYS = [
         'creation_date',
         'device',
         'duration',
@@ -44,43 +49,54 @@ export class Capture {
     save() {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
-        const cobj = Object.fromEntries(Capture.INFO_KEYS.map(k => [k, (this as any)[k]]))
+        const cobj = Object.fromEntries(Capture.#INFO_KEYS.map(k => [k, (this as any)[k]]))
         const ytxt = Yaml.dump({ capture: cobj })
         Fs.writeFileSync(Path.join(this.rootdir, 'emflux.yaml'), ytxt)
     }
 }
 
 export class SampleSet {
-    private data: Float32Array<ArrayBuffer>
-    private idx = 0
+    #data: Float32Array<ArrayBuffer>
+    #idx = 0
     constructor(readonly size: number) {
-        this.data = new Float32Array(size)
+        this.#data = new Float32Array(size)
     }
-    get is_full(): boolean { return this.idx >= this.size }
-    get length(): number { return this.idx }
-    avg(): number { return this.data.reduce((sum, x) => sum + x, 0) / this.length }
+    get data(): Readonly<Float32Array> { return this.#data }
+    get is_full(): boolean { return this.#idx >= this.size }
+    get length(): number { return this.#idx }
+    avg(): number { return this.#data.reduce((sum, x) => sum + x, 0) / this.length }
     add(value: number) {
         if (!this.is_full) {
-            this.data[this.idx++] = value
+            this.#data[this.#idx++] = value
         }
     }
-    max(): number { return this.data.reduce((a, b) => Math.max(a, b)) }
-    min(): number { return this.data.reduce((a, b) => Math.min(a, b)) }
+    max(): number { return this.#data.reduce((a, b) => Math.max(a, b)) }
+    min(): number { return this.#data.reduce((a, b) => Math.min(a, b)) }
     save(dir: string, name: string) {
-        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this.data)
+        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this.#data)
     }
 }
 
 export class Progress {
-    private max = 0
+    #max = 0
     constructor(readonly prefix: string) { }
     done() {
-        process.stdout.write(`\r${' '.repeat(this.max)}`)
+        process.stdout.write(`\r${' '.repeat(this.#max)}`)
         process.stdout.write(`\r${this.prefix} done.\n`)
+    }
+    async spin(ms: number) {
+        const spinner = ['|', '/', '-', '\\']
+        let i = 0
+        const interval = setInterval(() => {
+            process.stdout.write(`\r${this.prefix} ${spinner[i++ % spinner.length]} `)
+        }, 30)
+        await new Promise(resolve => setTimeout(resolve, ms))
+        clearInterval(interval)
+        process.stdout.write('\r      ')
     }
     update(msg: string) {
         const line = `${this.prefix} ${msg} ...`
-        this.max = Math.max(this.max, line.length)
+        this.#max = Math.max(this.#max, line.length)
         process.stdout.write(`\r${line}`)
     }
 }
