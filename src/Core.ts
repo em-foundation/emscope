@@ -36,7 +36,8 @@ export class Capture {
         readonly rootdir: string,
         readonly duration: number,
         readonly device: CaptureDevice,
-        readonly voltage: number = -1) {
+        readonly voltage: number = -1
+    ) {
         this.creation_date = new Date()
         this.sampling_rate = SAMPLING_RATE.get(device) ?? 0
         this.sample_count = duration * this.sampling_rate

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as Driver_JS220 from './Driver_JS220'
+import * as Driver_PPK2 from './Driver_PPK2'
 
 import * as Commander from 'commander'
 
@@ -12,12 +13,12 @@ CMD.command('js220')
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
     .action((opts: any) => Driver_JS220.exec(opts))
 
-
 CMD.command('ppk2')
     .description('capture using Nordic PPK2')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
     .option('-v --voltage <value>', 'source voltage', parseFloat, 3.3)
+    .action((opts: any) => Driver_PPK2.exec(opts))
 
 CMD.command('display')
     .description('display capture information')

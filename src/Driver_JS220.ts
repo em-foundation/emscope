@@ -7,7 +7,7 @@ export async function exec(opts: any) {
     const drv = new JoulescopeDriver
     const dev = drv.device_paths()[0]
     if (!dev) {
-        console.error("*** no connected joulescope")
+        console.error("*** no JS220 analyzer")
         drv.finalize()
         process.exit(1)
     }
