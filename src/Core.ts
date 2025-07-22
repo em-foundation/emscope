@@ -26,6 +26,7 @@ export class Capture {
         'max_current',
         'min_current',
     ]
+    #aobj: Object = {}
     readonly creation_date: Date
     readonly sampling_rate: number
     readonly sample_count: number
@@ -46,12 +47,33 @@ export class Capture {
     get max_current() { return this.current_ds.max() }
     get min_current() { return this.current_ds.min() }
     get avg_voltage() { return this.device == 'JS220' ? this.voltage_ds.avg() : this.voltage }
+    bind(aobj: Object) {
+        this.#aobj = aobj
+    }
+    markerCharge(m: Marker): number {
+        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        const dt = 1 / this.sampling_rate
+        return data.reduce((sum, x) => sum + x * dt, 0)
+    }
+    markerCurrent(m: Marker): number {
+        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        return data.reduce((sum, x) => sum + x, 0) / data.length
+    }
+    markerEnergy(m: Marker) {
+        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        const dt = 1 / this.sampling_rate
+        return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.sample_offset + idx) * dt, 0)
+    }
     save() {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#INFO_KEYS.map(k => [k, (this as any)[k]]))
-        const ytxt = Yaml.dump({ capture: cobj })
+        const yobj = { capture: cobj, analysis: this.#aobj }
+        const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emflux.yaml'), ytxt)
+    }
+    voltageAt(offset: number): number {
+        return this.device == 'JS220' ? this.voltage_ds.data[offset] : this.voltage
     }
 }
 
@@ -101,9 +123,11 @@ export class Progress {
     }
 }
 
+export function avg(data: number[]): number { return data.reduce((sum, x) => sum + x, 0) / data.length }
+
 export function toEng(x: number, u: string): string {
     const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
     const mantissa = x / 10 ** exp
-    const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}` }[exp] || `e${exp} ${u}`
+    const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}`, [3]: ` k${u}` }[exp] || `e${exp} ${u}`
     return `${mantissa.toFixed(3)}${unit}`
 }

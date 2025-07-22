@@ -1,22 +1,26 @@
 import * as Core from './Core'
 
-export class Options {
-    readonly sample_rate: number = 1_000_000 // 1 MHz
-    readonly event_thresh: number = 0.0001
-    readonly voltage: number = 3.3
-    readonly kernel_length = 20
-    event_min_dt: number = 0.001 // 1 ms
-    dir = '.'
-    data_source = ''
-    constructor(init?: Partial<Options>) {
-        Object.assign(this, init)
-    }
-}
-
 export function exec(cap: Core.Capture) {
     const events = findEvents(cap)
-    console.log(events.length)
-
+    const window: Core.Marker = {
+        sample_offset: events[0].sample_offset - (cap.sampling_rate / 2),
+        sample_count: events.length * cap.sampling_rate
+    }
+    const egy_per_sec = cap.markerEnergy(window) / events.length
+    const aobj = {
+        window: window,
+        events: {
+            markers: events,
+            avg_duration: Core.toEng(Core.avg(events.map(e => e.sample_count)) / cap.sampling_rate, 's'),
+            avg_current: Core.toEng(Core.avg(events.map(e => cap.markerCurrent(e))), 'A'),
+            avg_energy: Core.toEng(Core.avg(events.map(e => cap.markerEnergy(e))), 'J'),
+        },
+        energy_per_second: Core.toEng(egy_per_sec, 'J'),
+        energy_per_day: Core.toEng(egy_per_sec * 86400, 'J'),
+        energy_per_year: Core.toEng(egy_per_sec * 86400 * 365, 'J'),
+        final_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•Flux`
+    }
+    cap.bind(aobj)
 }
 
 function convolve1D(input: readonly number[], kernel: number[]): number[] {
