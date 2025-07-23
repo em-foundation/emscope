@@ -15,41 +15,84 @@ export interface Marker {
 }
 
 export class Capture {
-    static #INFO_KEYS = [
+
+    static #LOAD_KEYS = [
         'creation_date',
         'device',
         'duration',
         'sampling_rate',
         'sample_count',
+    ]
+
+    static #SAVE_KEYS = [
+        ...Capture.#LOAD_KEYS,
         'avg_voltage',
         'avg_current',
         'max_current',
         'min_current',
     ]
-    #aobj: Object = {}
-    readonly creation_date: Date
-    readonly sampling_rate: number
-    readonly sample_count: number
-    readonly current_ds: SampleSet
-    readonly voltage_ds: SampleSet
-    constructor(
-        readonly rootdir: string,
-        readonly duration: number,
-        readonly device: CaptureDevice,
-        readonly voltage: number = -1
-    ) {
-        this.creation_date = new Date()
-        this.sampling_rate = SAMPLING_RATE.get(device) ?? 0
-        this.sample_count = duration * this.sampling_rate
-        this.current_ds = new SampleSet(this.sample_count)
-        this.voltage_ds = new SampleSet((device == 'JS220') ? this.sample_count : 0)
+
+    _aobj: Object = {}
+    _current_ds?: SampleSet
+    _creation_date?: Date
+    _device?: CaptureDevice
+    _duration?: number
+    _rootdir?: string
+    _sample_count?: number
+    _sampling_rate?: number
+    _voltage?: number
+    _voltage_ds?: SampleSet
+
+    private constructor() { }
+
+    static create(rootdir: string, duration: number, device: CaptureDevice, voltage: number = -1): Capture {
+        let cap = new Capture()
+        cap._rootdir = rootdir
+        cap._duration = duration
+        cap._device = device
+        cap._voltage = voltage
+        cap._creation_date = new Date()
+        cap._sampling_rate = SAMPLING_RATE.get(device) ?? 0
+        cap._sample_count = duration * cap.sampling_rate
+        cap._current_ds = new SampleSet(cap.sample_count)
+        cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
+        return cap
     }
+
+    static load(rootdir: string): Capture {
+        let cap = new Capture()
+        cap._rootdir = rootdir
+        const ytxt = Fs.readFileSync(Path.join(rootdir, 'emgauge.yaml'), 'utf-8')
+        const yobj = Yaml.load(ytxt) as any
+        for (const k of Capture.#LOAD_KEYS) {
+            (cap as any)[`_${k}`] = yobj.capture[k]
+        }
+        cap._aobj = yobj.analysis
+        cap._current_ds = new SampleSet(cap.sample_count)
+        cap._voltage_ds = new SampleSet((cap.device == 'JS220') ? cap.sample_count : 0)
+        cap.current_ds.load(rootdir, 'current')
+        if (cap.device == 'JS220') {
+            cap.current_ds.load(rootdir, 'voltage')
+        }
+        return cap
+    }
+
+    get creation_date() { return this._creation_date! }
+    get current_ds() { return this._current_ds! }
+    get device() { return this._device! }
+    get duration() { return this._duration! }
+    get rootdir() { return this._rootdir! }
+    get sample_count() { return this._sample_count! }
+    get sampling_rate() { return this._sampling_rate! }
+    get voltage() { return this._voltage! }
+    get voltage_ds() { return this._voltage_ds! }
+
     get avg_current() { return this.current_ds.avg() }
     get max_current() { return this.current_ds.max() }
     get min_current() { return this.current_ds.min() }
     get avg_voltage() { return this.device == 'JS220' ? this.voltage_ds.avg() : this.voltage }
     bind(aobj: Object) {
-        this.#aobj = aobj
+        this._aobj = aobj
     }
     markerCharge(m: Marker): number {
         const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
@@ -68,10 +111,10 @@ export class Capture {
     save() {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
-        const cobj = Object.fromEntries(Capture.#INFO_KEYS.map(k => [k, (this as any)[k]]))
-        const yobj = { capture: cobj, analysis: this.#aobj }
+        const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
+        const yobj = { capture: cobj, analysis: this._aobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
-        Fs.writeFileSync(Path.join(this.rootdir, 'emflux.yaml'), ytxt)
+        Fs.writeFileSync(Path.join(this.rootdir, 'emgauge.yaml'), ytxt)
     }
     voltageAt(offset: number): number {
         return this.device == 'JS220' ? this.voltage_ds.data[offset] : this.voltage
@@ -79,32 +122,38 @@ export class Capture {
 }
 
 export class SampleSet {
-    #data: Float32Array<ArrayBuffer>
-    #idx = 0
+    _data: Float32Array<ArrayBuffer>
+    _idx = 0
     constructor(readonly size: number) {
-        this.#data = new Float32Array(size)
+        this._data = new Float32Array(size)
     }
-    get data(): Readonly<Float32Array> { return this.#data }
-    get is_full(): boolean { return this.#idx >= this.size }
-    get length(): number { return this.#idx }
-    avg(): number { return this.#data.reduce((sum, x) => sum + x, 0) / this.length }
+    get data(): Readonly<Float32Array> { return this._data }
+    get is_full(): boolean { return this._idx >= this.size }
+    get length(): number { return this._idx }
+    avg(): number { return this._data.reduce((sum, x) => sum + x, 0) / this.length }
     add(value: number) {
         if (!this.is_full) {
-            this.#data[this.#idx++] = value
+            this._data[this._idx++] = value
         }
     }
-    max(): number { return this.#data.reduce((a, b) => Math.max(a, b)) }
-    min(): number { return this.#data.reduce((a, b) => Math.min(a, b)) }
+    load(dir: string, name: string) {
+        const fd = Fs.openSync(Path.join(dir, `${name}.f32.bin`), 'r')
+        Fs.readSync(fd, this._data, 0, this._data.length * 4, 0)
+        this._idx = this._data.length
+        Fs.closeSync(fd)
+    }
+    max(): number { return this._data.reduce((a, b) => Math.max(a, b)) }
+    min(): number { return this._data.reduce((a, b) => Math.min(a, b)) }
     save(dir: string, name: string) {
-        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this.#data)
+        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this._data)
     }
 }
 
 export class Progress {
-    #max = 0
+    _max = 0
     constructor(readonly prefix: string) { }
     done() {
-        process.stdout.write(`\r${' '.repeat(this.#max)}`)
+        process.stdout.write(`\r${' '.repeat(this._max)}`)
         process.stdout.write(`\r${this.prefix} done.\n`)
     }
     async spin(ms: number) {
@@ -119,7 +168,7 @@ export class Progress {
     }
     update(msg: string) {
         const line = `${this.prefix} ${msg} ...`
-        this.#max = Math.max(this.#max, line.length)
+        this._max = Math.max(this._max, line.length)
         process.stdout.write(`\r${line}`)
     }
 }

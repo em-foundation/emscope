@@ -12,7 +12,7 @@ export async function exec(opts: any) {
         process.exit(1)
     }
 
-    const cap = new Core.Capture(opts.capture, opts.duration, 'JS220')
+    const cap = Core.Capture.create(opts.capture, opts.duration, 'JS220')
 
     const progress = new Core.Progress('capturing: ')
 

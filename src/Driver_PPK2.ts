@@ -82,7 +82,7 @@ export async function exec(opts: any) {
     })
     await progress.spin(500)
     port.on('data', () => { })
-    const cap = new Core.Capture(opts.capture, opts.duration, 'PPK2', opts.voltage)
+    const cap = Core.Capture.create(opts.capture, opts.duration, 'PPK2', opts.voltage)
     const ppk = new PPK2(port, cap)
     await ppk.getModifiers()
     ppk.setSourceVoltage(cap.voltage * 1000)

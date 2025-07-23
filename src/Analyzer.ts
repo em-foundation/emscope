@@ -18,7 +18,7 @@ export function exec(cap: Core.Capture) {
         energy_per_second: Core.toEng(egy_per_sec, 'J'),
         energy_per_day: Core.toEng(egy_per_sec * 86400, 'J'),
         energy_per_year: Core.toEng(egy_per_sec * 86400 * 365, 'J'),
-        final_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•Flux`
+        final_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•eralds`
     }
     cap.bind(aobj)
 }
@@ -41,7 +41,8 @@ function findEvents(cap: Core.Capture): Core.Marker[] {
     let in_event = false
     let sample_offset = 0
     const data = Array.from(cap.current_ds.data)
-    const kernel = new Array(20).fill(1.0 / 20)
+    const kernel_size = cap.sampling_rate < 1_000_000 ? 4 : 20
+    const kernel = new Array(20).fill(1.0 / kernel_size)
     convolve1D(data, kernel).forEach((val, i) => {
         if (!in_event && val >= thresh) {
             in_event = true
@@ -53,8 +54,8 @@ function findEvents(cap: Core.Capture): Core.Marker[] {
                 i < (cap.sample_count - 0.5 * cap.sampling_rate)
             ) {
                 res.push({
-                    sample_offset: sample_offset - 2 * 20,
-                    sample_count: width + 3 * 20
+                    sample_offset: sample_offset - 2 * kernel_size,
+                    sample_count: width + 3 * kernel_size
                 })
             }
             in_event = false
