@@ -69,8 +69,19 @@ export class Capture {
         }
         cap._aobj = yobj.analysis
         cap._current_ds = new SampleSet(cap.sample_count)
-        cap._voltage_ds = new SampleSet((cap.device == 'JS220') ? cap.sample_count : 0)
         cap.current_ds.load(rootdir, 'current')
+        switch (cap.device) {
+            case 'JS220':
+                cap._voltage_ds = new SampleSet(cap.sample_count)
+                cap.current_ds.load(rootdir, 'voltage')
+                cap._voltage = -1
+                break
+            case 'PPK2':
+                cap._voltage_ds = new SampleSet(0)
+                cap._voltage = yobj.capture.avg_voltage
+                break
+        }
+        cap._voltage_ds = new SampleSet((cap.device == 'JS220') ? cap.sample_count : 0)
         if (cap.device == 'JS220') {
             cap.current_ds.load(rootdir, 'voltage')
         }
