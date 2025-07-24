@@ -1,7 +1,7 @@
 import * as Core from './Core'
 
 export function exec(cap: Core.Capture) {
-    const events = findEvents2(cap)
+    const events = findEvents(cap)
     const window: Core.Marker = {
         sample_offset: events[0].sample_offset - (cap.sampling_rate / 2),
         sample_count: events.length * cap.sampling_rate
@@ -21,51 +21,10 @@ export function exec(cap: Core.Capture) {
         efficiency_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•eralds`
     }
     cap.bind(aobj)
-}
-
-function convolve1D(input: readonly number[], kernel: number[]): number[] {
-    const output = new Array(input.length + kernel.length - 1).fill(0)
-    for (let i = 0; i < input.length; i++) {
-        for (let j = 0; j < kernel.length; j++) {
-            output[i + j] += input[i] * kernel[j]
-        }
-    }
-    return output
+    console.log(`  ==> ${aobj.efficiency_score}`)
 }
 
 function findEvents(cap: Core.Capture): Core.Marker[] {
-    const thresh = 0.0001
-    const dt = 0.001
-    const min_width = Math.round(dt * cap.sampling_rate)
-    let res = new Array<Core.Marker>()
-    let in_event = false
-    let sample_offset = 0
-    const data = Array.from(cap.current_ds.data)
-    const kernel_size = 20
-    const kernel = new Array(20).fill(1.0 / kernel_size)
-    convolve1D(data, kernel).forEach((val, i) => {
-        if (!in_event && val >= thresh) {
-            in_event = true
-            console.log(`in@${i}: ${val}`)
-            sample_offset = i
-        } else if (in_event && val < thresh) {
-            const width = i - sample_offset
-            if (width >= min_width &&
-                sample_offset >= (0.5 * cap.sampling_rate) &&
-                i < (cap.sample_count - 0.5 * cap.sampling_rate)
-            ) {
-                res.push({
-                    sample_offset: sample_offset - 2 * kernel_size,
-                    sample_count: width + 3 * kernel_size
-                })
-            }
-            in_event = false
-        }
-    })
-    return res
-}
-
-function findEvents2(cap: Core.Capture): Core.Marker[] {
     const thresh = 0.0001
     const dt = 0.001
     const min_width = Math.round(dt * cap.sampling_rate)
@@ -78,7 +37,6 @@ function findEvents2(cap: Core.Capture): Core.Marker[] {
         const val = kalman.update(sample)
         if (!in_event && val >= thresh) {
             in_event = true
-            console.log(`in@${i}: ${val}`)
             sample_offset = i
         } else if (in_event && val < thresh) {
             const width = i - sample_offset
@@ -96,20 +54,3 @@ function findEvents2(cap: Core.Capture): Core.Marker[] {
     }
     return res
 }
-
-
-// function findEvents2(cap: Core.Capture) {
-//     const thresh = 0.0001
-//     const dt = 0.001
-//     const min_width = Math.round(dt * cap.sampling_rate)
-//     const kalman = new Core.KalmanFilter(1e-6, 1e-6, 1e-5, 1e-2)
-//     for (const [i, sample] of cap.current_ds.data.entries()) {
-//         const val = kalman.update(sample)
-//         if (val > thresh) {
-//             console.log(`sample ${i}: ${val}`)
-//             return
-//         }
-//     }
-// 
-// }
-

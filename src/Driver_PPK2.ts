@@ -175,7 +175,7 @@ class PPK2 {
                 buf.copy(raw, offset, 0, len)
                 offset += len
                 if (offset >= raw.length) {
-                    progress.done()
+                    progress.clear()
                     this.#port.on('data', () => { })
                     this.stopMeasurement()
                     for (const adcVal of new Uint32Array(raw.buffer, raw.byteOffset, raw.length / 4)) {

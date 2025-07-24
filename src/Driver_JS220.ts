@@ -18,7 +18,7 @@ export async function exec(opts: any) {
 
     const sampleCb = (topic: string, value: Value) => {
         if (cap.current_ds.is_full) {
-            progress.done()
+            progress.clear()
             Analyzer.exec(cap)
             cap.save()
             drv.publish(dev.concat('/s/i/ctrl'), 0, 0);

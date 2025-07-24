@@ -199,22 +199,25 @@ export class SampleSet {
 export class Progress {
     _max = 0
     constructor(readonly prefix: string) { }
+    clear() {
+        process.stdout.write(`\r${' '.repeat(this._max)}\r`)
+    }
     done() {
-        process.stdout.write(`\r${' '.repeat(this._max)}`)
-        process.stdout.write(`\r${this.prefix} done.\n`)
+        this.clear()
+        process.stdout.write(`\r${this.prefix}done.\n`)
     }
     async spin(ms: number) {
         const spinner = ['|', '/', '-', '\\']
         let i = 0
         const interval = setInterval(() => {
-            process.stdout.write(`\r${this.prefix} ${spinner[i++ % spinner.length]} `)
+            process.stdout.write(`\r${this.prefix}${spinner[i++ % spinner.length]} `)
         }, 30)
         await new Promise(resolve => setTimeout(resolve, ms))
         clearInterval(interval)
         process.stdout.write('\r      ')
     }
     update(msg: string) {
-        const line = `${this.prefix} ${msg} ...`
+        const line = `${this.prefix}${msg} ...`
         this._max = Math.max(this._max, line.length)
         process.stdout.write(`\r${line}`)
     }
