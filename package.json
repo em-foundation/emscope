@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "esbuild --bundle --external:vscode --external:joulescope_driver --external:@serialport/bindings --external:@serialport/bindings-cpp ./src/Main --outdir=out --platform=node --format=cjs",
+        "build": "esbuild --bundle --external:vscode --external:joulescope_driver --external:node_jls --external:@serialport/bindings --external:@serialport/bindings-cpp ./src/Main --outdir=out --platform=node --format=cjs",
         "watch": "npm run build -- --sourcemap --watch"
     },
     "repository": {
@@ -23,6 +23,7 @@
         "commander": "^14.0.0",
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",
+        "node_jls": "file:../jscope/jls/node_jls/node_jls-1.0.0.tgz",
         "serialport": "^12.0.0",
         "ts-node": "^10.9.2"
     },

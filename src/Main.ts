@@ -3,6 +3,7 @@
 import * as Driver_JS220 from './Driver_JS220'
 import * as Driver_PPK2 from './Driver_PPK2'
 import * as Dumper from './Dumper'
+import * as Exporter from './Exporter'
 
 import * as Commander from 'commander'
 
@@ -26,6 +27,11 @@ CMD.command('dump')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-e --event-number <value>', 'event number', parseFloat, 0)
     .action((opts: any) => Dumper.exec(opts))
+
+CMD.command('export')
+    .description('export a Joulescope JLS file')
+    .option('-c --capture <dir>', 'working capture directory', '.')
+    .action((opts: any) => Exporter.exec(opts))
 
 try {
     CMD.parse(process.argv)

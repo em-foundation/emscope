@@ -14,6 +14,20 @@ export interface Marker {
     sample_count: number
 }
 
+export interface Analysis {
+    window: Marker
+    events: {
+        markers: Marker[]
+        avg_duration: string
+        avg_current: string
+        avg_energy: string
+    }
+    energy_per_sec: string
+    energy_per_day: string
+    energy_per_year: string
+    efficiency_score: string
+}
+
 export class Capture {
 
     static #LOAD_KEYS = [
@@ -32,7 +46,7 @@ export class Capture {
         'min_current',
     ]
 
-    _aobj: Object = {}
+    _aobj: any = {}
     _current_ds?: SampleSet
     _creation_date?: Date
     _device?: CaptureDevice
@@ -73,7 +87,7 @@ export class Capture {
         switch (cap.device) {
             case 'JS220':
                 cap._voltage_ds = new SampleSet(cap.sample_count)
-                cap.current_ds.load(rootdir, 'voltage')
+                cap.voltage_ds.load(rootdir, 'voltage')
                 cap._voltage = -1
                 break
             case 'PPK2':
@@ -81,13 +95,10 @@ export class Capture {
                 cap._voltage = yobj.capture.avg_voltage
                 break
         }
-        cap._voltage_ds = new SampleSet((cap.device == 'JS220') ? cap.sample_count : 0)
-        if (cap.device == 'JS220') {
-            cap.current_ds.load(rootdir, 'voltage')
-        }
         return cap
     }
 
+    get analysis() { return this._aobj as Analysis }
     get creation_date() { return this._creation_date! }
     get current_ds() { return this._current_ds! }
     get device() { return this._device! }
@@ -102,7 +113,7 @@ export class Capture {
     get max_current() { return this.current_ds.max() }
     get min_current() { return this.current_ds.min() }
     get avg_voltage() { return this.device == 'JS220' ? this.voltage_ds.avg() : this.voltage }
-    bind(aobj: Object) {
+    bind(aobj: Analysis) {
         this._aobj = aobj
     }
     markerCharge(m: Marker): number {
@@ -129,6 +140,31 @@ export class Capture {
     }
     voltageAt(offset: number): number {
         return this.device == 'JS220' ? this.voltage_ds.data[offset] : this.voltage
+    }
+}
+
+export class KalmanFilter {
+    q: number
+    r: number
+    p: number
+    x: number
+    constructor(
+        initialEstimate: number,
+        processNoise: number,
+        measurementNoise: number,
+        estimateCovariance: number
+    ) {
+        this.x = initialEstimate
+        this.p = estimateCovariance
+        this.q = processNoise
+        this.r = measurementNoise
+    }
+    update(measurement: number): number {
+        this.p += this.q
+        const k = this.p / (this.p + this.r)  // Kalman gain
+        this.x = this.x + k * (measurement - this.x) // Update estimate
+        this.p = (1 - k) * this.p
+        return this.x
     }
 }
 
