@@ -11,31 +11,10 @@ import * as Commander from 'commander'
 
 const CMD = new Commander.Command('emscope')
 
-CMD.command('js220')
-    .description('capture using Jouleccope JS220')
-    .option('-c --capture <dir>', 'working capture directory', '.')
-    .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
-    .action((opts: any) => Driver_JS220.exec(opts))
-
-CMD.command('ppk2')
-    .description('capture using Nordic PPK2')
-    .option('-c --capture <dir>', 'working capture directory', '.')
-    .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
-    .option('-V --voltage <value>', 'source voltage', parseFloat, 3.3)
-    .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts('sourceMode'))
-    .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts('ampereMode'))
-    .action((opts: any) => Driver_PPK2.exec(opts))
-
 CMD.command('dump')
     .description('dump capture information')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .action((opts: any) => Dumper.exec(opts))
-
-CMD.command('export')
-    .alias('ex')
-    .description('export a Joulescope JLS file')
-    .option('-c --capture <dir>', 'working capture directory', '.')
-    .action((opts: any) => Exporter.exec(opts))
 
 CMD.command('plot')
     .description('plot a specified event')

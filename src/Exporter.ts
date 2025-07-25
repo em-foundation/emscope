@@ -1,10 +1,7 @@
 import * as Core from './Core'
-
 import * as Jls from 'node_jls'
-import * as Fs from 'fs'
 
-export function exec(opts: any) {
-    const cap = Core.Capture.load(opts.capture)
+export function exec(cap: Core.Capture) {
     const jfile = new Jls.Writer('capture.jls')
     const sdef: Jls.SourceDef = {
         source_id: 1,
@@ -35,5 +32,4 @@ export function exec(opts: any) {
     jfile.signalDef(sigdef)
     jfile.writeF32(1, f32)
     jfile.close()
-    console.log(`wrote 'capture.jls'`)
 }

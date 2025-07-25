@@ -1,4 +1,4 @@
-import * as Analyzer from './Analyzer'
+// import * as Analyzer from './Analyzer'
 import * as Core from './Core'
 
 import { SerialPort } from 'serialport'
@@ -69,7 +69,7 @@ type modifiers = {
 const getMaskedValue = (value: number, { mask, pos }: Mask): number =>
     (value & mask) >> pos
 
-export async function exec(opts: any) {
+export async function execCapture(opts: any): Promise<Core.Capture> {
     const path_list = await findDevices()
     if (path_list.length == 0) {
         console.error("*** no PPK2 analyzer")
@@ -95,8 +95,9 @@ export async function exec(opts: any) {
     await ppk.capture(progress)
     ppk.togglePower('off')
     ppk.close()
-    Analyzer.exec(cap)
-    cap.save()
+    return cap
+    // Analyzer.exec(cap)
+    // cap.save()
 }
 
 async function findDevices(): Promise<Array<string>> {

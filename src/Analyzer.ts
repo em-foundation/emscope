@@ -21,7 +21,6 @@ export function exec(cap: Core.Capture) {
         efficiency_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•eralds`
     }
     cap.bind(aobj)
-    console.log(`  ${events.length} events ==> ${aobj.efficiency_score}`)
 }
 
 function findEvents(cap: Core.Capture): Core.Marker[] {
