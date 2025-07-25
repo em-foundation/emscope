@@ -5,6 +5,7 @@ import * as Driver_PPK2 from './Driver_PPK2'
 import * as Dumper from './Dumper'
 import * as Exporter from './Exporter'
 import * as Plotter from './Plotter'
+import * as Recorder from './Recorder'
 
 import * as Commander from 'commander'
 
@@ -31,6 +32,7 @@ CMD.command('dump')
     .action((opts: any) => Dumper.exec(opts))
 
 CMD.command('export')
+    .alias('ex')
     .description('export a Joulescope JLS file')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .action((opts: any) => Exporter.exec(opts))
@@ -41,9 +43,24 @@ CMD.command('plot')
     .option('-e --event-number <value>', 'event number', parseFloat, 0)
     .action((opts: any) => Plotter.exec(opts))
 
+CMD.command('record')
+    .description('record information using an analyzer device')
+    .option('-c --capture <dir>', 'working capture directory', '.')
+    .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
+    .option('-J --js220', 'use a Joulescope JS220 device')
+    .option('-P --ppk2', 'use a Nordic PPK2 device')
+    .addOption(new Commander.Option('-V, --voltage <value>', 'source voltage').argParser(parseFloat).default(3.3).conflicts('js220'))
+    .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts(['sourceMode', 'js220']))
+    .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts(['ampereMode', 'js220']))
+    .action((opts: any) => Recorder.exec(opts))
+
+CMD.addHelpText('afterAll', `
+Common Options:
+  -c, --capture        working capture directory (default: ".")
+`)
+
 try {
     CMD.parse(process.argv)
-    console.log(CMD.opts())
 } catch (err) {
     console.log(err)
     process.exit(1)
