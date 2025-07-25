@@ -20,7 +20,9 @@ CMD.command('ppk2')
     .description('capture using Nordic PPK2')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
-    .option('-v --voltage <value>', 'source voltage', parseFloat, 3.3)
+    .option('-V --voltage <value>', 'source voltage', parseFloat, 3.3)
+    .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts('sourceMode'))
+    .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts('ampereMode'))
     .action((opts: any) => Driver_PPK2.exec(opts))
 
 CMD.command('dump')
@@ -41,6 +43,7 @@ CMD.command('plot')
 
 try {
     CMD.parse(process.argv)
+    console.log(CMD.opts())
 } catch (err) {
     console.log(err)
     process.exit(1)

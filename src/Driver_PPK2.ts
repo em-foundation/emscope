@@ -85,8 +85,12 @@ export async function exec(opts: any) {
     const cap = Core.Capture.create(opts.capture, opts.duration, 'PPK2', opts.voltage)
     const ppk = new PPK2(port, cap)
     await ppk.getModifiers()
-    ppk.setSourceVoltage(cap.voltage * 1000)
-    ppk.setMode('source')
+    if (opts.ampereMode) {
+        ppk.setMode('ampere')
+    } else {
+        ppk.setMode('source')
+        ppk.setSourceVoltage(cap.voltage * 1000)
+    }
     ppk.togglePower('on')
     await ppk.capture(progress)
     ppk.togglePower('off')
