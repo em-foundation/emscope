@@ -1,8 +1,8 @@
 import * as Core from './Core'
 import * as Jls from 'node_jls'
 
-export function exec(cap: Core.Capture) {
-    const jfile = new Jls.Writer('capture.jls')
+export function exec(cap: Core.Capture, path: string) {
+    const jfile = new Jls.Writer(path)
     const sdef: Jls.SourceDef = {
         source_id: 1,
         name: 'mysource',

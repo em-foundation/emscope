@@ -1,6 +1,6 @@
 import * as Core from './Core'
 
-export function exec(cap: Core.Capture) {
+export function exec(cap: Core.Capture): Core.Analysis {
     const events = findEvents(cap)
     const window: Core.Marker = events.length > 0 ? {
         sample_offset: events[0].sample_offset - (cap.sampling_rate / 2),
@@ -20,7 +20,7 @@ export function exec(cap: Core.Capture) {
         energy_per_year: Core.toEng(egy_per_sec * 86400 * 365, 'J'),
         efficiency_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•eralds`
     }
-    cap.bind(aobj)
+    return aobj
 }
 
 function findEvents(cap: Core.Capture): Core.Marker[] {

@@ -4,6 +4,8 @@ import * as Driver_JS220 from './Driver_JS220'
 import * as Driver_PPK2 from './Driver_PPK2'
 import * as Exporter from './Exporter'
 
+import * as Path from 'path'
+
 export async function exec(opts: any) {
     let c: Core.Capture
     if (opts.js220) {
@@ -15,11 +17,11 @@ export async function exec(opts: any) {
         process.exit(1)
     }
     const cap = c!
-    Exporter.exec(cap)
+    Exporter.exec(cap, Path.join(cap.rootdir, 'capture.jls'))
     console.log(`    wrote 'capture.jls'`)
-    Analyzer.exec(cap)
-    const aobj = cap.analysis
+    const aobj = Analyzer.exec(cap)
     console.log(`    ${aobj.events.markers.length} events ==> ${aobj.efficiency_score}`)
+    cap.bind(aobj)
     cap.save()
     process.exit()
 }

@@ -23,6 +23,7 @@ CMD.command('plot')
     .action((opts: any) => Plotter.exec(opts))
 
 CMD.command('record')
+    .alias('rec')
     .description('record information using an analyzer device')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
