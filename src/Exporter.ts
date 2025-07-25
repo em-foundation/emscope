@@ -35,5 +35,5 @@ export function exec(opts: any) {
     jfile.signalDef(sigdef)
     jfile.writeF32(1, f32)
     jfile.close()
-    console.log(`wrote 'console.jls'`)
+    console.log(`wrote 'capture.jls'`)
 }

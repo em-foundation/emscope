@@ -76,7 +76,7 @@ export class Capture {
     static load(rootdir: string): Capture {
         let cap = new Capture()
         cap._rootdir = rootdir
-        const ytxt = Fs.readFileSync(Path.join(rootdir, 'emgauge.yaml'), 'utf-8')
+        const ytxt = Fs.readFileSync(Path.join(rootdir, 'emscope.yaml'), 'utf-8')
         const yobj = Yaml.load(ytxt) as any
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
@@ -130,13 +130,23 @@ export class Capture {
         const dt = 1 / this.sampling_rate
         return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.sample_offset + idx) * dt, 0)
     }
+
+    sampleIndexToSecs(idx: number): number {
+        return idx / this.sampling_rate
+    }
+    secsToSampleIndex(secs: number): number {
+        return Math.round(secs * this.sampling_rate)
+    }
     save() {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
         const yobj = { capture: cobj, analysis: this._aobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
-        Fs.writeFileSync(Path.join(this.rootdir, 'emgauge.yaml'), ytxt)
+        Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
+    }
+    toMarker(): Marker {
+        return { sample_offset: 0, sample_count: this.sample_count }
     }
     voltageAt(offset: number): number {
         return this.device == 'JS220' ? this.voltage_ds.data[offset] : this.voltage
@@ -224,6 +234,14 @@ export class Progress {
 }
 
 export function avg(data: number[]): number { return data.reduce((sum, x) => sum + x, 0) / data.length }
+export function stdDev(data: number[]): number {
+    const mean = avg(data)
+    return Math.sqrt(data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length)
+}
+
+export function decimate<T>(factor: number, data: T[]): T[] {
+    return data.filter((_, i) => i % factor === 0)
+}
 
 export function toEng(x: number, u: string): string {
     const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3

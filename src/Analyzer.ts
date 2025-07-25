@@ -2,11 +2,11 @@ import * as Core from './Core'
 
 export function exec(cap: Core.Capture) {
     const events = findEvents(cap)
-    const window: Core.Marker = {
+    const window: Core.Marker = events.length > 0 ? {
         sample_offset: events[0].sample_offset - (cap.sampling_rate / 2),
         sample_count: events.length * cap.sampling_rate
-    }
-    const egy_per_sec = cap.markerEnergy(window) / events.length
+    } : cap.toMarker()
+    const egy_per_sec = cap.markerEnergy(window) / (events.length ? events.length : cap.duration)
     const aobj = {
         window: window,
         events: {
@@ -21,7 +21,7 @@ export function exec(cap: Core.Capture) {
         efficiency_score: `${(2400 / (egy_per_sec * 86400 * 365)).toFixed(3)} EM•eralds`
     }
     cap.bind(aobj)
-    console.log(`  ==> ${aobj.efficiency_score}`)
+    console.log(`  ${events.length} events ==> ${aobj.efficiency_score}`)
 }
 
 function findEvents(cap: Core.Capture): Core.Marker[] {
