@@ -14,6 +14,7 @@ const CMD = new Commander.Command('emscope')
 CMD.command('dump')
     .description('dump capture information')
     .option('-c --capture <dir>', 'working capture directory', '.')
+    .option('-a --algorithm-number <value>', 'algorithm number', parseFloat, 0)
     .action((opts: any) => Dumper.exec(opts))
 
 CMD.command('plot')

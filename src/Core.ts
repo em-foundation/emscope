@@ -28,6 +28,8 @@ export interface Analysis {
     efficiency_score: string
 }
 
+type NumericSequence = Iterable<number> & { length: number }
+
 export class Capture {
 
     static #LOAD_KEYS = [
@@ -116,23 +118,26 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
+    markerArray(m: Marker): Float32Array<ArrayBuffer> {
+        return this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+    }
     markerCharge(m: Marker): number {
-        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        const data = this.markerArray(m)
         const dt = 1 / this.sampling_rate
         return data.reduce((sum, x) => sum + x * dt, 0)
     }
     markerCurrent(m: Marker): number {
-        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        const data = this.markerArray(m)
         return data.reduce((sum, x) => sum + x, 0) / data.length
     }
     markerEnergy(m: Marker) {
-        const data = this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        const data = this.markerArray(m)
         const dt = 1 / this.sampling_rate
         return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.sample_offset + idx) * dt, 0)
     }
 
     sampleIndexToSecs(idx: number): number {
-        return idx / this.sampling_rate
+        return idx > 0 ? idx / this.sampling_rate : 0
     }
     secsToSampleIndex(secs: number): number {
         return Math.round(secs * this.sampling_rate)
@@ -233,10 +238,19 @@ export class Progress {
     }
 }
 
-export function avg(data: number[]): number { return data.reduce((sum, x) => sum + x, 0) / data.length }
-export function stdDev(data: number[]): number {
+export function avg(data: NumericSequence): number {
+    let sum = 0
+    for (const x of data) sum += x
+    return sum / data.length
+}
+export function stdDev(data: NumericSequence): number {
     const mean = avg(data)
-    return Math.sqrt(data.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / data.length)
+    let sumSq = 0
+    for (const x of data) {
+        const d = x - mean
+        sumSq += d * d
+    }
+    return Math.sqrt(sumSq / data.length)
 }
 
 export function decimate<T>(factor: number, data: T[]): T[] {
@@ -244,6 +258,7 @@ export function decimate<T>(factor: number, data: T[]): T[] {
 }
 
 export function toEng(x: number, u: string): string {
+    if (x == 0) return `0 ${u}`
     const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
     const mantissa = x / 10 ** exp
     const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}`, [3]: ` k${u}` }[exp] || `e${exp} ${u}`

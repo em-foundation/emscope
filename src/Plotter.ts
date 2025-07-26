@@ -10,7 +10,7 @@ export async function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     const markers = cap.analysis.events.markers
     const ev_num = opts.eventNumber as number
-    if (ev_num > markers.length) {
+    if (ev_num >= markers.length) {
         console.error("*** event number out of range")
         process.exit(1)
     }
