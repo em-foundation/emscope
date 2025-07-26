@@ -19,8 +19,9 @@ CMD.command('dump')
     .action((opts: any) => Dumper.exec(opts))
 
 CMD.command('pack')
-    .description('pack capture information')
+    .description('pack capture information into a zip file')
     .option('-c --capture <dir>', 'working capture directory', '.')
+    .option('-o --output <dir>', 'output directory', '.')
     .action((opts: any) => Packer.exec(opts))
 
 CMD.command('plot')
