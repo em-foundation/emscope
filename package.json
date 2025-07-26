@@ -19,7 +19,9 @@
     },
     "homepage": "https://github.com/em-foundation/em-flux#readme",
     "dependencies": {
+        "@types/adm-zip": "^0.5.7",
         "@types/js-yaml": "^4.0.9",
+        "adm-zip": "^0.5.16",
         "commander": "^14.0.0",
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",

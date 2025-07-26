@@ -4,6 +4,7 @@ import * as Driver_JS220 from './Driver_JS220'
 import * as Driver_PPK2 from './Driver_PPK2'
 import * as Dumper from './Dumper'
 import * as Exporter from './Exporter'
+import * as Packer from './Packer'
 import * as Plotter from './Plotter'
 import * as Recorder from './Recorder'
 
@@ -16,6 +17,11 @@ CMD.command('dump')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-a --algorithm-number <value>', 'algorithm number', parseFloat, 0)
     .action((opts: any) => Dumper.exec(opts))
+
+CMD.command('pack')
+    .description('pack capture information')
+    .option('-c --capture <dir>', 'working capture directory', '.')
+    .action((opts: any) => Packer.exec(opts))
 
 CMD.command('plot')
     .description('plot a specified event')
