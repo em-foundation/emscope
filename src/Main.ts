@@ -48,11 +48,6 @@ CMD.command('plot')
     .option('-e --event-number <value>', 'event number', parseFloat, 0)
     .action((opts: any) => Plotter.exec(opts))
 
-CMD.addHelpText('afterAll', `
-Common Options:
-  -c, --capture        working capture directory (default: ".")
-`)
-
 try {
     CMD.parse(process.argv)
 } catch (err) {
