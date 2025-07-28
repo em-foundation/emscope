@@ -1,13 +1,13 @@
+import * as Analyzer from './Analyzer'
 import * as Core from './Core'
 
 
 type AlgInfo = [(cap: Core.Capture) => void, string]
 
 const ALGS = new Array<AlgInfo>(
-    [alg0, 'sleep current prior to first event'],
-    [alg1, '*** WIP ***'],
-    [alg2, 'lowest sleep current across overlapped .5s windows'],
-    [alg3, 'initial activity search using alg2 output'],
+    [alg0, 'default analysis'],
+    [alg1, 'lowest sleep current across overlapped .5s windows'],
+    [alg2, 'active event search using alg2 output'],
 )
 
 export async function exec(opts: any) {
@@ -27,58 +27,11 @@ export async function exec(opts: any) {
 }
 
 function alg0(cap: Core.Capture) {
-    const ev0 = cap.analysis.events.markers[0]
-    const m: Core.Marker = {
-        sample_offset: ev0.sample_offset - cap.secsToSampleIndex(.40),
-        sample_count: cap.secsToSampleIndex(.25)
-    }
-    const sleep_data = cap.markerArray(m)
-    Core.avg(sleep_data)
-    const vol = Core.toEng(cap.avg_voltage, 'V')
-    const cur = Core.toEng(Core.avg(sleep_data), 'A')
-    const std = Core.toEng(Core.stdDev(sleep_data), 'A')
-    console.log(`voltage = ${vol}, sleep current = ${cur}, std = ${std}`)
-    // const pre = 50
-    // const data = cap.current_ds.data.subarray(ev0.sample_offset - pre, ev0.sample_offset)
-    // for (const [i, v] of data.entries()) {
-    //     console.log(`${i - pre}: ${Core.toEng(v, 'A')}`)
-    // }
-    console.log(ev0)
+    const aobj = Analyzer.exec(cap)
+    console.dir(aobj, { depth: null, colors: true })
 }
 
-function alg1(cap: Core.Capture) {
-
-    const MIN_STD_DEV = 0.0001
-    const MIN_DURATION = .25
-
-    const data = cap.current_ds.data
-    const min_samples = cap.secsToSampleIndex(MIN_DURATION)
-    let hist = new Array<number>()
-    let sleeping = true
-    const pre = 100
-    for (const [i, v] of data.subarray(pre).entries()) {
-        hist.push(v)
-        if (sleeping) {
-            const sd = Core.stdDev(hist)
-            if (sd < MIN_STD_DEV) {
-                sleeping = false
-            }
-            continue
-        }
-        if (hist.length >= min_samples) {
-            const sd = Core.stdDev(hist)
-            if (sd < MIN_STD_DEV) {
-                const time = Core.toEng(cap.sampleIndexToSecs(pre + i + 1 - hist.length), 's')
-                console.log(`${time}: sleep avg = ${Core.toEng(Core.avg(hist), 'A')}`)
-                process.exit()
-            } else {
-                hist.shift()
-            }
-        }
-    }
-}
-
-function alg2(cap: Core.Capture): { avg: number, std: number, p95: number } {
+function alg1(cap: Core.Capture): { avg: number, std: number, p95: number } {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
@@ -104,8 +57,8 @@ function alg2(cap: Core.Capture): { avg: number, std: number, p95: number } {
     return { avg: min_cur, std: std, p95: p95 }
 }
 
-function alg3(cap: Core.Capture) {
-    const { avg, std, p95 } = alg2(cap)
+function alg2(cap: Core.Capture) {
+    const { avg, std, p95 } = alg1(cap)
     const N1 = 5
     const N2 = 4
     const ampT = avg + (N1 * std)
@@ -117,7 +70,6 @@ function alg3(cap: Core.Capture) {
     let active = false
     let nxt_marker = new Core.Marker()
     for (const [i, v] of cap.current_ds.data.entries()) {
-        // if (i == 2_000_000) break
         const dy = v - y0
         y0 = v
         if (!active && ((v > ampT) || (Math.abs(dy) > slopeT))) {
@@ -134,11 +86,30 @@ function alg3(cap: Core.Capture) {
         }
     }
     const min_samples = cap.secsToSampleIndex(500e-6)
-    for (const m of markers) {
-        if (m.sample_count > min_samples) {
-            console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
+    const max_gap = cap.secsToSampleIndex(10e-3)
+    const merged = mergeMarkers(markers.filter(m => m.sample_count > min_samples), max_gap)
+    for (const m of merged) {
+        console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
+    }
+}
+
+function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
+    if (markers.length === 0) return []
+    const merged: Core.Marker[] = []
+    let prev = markers[0]
+    for (let i = 1; i < markers.length; i++) {
+        const next = markers[i]
+        const gap = next.sample_offset - (prev.sample_offset + prev.sample_count)
+        if (gap <= max_gap) {
+            const new_end = next.sample_offset + next.sample_count
+            prev.sample_count = new_end - prev.sample_offset
+        } else {
+            merged.push(prev)
+            prev = next
         }
     }
+    merged.push(prev)
+    return merged
 }
 
 function slopeP95(data: Float32Array): number {
