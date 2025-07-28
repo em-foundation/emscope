@@ -7,6 +7,7 @@ const ALGS = new Array<AlgInfo>(
     [alg0, 'sleep current prior to first event'],
     [alg1, '*** WIP ***'],
     [alg2, 'lowest sleep current across overlapped .5s windows'],
+    [alg3, 'initial activity search using alg2 output'],
 )
 
 export async function exec(opts: any) {
@@ -77,9 +78,10 @@ function alg1(cap: Core.Capture) {
     }
 }
 
-function alg2(cap: Core.Capture) {
+function alg2(cap: Core.Capture): { avg: number, std: number, p95: number } {
     let min_cur = Number.POSITIVE_INFINITY
-    let min_std = Number.POSITIVE_INFINITY
+    let std = 0
+    let p95 = 0
     let m: Core.Marker = {
         sample_offset: 0,
         sample_count: cap.secsToSampleIndex(.5),
@@ -88,16 +90,59 @@ function alg2(cap: Core.Capture) {
         const sleep_data = cap.markerArray(m)
         Core.avg(sleep_data)
         const cur = Core.avg(sleep_data)
-        const std = Core.stdDev(sleep_data)
         if (cur < min_cur) {
             min_cur = cur
-            min_std = std
+            std = Core.stdDev(sleep_data)
+            p95 = slopeP95(sleep_data)
         }
         m.sample_offset += m.sample_count / 2
     }
-    const vol = Core.toEng(cap.avg_voltage, 'V')
-    const cur = Core.toEng(min_cur, 'A')
-    const std = Core.toEng(min_std, 'A')
-    console.log(`voltage = ${vol}, sleep current = ${cur}, std = ${std}`)
+    const vol_s = Core.toEng(cap.avg_voltage, 'V')
+    const cur_s = Core.toEng(min_cur, 'A')
+    const std_s = Core.toEng(std, 'A')
+    console.log(`voltage = ${vol_s}, sleep current = ${cur_s}, std = ${std_s}, p95 = ${p95.toExponential(2)}`)
+    return { avg: min_cur, std: std, p95: p95 }
+}
 
+function alg3(cap: Core.Capture) {
+    const { avg, std, p95 } = alg2(cap)
+    const N1 = 5
+    const N2 = 4
+    const ampT = avg + (N1 * std)
+    const slopeT = N2 * p95
+    const eps = 2 * std
+    console.log(`ampT = ${Core.toEng(ampT, 'A')}, slopeT = ${slopeT.toExponential(2)}`)
+    let markers = new Array<Core.Marker>()
+    let y0 = 0
+    let active = false
+    let nxt_marker = new Core.Marker()
+    for (const [i, v] of cap.current_ds.data.entries()) {
+        // if (i == 2_000_000) break
+        const dy = v - y0
+        y0 = v
+        if (!active && ((v > ampT) || (Math.abs(dy) > slopeT))) {
+            active = true
+            nxt_marker.sample_offset = i
+            continue
+        }
+        if (active && (v <= avg + eps) && (Math.abs(dy) <= p95)) {
+            active = false
+            nxt_marker.sample_count = i - nxt_marker.sample_offset
+            markers.push(nxt_marker)
+            nxt_marker = new Core.Marker()
+            continue
+        }
+    }
+    const min_samples = cap.secsToSampleIndex(500e-6)
+    markers.filter(m => m.sample_count > min_samples).forEach(m => console.log(m))
+}
+
+function slopeP95(data: Float32Array): number {
+    const slope = new Array<number>()
+    for (let i = 1; i < data.length; i++) {
+        slope.push(Math.abs(data[i] - data[i - 1]))
+    }
+    const sorted = [...slope].sort((a, b) => a - b)
+    const p95 = sorted[Math.floor(0.95 * sorted.length)]
+    return p95
 }

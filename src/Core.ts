@@ -9,11 +9,6 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
     ['PPK2', 100_000],
 ])
 
-export interface Marker {
-    sample_offset: number
-    sample_count: number
-}
-
 export interface Analysis {
     window: Marker
     events: {
@@ -28,7 +23,7 @@ export interface Analysis {
     efficiency_score: string
 }
 
-type NumericSequence = Iterable<number> & { length: number }
+export type NumericSequence = Iterable<number> & { length: number }
 
 export class Capture {
 
@@ -181,6 +176,11 @@ export class KalmanFilter {
         this.p = (1 - k) * this.p
         return this.x
     }
+}
+
+export class Marker {
+    sample_offset: number = 0
+    sample_count: number = 0
 }
 
 export class SampleSet {
