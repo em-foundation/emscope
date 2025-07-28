@@ -125,12 +125,17 @@ export class Capture {
         const data = this.markerArray(m)
         return data.reduce((sum, x) => sum + x, 0) / data.length
     }
+    markerDuration(m: Marker): number {
+        return this.sampleIndexToSecs(m.sample_count)
+    }
     markerEnergy(m: Marker) {
         const data = this.markerArray(m)
         const dt = 1 / this.sampling_rate
         return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.sample_offset + idx) * dt, 0)
     }
-
+    markerLocation(m: Marker): number {
+        return this.sampleIndexToSecs(m.sample_offset)
+    }
     sampleIndexToSecs(idx: number): number {
         return idx > 0 ? idx / this.sampling_rate : 0
     }

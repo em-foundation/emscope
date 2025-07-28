@@ -134,7 +134,11 @@ function alg3(cap: Core.Capture) {
         }
     }
     const min_samples = cap.secsToSampleIndex(500e-6)
-    markers.filter(m => m.sample_count > min_samples).forEach(m => console.log(m))
+    for (const m of markers) {
+        if (m.sample_count > min_samples) {
+            console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
+        }
+    }
 }
 
 function slopeP95(data: Float32Array): number {
