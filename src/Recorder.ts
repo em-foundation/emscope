@@ -17,8 +17,7 @@ export async function exec(opts: any) {
         process.exit(1)
     }
     const cap = c!
-    Exporter.exec(cap, Path.join(cap.rootdir, 'capture.jls'))
-    console.log(`    wrote 'capture.jls'`)
+    Exporter.write(cap)
     const aobj = Analyzer.exec(cap)
     console.log(`    ${aobj.events.markers.length} events ==> ${aobj.efficiency_score}`)
     cap.bind(aobj)

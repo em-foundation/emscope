@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import * as Driver_JS220 from './Driver_JS220'
-import * as Driver_PPK2 from './Driver_PPK2'
 import * as Dumper from './Algs'
 import * as Exporter from './Exporter'
 import * as Packer from './Packer'
@@ -33,8 +31,13 @@ CMD.command('apply')
     )
     .action((opts: any) => Dumper.exec(opts))
 
+CMD.command('export')
+    .description('export captured information into a Joulescope .jls file')
+    .option('-c --capture <dir>', 'working capture directory', '.')
+    .action((opts: any) => Exporter.exec(opts))
+
 CMD.command('pack')
-    .description('pack captured information into a zip file')
+    .description('pack captured information into a .zip file')
     .option('-c --capture <dir>', 'working capture directory', '.')
     .option('-o --output <dir>', 'output directory', '.')
     .action((opts: any) => Packer.exec(opts))

@@ -81,17 +81,18 @@ export class Capture {
         cap._aobj = yobj.analysis
         cap._current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
-        switch (cap.device) {
-            case 'JS220':
-                cap._voltage_ds = new SampleSet(cap.sample_count)
-                cap.voltage_ds.load(rootdir, 'voltage')
-                cap._voltage = -1
-                break
-            case 'PPK2':
-                cap._voltage_ds = new SampleSet(0)
-                cap._voltage = yobj.capture.avg_voltage
-                break
-        }
+        cap._voltage = yobj.capture.avg_voltage
+        // switch (cap.device) {
+        //     case 'JS220':
+        //         cap._voltage_ds = new SampleSet(cap.sample_count)
+        //         cap.voltage_ds.load(rootdir, 'voltage')
+        //         cap._voltage = -1
+        //         break
+        //     case 'PPK2':
+        //         cap._voltage_ds = new SampleSet(0)
+        //         cap._voltage = yobj.capture.avg_voltage
+        //         break
+        // }
         return cap
     }
 
@@ -109,7 +110,7 @@ export class Capture {
     get avg_current() { return this.current_ds.avg() }
     get max_current() { return this.current_ds.max() }
     get min_current() { return this.current_ds.min() }
-    get avg_voltage() { return this.device == 'JS220' ? this.voltage_ds.avg() : this.voltage }
+    get avg_voltage() { return this.voltage == -1 ? this.voltage_ds.avg() : this.voltage }
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
@@ -154,7 +155,7 @@ export class Capture {
         return { sample_offset: 0, sample_count: this.sample_count }
     }
     voltageAt(offset: number): number {
-        return this.device == 'JS220' ? this.voltage_ds.data[offset] : this.voltage
+        return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
     }
 }
 
