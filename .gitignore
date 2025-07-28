@@ -2,6 +2,7 @@
 
 /build/
 /junk*/
+/.junk/
 /node_modules/
 /out/
 
