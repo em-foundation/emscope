@@ -38,6 +38,7 @@ export function write(cap: Core.Capture) {
     }
     jfile.signalDef(sigdef)
     jfile.writeF32(1, f32)
+    jfile.textAnnotation(1, 100, "hello world")
     jfile.close()
     console.log(`    wrote 'capture.jls'`)
 }
