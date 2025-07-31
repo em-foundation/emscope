@@ -23,7 +23,10 @@ export interface Analysis {
     efficiency_score: string
 }
 
+export type F32 = Float32Array<ArrayBufferLike>
 export type NumericSequence = Iterable<number> & { length: number }
+
+export type MinMaxMeanBin = [number, number, number]
 
 export class Capture {
 
@@ -97,6 +100,7 @@ export class Capture {
     }
 
     get analysis() { return this._aobj as Analysis }
+    get basename() { return Path.basename(Path.resolve(this.rootdir)) }
     get creation_date() { return this._creation_date! }
     get current_ds() { return this._current_ds! }
     get device() { return this._device! }
@@ -114,7 +118,7 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
-    markerArray(m: Marker): Float32Array<ArrayBuffer> {
+    markerArray(m: Marker): F32 {
         return this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
     }
     markerCharge(m: Marker): number {
@@ -190,12 +194,12 @@ export class Marker {
 }
 
 export class SampleSet {
-    _data: Float32Array<ArrayBuffer>
+    _data: F32
     _idx = 0
     constructor(readonly size: number) {
         this._data = new Float32Array(size)
     }
-    get data(): Readonly<Float32Array> { return this._data }
+    get data(): Readonly<F32> { return this._data }
     get is_full(): boolean { return this._idx >= this.size }
     get length(): number { return this._idx }
     avg(): number { return this._data.reduce((sum, x) => sum + x, 0) / this.length }
@@ -249,6 +253,26 @@ export function avg(data: NumericSequence): number {
     for (const x of data) sum += x
     return sum / data.length
 }
+
+export function bin3M(data: NumericSequence, width: number): MinMaxMeanBin[] {
+    let res = new Array<MinMaxMeanBin>()
+    const INIT = [width, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0]
+    let [cnt, min, max, sum] = INIT
+    for (const v of data) {
+        min = Math.min(min, v)
+        max = Math.max(max, v)
+        sum += v
+        if (--cnt > 0) continue
+        res.push([min, max, sum / width])
+        { [cnt, min, max, sum] = INIT }
+    }
+    return res
+}
+
+export function decimate<T>(factor: number, data: T[]): T[] {
+    return data.filter((_, i) => i % factor === 0)
+}
+
 export function stdDev(data: NumericSequence): number {
     const mean = avg(data)
     let sumSq = 0
@@ -257,10 +281,6 @@ export function stdDev(data: NumericSequence): number {
         sumSq += d * d
     }
     return Math.sqrt(sumSq / data.length)
-}
-
-export function decimate<T>(factor: number, data: T[]): T[] {
-    return data.filter((_, i) => i % factor === 0)
 }
 
 export function toEng(x: number, u: string): string {

@@ -17,8 +17,8 @@ export async function exec(opts: any) {
         process.exit(1)
     }
     const cap = c!
-    Exporter.write(cap)
     const aobj = Analyzer.exec(cap)
+    Exporter.saveMarkers(cap, cap.basename, aobj.events.markers)
     console.log(`    ${aobj.events.markers.length} events ==> ${aobj.efficiency_score}`)
     cap.bind(aobj)
     cap.save()

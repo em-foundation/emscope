@@ -1,6 +1,6 @@
 import * as Analyzer from './Analyzer'
 import * as Core from './Core'
-
+import * as Exporter from './Exporter'
 
 type AlgInfo = [(cap: Core.Capture) => void, string]
 
@@ -8,6 +8,8 @@ const ALGS = new Array<AlgInfo>(
     [alg0, 'default analysis'],
     [alg1, 'lowest sleep current across overlapped .5s windows'],
     [alg2, 'active event search using alg2 output'],
+    [alg3, 'min/max/mean bins'],
+
 )
 
 export async function exec(opts: any) {
@@ -88,9 +90,18 @@ function alg2(cap: Core.Capture) {
     const min_samples = cap.secsToSampleIndex(500e-6)
     const max_gap = cap.secsToSampleIndex(10e-3)
     const merged = mergeMarkers(markers.filter(m => m.sample_count > min_samples), max_gap)
-    for (const m of merged) {
-        console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
-    }
+    console.log(`    found ${merged.length} events`)
+    // for (const m of merged) {
+    //     console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
+    // }
+    Exporter.saveMarkers(cap, `${cap.basename}--alg2`, merged)
+}
+
+function alg3(cap: Core.Capture) {
+    const width = cap.secsToSampleIndex(250e-6)
+    const bins = Core.bin3M(cap.current_ds.data, width)
+    const f32 = new Float32Array(bins.map(b => b[2]))
+    Exporter.saveData(cap, `${cap.basename}--alg3`, f32, cap.sampling_rate / width)
 }
 
 function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
