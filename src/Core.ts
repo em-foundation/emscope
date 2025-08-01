@@ -40,51 +40,47 @@ export class Capture {
 
     static #SAVE_KEYS = [
         ...Capture.#LOAD_KEYS,
-        'avg_voltage',
-        'avg_current',
-        'max_current',
-        'min_current',
     ]
 
-    _aobj: any = {}
-    _current_ds?: SampleSet
-    _creation_date?: Date
-    _device?: CaptureDevice
-    _duration?: number
-    _rootdir?: string
-    _sample_count?: number
-    _sampling_rate?: number
-    _voltage?: number
-    _voltage_ds?: SampleSet
+    #aobj: any = {}
+    #current_ds?: SampleSet
+    #creation_date?: Date
+    #device?: CaptureDevice
+    #duration?: number
+    #rootdir?: string
+    #sample_count?: number
+    #sampling_rate?: number
+    #voltage?: number
+    #voltage_ds?: SampleSet
 
     private constructor() { }
 
     static create(rootdir: string, duration: number, device: CaptureDevice, voltage: number = -1): Capture {
         let cap = new Capture()
-        cap._rootdir = rootdir
-        cap._duration = duration
-        cap._device = device
-        cap._voltage = voltage
-        cap._creation_date = new Date()
-        cap._sampling_rate = SAMPLING_RATE.get(device) ?? 0
-        cap._sample_count = duration * cap.sampling_rate
-        cap._current_ds = new SampleSet(cap.sample_count)
-        cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
+        cap.#rootdir = rootdir
+        cap.#duration = duration
+        cap.#device = device
+        cap.#voltage = voltage
+        cap.#creation_date = new Date()
+        cap.#sampling_rate = SAMPLING_RATE.get(device) ?? 0
+        cap.#sample_count = duration * cap.sampling_rate
+        cap.#current_ds = new SampleSet(cap.sample_count)
+        cap.#voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
         return cap
     }
 
     static load(rootdir: string): Capture {
         let cap = new Capture()
-        cap._rootdir = rootdir
+        cap.#rootdir = rootdir
         const ytxt = Fs.readFileSync(Path.join(rootdir, 'emscope.yaml'), 'utf-8')
         const yobj = Yaml.load(ytxt) as any
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
         }
-        cap._aobj = yobj.analysis
-        cap._current_ds = new SampleSet(cap.sample_count)
+        cap.#aobj = yobj.analysis
+        cap.#current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
-        cap._voltage = yobj.capture.avg_voltage
+        cap.#voltage = yobj.capture.avg_voltage
         // switch (cap.device) {
         //     case 'JS220':
         //         cap._voltage_ds = new SampleSet(cap.sample_count)
@@ -99,24 +95,24 @@ export class Capture {
         return cap
     }
 
-    get analysis() { return this._aobj as Analysis }
+    get analysis() { return this.#aobj as Analysis }
+    get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
     get basename() { return Path.basename(Path.resolve(this.rootdir)) }
-    get creation_date() { return this._creation_date! }
-    get current_ds() { return this._current_ds! }
-    get device() { return this._device! }
-    get duration() { return this._duration! }
-    get rootdir() { return this._rootdir! }
-    get sample_count() { return this._sample_count! }
-    get sampling_rate() { return this._sampling_rate! }
-    get voltage() { return this._voltage! }
-    get voltage_ds() { return this._voltage_ds! }
+    get creation_date() { return this.#creation_date! }
+    get current_ds() { return this.#current_ds! }
+    get current_sig() { return new Signal(this.current_ds.data, this.sampling_rate) }
+    get device() { return this.#device! }
+    get duration() { return this.#duration! }
+    get rootdir() { return this.#rootdir! }
+    get sample_count() { return this.#sample_count! }
+    get sampling_rate() { return this.#sampling_rate! }
+    get voltage() { return this.#voltage! }
+    get voltage_ds() { return this.#voltage_ds! }
+    get voltage_sig() { return new Signal(this.voltage_ds.data, this.sampling_rate) }
 
-    get avg_current() { return this.current_ds.avg() }
-    get max_current() { return this.current_ds.max() }
-    get min_current() { return this.current_ds.min() }
-    get avg_voltage() { return this.voltage == -1 ? this.voltage_ds.avg() : this.voltage }
+
     bind(aobj: Analysis) {
-        this._aobj = aobj
+        this.#aobj = aobj
     }
     markerArray(m: Marker): F32 {
         return this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
@@ -151,7 +147,7 @@ export class Capture {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
-        const yobj = { capture: cobj, analysis: this._aobj }
+        const yobj = { capture: cobj, analysis: this.#aobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
@@ -193,34 +189,6 @@ export class Marker {
     sample_count: number = 0
 }
 
-export class SampleSet {
-    _data: F32
-    _idx = 0
-    constructor(readonly size: number) {
-        this._data = new Float32Array(size)
-    }
-    get data(): Readonly<F32> { return this._data }
-    get is_full(): boolean { return this._idx >= this.size }
-    get length(): number { return this._idx }
-    avg(): number { return this._data.reduce((sum, x) => sum + x, 0) / this.length }
-    add(value: number) {
-        if (!this.is_full) {
-            this._data[this._idx++] = value
-        }
-    }
-    load(dir: string, name: string) {
-        const fd = Fs.openSync(Path.join(dir, `${name}.f32.bin`), 'r')
-        Fs.readSync(fd, this._data, 0, this._data.length * 4, 0)
-        this._idx = this._data.length
-        Fs.closeSync(fd)
-    }
-    max(): number { return this._data.reduce((a, b) => Math.max(a, b)) }
-    min(): number { return this._data.reduce((a, b) => Math.min(a, b)) }
-    save(dir: string, name: string) {
-        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this._data)
-    }
-}
-
 export class Progress {
     _max = 0
     constructor(readonly prefix: string) { }
@@ -246,6 +214,50 @@ export class Progress {
         this._max = Math.max(this._max, line.length)
         process.stdout.write(`\r${line}`)
     }
+}
+
+export class SampleSet {
+    _data: F32
+    _idx = 0
+    constructor(readonly size: number) {
+        this._data = new Float32Array(size)
+    }
+    get data(): Readonly<F32> { return this._data }
+    get is_full(): boolean { return this._idx >= this.size }
+    get length(): number { return this._idx }
+    add(value: number) {
+        if (!this.is_full) {
+            this._data[this._idx++] = value
+        }
+    }
+    load(dir: string, name: string) {
+        const fd = Fs.openSync(Path.join(dir, `${name}.f32.bin`), 'r')
+        Fs.readSync(fd, this._data, 0, this._data.length * 4, 0)
+        this._idx = this._data.length
+        Fs.closeSync(fd)
+    }
+    save(dir: string, name: string) {
+        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this._data)
+    }
+}
+
+export class Signal {
+    constructor(readonly data: F32, readonly sample_rate: number) { }
+    avg(): number { return this.data.reduce((sum, x) => sum + x, 0) / this.data.length }
+    max(): number { return this.data.reduce((a, b) => Math.max(a, b)) }
+    min(): number { return this.data.reduce((a, b) => Math.min(a, b)) }
+    std(): number { return stdDev(this.data) }
+    slope_p95(): number {
+        const slope = new Array<number>()
+        for (let i = 1; i < this.data.length; i++) {
+            slope.push(Math.abs(this.data[i] - this.data[i - 1]))
+        }
+        const sorted = [...slope].sort((a, b) => a - b)
+        const p95 = sorted[Math.floor(0.95 * sorted.length)]
+        return p95
+    }
+
+
 }
 
 export function avg(data: NumericSequence): number {

@@ -9,6 +9,7 @@ const ALGS = new Array<AlgInfo>(
     [alg1, 'lowest sleep current across overlapped .5s windows'],
     [alg2, 'active event search using alg2 output'],
     [alg3, 'min/max/mean bins'],
+    [alg4, 'alg1 offset'],
 
 )
 
@@ -33,10 +34,11 @@ function alg0(cap: Core.Capture) {
     console.dir(aobj, { depth: null, colors: true })
 }
 
-function alg1(cap: Core.Capture): { avg: number, std: number, p95: number } {
+function alg1(cap: Core.Capture): { avg: number, std: number, p95: number, off: number } {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
+    let off = 0
     let m: Core.Marker = {
         sample_offset: 0,
         sample_count: cap.secsToSampleIndex(.5),
@@ -49,6 +51,7 @@ function alg1(cap: Core.Capture): { avg: number, std: number, p95: number } {
             min_cur = cur
             std = Core.stdDev(sleep_data)
             p95 = slopeP95(sleep_data)
+            off = m.sample_offset
         }
         m.sample_offset += m.sample_count / 2
     }
@@ -56,7 +59,7 @@ function alg1(cap: Core.Capture): { avg: number, std: number, p95: number } {
     const cur_s = Core.toEng(min_cur, 'A')
     const std_s = Core.toEng(std, 'A')
     console.log(`voltage = ${vol_s}, sleep current = ${cur_s}, std = ${std_s}, p95 = ${p95.toExponential(2)}`)
-    return { avg: min_cur, std: std, p95: p95 }
+    return { avg: min_cur, std: std, p95: p95, off: off }
 }
 
 function alg2(cap: Core.Capture) {
@@ -102,6 +105,11 @@ function alg3(cap: Core.Capture) {
     const bins = Core.bin3M(cap.current_ds.data, width)
     const f32 = new Float32Array(bins.map(b => b[2]))
     Exporter.saveData(cap, `${cap.basename}--alg3`, f32, cap.sampling_rate / width)
+}
+
+function alg4(cap: Core.Capture) {
+    const { off } = alg1(cap)
+    console.log(`off = ${off}`)
 }
 
 function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
