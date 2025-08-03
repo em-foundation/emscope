@@ -3,6 +3,7 @@ import * as Core from './Core'
 import * as Exporter from './Exporter'
 
 type AlgInfo = [(cap: Core.Capture) => void, string]
+type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
 const ALGS = new Array<AlgInfo>(
     [alg0, 'default analysis'],
@@ -10,7 +11,7 @@ const ALGS = new Array<AlgInfo>(
     [alg2, 'active event search using alg2 output'],
     [alg3, 'min/max/mean bins'],
     [alg4, 'alg1 offset'],
-
+    [alg5, 'test'],
 )
 
 export async function exec(opts: any) {
@@ -34,36 +35,13 @@ function alg0(cap: Core.Capture) {
     console.dir(aobj, { depth: null, colors: true })
 }
 
-function alg1(cap: Core.Capture): { avg: number, std: number, p95: number, off: number } {
-    let min_cur = Number.POSITIVE_INFINITY
-    let std = 0
-    let p95 = 0
-    let off = 0
-    let m: Core.Marker = {
-        sample_offset: 0,
-        sample_count: cap.secsToSampleIndex(.5),
-    }
-    while ((m.sample_offset + m.sample_count) < cap.sample_count) {
-        const sleep_data = cap.markerArray(m)
-        Core.avg(sleep_data)
-        const cur = Core.avg(sleep_data)
-        if (cur < min_cur) {
-            min_cur = cur
-            std = Core.stdDev(sleep_data)
-            p95 = slopeP95(sleep_data)
-            off = m.sample_offset
-        }
-        m.sample_offset += m.sample_count / 2
-    }
-    const vol_s = Core.toEng(cap.avg_voltage, 'V')
-    const cur_s = Core.toEng(min_cur, 'A')
-    const std_s = Core.toEng(std, 'A')
-    console.log(`voltage = ${vol_s}, sleep current = ${cur_s}, std = ${std_s}, p95 = ${p95.toExponential(2)}`)
-    return { avg: min_cur, std: std, p95: p95, off: off }
+function alg1(cap: Core.Capture) {
+    const si = findSleep(cap.current_sig)
+    printSleep(si, cap.avg_voltage)
 }
 
 function alg2(cap: Core.Capture) {
-    const { avg, std, p95 } = alg1(cap)
+    const { avg, std, p95 } = findSleep(cap.current_sig)
     const N1 = 5
     const N2 = 4
     const ampT = avg + (N1 * std)
@@ -108,8 +86,37 @@ function alg3(cap: Core.Capture) {
 }
 
 function alg4(cap: Core.Capture) {
-    const { off } = alg1(cap)
+    const { off } = findSleep(cap.current_sig)
     console.log(`off = ${off}`)
+}
+
+function alg5(cap: Core.Capture) {
+    const si = findSleep(cap.current_sig)
+    console.log(`voltage = ${cap.avg_voltage.toFixed(2)}, sleep current = ${amps(si.avg)}, std = ${amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+}
+
+function amps(val: number): string {
+    return Core.toEng(val, 'A')
+}
+
+function findSleep(osig: Core.Signal): SleepInfo {
+    let min_cur = Number.POSITIVE_INFINITY
+    let std = 0
+    let p95 = 0
+    let off = 0
+    const win = osig.window(osig.secsToOff(.5))
+    while (win.valid()) {
+        const wsig = win.toSignal()
+        const cur = wsig.avg()
+        if (cur < min_cur) {
+            min_cur = cur
+            std = wsig.std()
+            p95 = slopeP95(wsig.data)
+            off = win.offset
+        }
+        win.slide(win.width / 2)
+    }
+    return { avg: min_cur, std: std, p95: p95, off: off }
 }
 
 function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
@@ -131,6 +138,10 @@ function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
     return merged
 }
 
+function printSleep(si: SleepInfo, voltage: number) {
+    console.log(`sleep current = ${amps(si.avg)} @ ${voltage.toFixed(2)} V, std = ${amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+}
+
 function slopeP95(data: Float32Array): number {
     const slope = new Array<number>()
     for (let i = 1; i < data.length; i++) {
@@ -140,3 +151,4 @@ function slopeP95(data: Float32Array): number {
     const p95 = sorted[Math.floor(0.95 * sorted.length)]
     return p95
 }
+

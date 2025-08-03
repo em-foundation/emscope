@@ -42,45 +42,45 @@ export class Capture {
         ...Capture.#LOAD_KEYS,
     ]
 
-    #aobj: any = {}
-    #current_ds?: SampleSet
-    #creation_date?: Date
-    #device?: CaptureDevice
-    #duration?: number
-    #rootdir?: string
-    #sample_count?: number
-    #sampling_rate?: number
-    #voltage?: number
-    #voltage_ds?: SampleSet
+    private _aobj: any = {}
+    private _current_ds?: SampleSet
+    private _creation_date?: Date
+    private _device?: CaptureDevice
+    private _duration?: number
+    private _rootdir?: string
+    private _sample_count?: number
+    private _sampling_rate?: number
+    private _voltage?: number
+    private _voltage_ds?: SampleSet
 
     private constructor() { }
 
     static create(rootdir: string, duration: number, device: CaptureDevice, voltage: number = -1): Capture {
         let cap = new Capture()
-        cap.#rootdir = rootdir
-        cap.#duration = duration
-        cap.#device = device
-        cap.#voltage = voltage
-        cap.#creation_date = new Date()
-        cap.#sampling_rate = SAMPLING_RATE.get(device) ?? 0
-        cap.#sample_count = duration * cap.sampling_rate
-        cap.#current_ds = new SampleSet(cap.sample_count)
-        cap.#voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
+        cap._rootdir = rootdir
+        cap._duration = duration
+        cap._device = device
+        cap._voltage = voltage
+        cap._creation_date = new Date()
+        cap._sampling_rate = SAMPLING_RATE.get(device) ?? 0
+        cap._sample_count = duration * cap.sampling_rate
+        cap._current_ds = new SampleSet(cap.sample_count)
+        cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
         return cap
     }
 
     static load(rootdir: string): Capture {
         let cap = new Capture()
-        cap.#rootdir = rootdir
+        cap._rootdir = rootdir
         const ytxt = Fs.readFileSync(Path.join(rootdir, 'emscope.yaml'), 'utf-8')
         const yobj = Yaml.load(ytxt) as any
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
         }
-        cap.#aobj = yobj.analysis
-        cap.#current_ds = new SampleSet(cap.sample_count)
+        cap._aobj = yobj.analysis
+        cap._current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
-        cap.#voltage = yobj.capture.avg_voltage
+        cap._voltage = yobj.capture.avg_voltage
         // switch (cap.device) {
         //     case 'JS220':
         //         cap._voltage_ds = new SampleSet(cap.sample_count)
@@ -95,24 +95,24 @@ export class Capture {
         return cap
     }
 
-    get analysis() { return this.#aobj as Analysis }
+    get analysis() { return this._aobj as Analysis }
     get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
     get basename() { return Path.basename(Path.resolve(this.rootdir)) }
-    get creation_date() { return this.#creation_date! }
-    get current_ds() { return this.#current_ds! }
+    get creation_date() { return this._creation_date! }
+    get current_ds() { return this._current_ds! }
     get current_sig() { return new Signal(this.current_ds.data, this.sampling_rate) }
-    get device() { return this.#device! }
-    get duration() { return this.#duration! }
-    get rootdir() { return this.#rootdir! }
-    get sample_count() { return this.#sample_count! }
-    get sampling_rate() { return this.#sampling_rate! }
-    get voltage() { return this.#voltage! }
-    get voltage_ds() { return this.#voltage_ds! }
+    get device() { return this._device! }
+    get duration() { return this._duration! }
+    get rootdir() { return this._rootdir! }
+    get sample_count() { return this._sample_count! }
+    get sampling_rate() { return this._sampling_rate! }
+    get voltage() { return this._voltage! }
+    get voltage_ds() { return this._voltage_ds! }
     get voltage_sig() { return new Signal(this.voltage_ds.data, this.sampling_rate) }
 
 
     bind(aobj: Analysis) {
-        this.#aobj = aobj
+        this._aobj = aobj
     }
     markerArray(m: Marker): F32 {
         return this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
@@ -147,7 +147,7 @@ export class Capture {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
-        const yobj = { capture: cobj, analysis: this.#aobj }
+        const yobj = { capture: cobj, analysis: this._aobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
@@ -243,10 +243,24 @@ export class SampleSet {
 
 export class Signal {
     constructor(readonly data: F32, readonly sample_rate: number) { }
-    avg(): number { return this.data.reduce((sum, x) => sum + x, 0) / this.data.length }
-    max(): number { return this.data.reduce((a, b) => Math.max(a, b)) }
-    min(): number { return this.data.reduce((a, b) => Math.min(a, b)) }
-    std(): number { return stdDev(this.data) }
+    avg(): number {
+        return this.data.reduce((sum, x) => sum + x, 0) / this.data.length
+    }
+    max(): number {
+        return this.data.reduce((a, b) => Math.max(a, b))
+    }
+    min(): number {
+        return this.data.reduce((a, b) => Math.min(a, b))
+    }
+    offToSecs(idx: number): number {
+        return idx > 0 ? idx / this.sample_rate : 0
+    }
+    secsToOff(secs: number): number {
+        return Math.round(secs * this.sample_rate)
+    }
+    std(): number {
+        return stdDev(this.data)
+    }
     slope_p95(): number {
         const slope = new Array<number>()
         for (let i = 1; i < this.data.length; i++) {
@@ -256,8 +270,31 @@ export class Signal {
         const p95 = sorted[Math.floor(0.95 * sorted.length)]
         return p95
     }
+    window(width: number, offset: number = 0): Window {
+        return new Window(this, offset, width)
+    }
+}
 
-
+class Window {
+    #sig: Signal
+    #off: number
+    #wid: number
+    constructor(sig: Signal, off: number, wid: number) {
+        this.#sig = sig
+        this.#off = off
+        this.#wid = wid
+    }
+    get offset() { return this.#off }
+    get width() { return this.#wid }
+    slide(count: number) {
+        this.#off += count
+    }
+    valid(): boolean {
+        return this.#off >= 0 && (this.#off + this.#wid) <= this.#sig.data.length
+    }
+    toSignal(): Signal {
+        return new Signal(this.#sig.data.subarray(this.#off, this.#off + this.#wid), this.#sig.sample_rate)
+    }
 }
 
 export function avg(data: NumericSequence): number {
