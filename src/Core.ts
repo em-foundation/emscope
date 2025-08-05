@@ -260,6 +260,10 @@ export class Signal {
         }
         return res
     }
+    integral(): number {
+        const dt = 1 / this.sample_rate
+        return this.data.reduce((sum, v) => sum + v * dt, 0)
+    }
     mapMean(width: number): Signal {
         const bins = this.bin3M(width)
         const f32 = new Float32Array(bins.map(b => b[2]))

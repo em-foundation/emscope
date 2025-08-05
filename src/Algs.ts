@@ -96,9 +96,10 @@ function alg5(cap: Core.Capture) {
     const si = findSleep(asig)
     const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
-    printSleep(si, cap.avg_voltage)
+    // printSleep(si, cap.avg_voltage)
     let active = false
     let start = -1
+    let charge_list = new Array<number>()
     for (const [i, v] of asig.data.entries()) {
         if (!active && v > min_thresh) {
             active = true
@@ -108,12 +109,15 @@ function alg5(cap: Core.Capture) {
         if (active && v < min_thresh) {
             active = false
             const win = asig.window(i - start, start)
-            if (win.toSignal().max() > max_thresh) {
-                console.log(`off = ${start}, wid = ${i - start}`)
+            const wsig = win.toSignal()
+            if (wsig.max() > max_thresh) {
+                charge_list.push(wsig.integral())
+                // console.log(joules(wsig.integral(), cap.avg_voltage))
+                // console.log(`off = ${start}, wid = ${i - start}`)
             }
         }
-
     }
+    console.log(`${charge_list.length} events: ${joules(Core.avg(charge_list), cap.avg_voltage)}`)
 }
 
 function amps(val: number): string {
@@ -138,6 +142,10 @@ function findSleep(osig: Core.Signal): SleepInfo {
         win.slide(win.width / 2)
     }
     return { avg: min_cur, std: std, p95: p95, off: off }
+}
+
+function joules(c: number, v: number): string {
+    return Core.toEng(c * v, 'J')
 }
 
 function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
