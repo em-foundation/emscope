@@ -7,11 +7,11 @@ type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
 const ALGS = new Array<AlgInfo>(
     [alg0, 'default analysis'],
-    [alg1, 'lowest sleep current across overlapped .5s windows'],
+    [alg1, 'sleep info of raw signal'],
     [alg2, 'active event search using alg2 output'],
-    [alg3, 'min/max/mean bins'],
+    [alg3, 'save averaged signal'],
     [alg4, 'alg1 offset'],
-    [alg5, 'test'],
+    [alg5, 'sleep info of averaged signal'],
 )
 
 export async function exec(opts: any) {
@@ -25,7 +25,7 @@ export async function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     for (const i of alg_nums) {
         const [algFxn, desc] = ALGS[i]
-        console.log(`\n---- algorithm ${i}: ${desc} ----\n`)
+        console.log(`\n---- capture ${cap.basename}: algorithm ${i}: ${desc} ----\n`)
         algFxn(cap)
     }
 }
@@ -79,10 +79,9 @@ function alg2(cap: Core.Capture) {
 }
 
 function alg3(cap: Core.Capture) {
-    const width = cap.secsToSampleIndex(250e-6)
-    const bins = Core.bin3M(cap.current_ds.data, width)
-    const f32 = new Float32Array(bins.map(b => b[2]))
-    Exporter.saveData(cap, `${cap.basename}--alg3`, f32, cap.sampling_rate / width)
+    const sig = cap.current_sig
+    const width = sig.secsToOff(250e-6)
+    Exporter.saveSignal(cap, `${cap.basename}--alg3`, sig.mapMean(width))
 }
 
 function alg4(cap: Core.Capture) {
@@ -91,8 +90,11 @@ function alg4(cap: Core.Capture) {
 }
 
 function alg5(cap: Core.Capture) {
-    const si = findSleep(cap.current_sig)
-    console.log(`voltage = ${cap.avg_voltage.toFixed(2)}, sleep current = ${amps(si.avg)}, std = ${amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+    const rsig = cap.current_sig
+    const width = rsig.secsToOff(250e-6)
+    const asig = rsig.mapMean(width)
+    const si = findSleep(asig)
+    printSleep(si, cap.avg_voltage)
 }
 
 function amps(val: number): string {

@@ -246,6 +246,25 @@ export class Signal {
     avg(): number {
         return this.data.reduce((sum, x) => sum + x, 0) / this.data.length
     }
+    bin3M(width: number): Array<MinMaxMeanBin> {
+        let res = new Array<MinMaxMeanBin>()
+        const INIT = [width, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0]
+        let [cnt, min, max, sum] = INIT
+        for (const v of this.data) {
+            min = Math.min(min, v)
+            max = Math.max(max, v)
+            sum += v
+            if (--cnt > 0) continue
+            res.push([min, max, sum / width])
+            { [cnt, min, max, sum] = INIT }
+        }
+        return res
+    }
+    mapMean(width: number): Signal {
+        const bins = this.bin3M(width)
+        const f32 = new Float32Array(bins.map(b => b[2]))
+        return new Signal(f32, this.sample_rate / width)
+    }
     max(): number {
         return this.data.reduce((a, b) => Math.max(a, b))
     }

@@ -22,6 +22,10 @@ export function saveMarkers(cap: Core.Capture, cname: string, markers: Core.Mark
     writer.finalize()
 }
 
+export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal) {
+    saveData(cap, cname, sig.data, sig.sample_rate)
+}
+
 class Writer {
     #jfile: Jls.Writer
     static create(cap: Core.Capture, cname: string): Writer {
