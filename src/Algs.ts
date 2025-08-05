@@ -94,7 +94,26 @@ function alg5(cap: Core.Capture) {
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
     const si = findSleep(asig)
+    const min_thresh = si.avg + si.std
+    const max_thresh = 1e-3
     printSleep(si, cap.avg_voltage)
+    let active = false
+    let start = -1
+    for (const [i, v] of asig.data.entries()) {
+        if (!active && v > min_thresh) {
+            active = true
+            start = i
+            continue
+        }
+        if (active && v < min_thresh) {
+            active = false
+            const win = asig.window(i - start, start)
+            if (win.toSignal().max() > max_thresh) {
+                console.log(`off = ${start}, wid = ${i - start}`)
+            }
+        }
+
+    }
 }
 
 function amps(val: number): string {
