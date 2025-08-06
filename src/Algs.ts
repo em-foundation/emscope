@@ -57,12 +57,12 @@ function alg2(cap: Core.Capture) {
         y0 = v
         if (!active && ((v > ampT) || (Math.abs(dy) > slopeT))) {
             active = true
-            nxt_marker.sample_offset = i
+            nxt_marker.offset = i
             continue
         }
         if (active && (v <= avg + eps) && (Math.abs(dy) <= p95)) {
             active = false
-            nxt_marker.sample_count = i - nxt_marker.sample_offset
+            nxt_marker.width = i - nxt_marker.offset
             markers.push(nxt_marker)
             nxt_marker = new Core.Marker()
             continue
@@ -70,7 +70,7 @@ function alg2(cap: Core.Capture) {
     }
     const min_samples = cap.secsToSampleIndex(500e-6)
     const max_gap = cap.secsToSampleIndex(10e-3)
-    const merged = mergeMarkers(markers.filter(m => m.sample_count > min_samples), max_gap)
+    const merged = mergeMarkers(markers.filter(m => m.width > min_samples), max_gap)
     console.log(`    found ${merged.length} events`)
     // for (const m of merged) {
     //     console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
@@ -100,6 +100,7 @@ function alg5(cap: Core.Capture) {
     let active = false
     let start = -1
     let charge_list = new Array<number>()
+    let markers = new Array<Core.MarkerI>()
     for (const [i, v] of asig.data.entries()) {
         if (!active && v > min_thresh) {
             active = true
@@ -111,15 +112,16 @@ function alg5(cap: Core.Capture) {
             const win = asig.window(i - start, start)
             const wsig = win.toSignal()
             if (wsig.max() > max_thresh) {
-                charge_list.push(wsig.integral())
                 const rwin = win.scale(rsig)
-                console.log(rwin.offset)
+                markers.push(rwin)
+                charge_list.push(rwin.toSignal().integral())
                 // console.log(joules(wsig.integral(), cap.avg_voltage))
                 // console.log(`off = ${start}, wid = ${i - start}`)
             }
         }
     }
     console.log(`${charge_list.length} events: ${joules(Core.avg(charge_list), cap.avg_voltage)}`)
+    Exporter.saveSignal(cap, `${cap.basename}--alg5`, rsig, markers)
 }
 
 function amps(val: number): string {
@@ -156,10 +158,10 @@ function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
     let prev = markers[0]
     for (let i = 1; i < markers.length; i++) {
         const next = markers[i]
-        const gap = next.sample_offset - (prev.sample_offset + prev.sample_count)
+        const gap = next.offset - (prev.offset + prev.width)
         if (gap <= max_gap) {
-            const new_end = next.sample_offset + next.sample_count
-            prev.sample_count = new_end - prev.sample_offset
+            const new_end = next.offset + next.width
+            prev.width = new_end - prev.offset
         } else {
             merged.push(prev)
             prev = next

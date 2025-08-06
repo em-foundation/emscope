@@ -15,8 +15,8 @@ export async function exec(opts: any) {
         process.exit(1)
     }
     const ev_mark = markers[ev_num]
-    const ev_vals = cap.current_ds.data.subarray(ev_mark.sample_offset - PRE, ev_mark.sample_offset + 5100)
-    const html = genHtml(ev_vals, ev_mark.sample_count, 2)
+    const ev_vals = cap.current_ds.data.subarray(ev_mark.offset - PRE, ev_mark.offset + 5100)
+    const html = genHtml(ev_vals, ev_mark.width, 2)
     Fs.writeFileSync('event.html', html)
 }
 

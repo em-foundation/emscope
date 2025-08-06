@@ -3,15 +3,15 @@ import * as Core from './Core'
 export function exec(cap: Core.Capture): Core.Analysis {
     const events = findEvents(cap)
     const window: Core.Marker = events.length > 0 ? {
-        sample_offset: events[0].sample_offset - (cap.sampling_rate / 2),
-        sample_count: events.length * cap.sampling_rate
+        offset: events[0].offset - (cap.sampling_rate / 2),
+        width: events.length * cap.sampling_rate
     } : cap.toMarker()
     const egy_per_sec = cap.markerEnergy(window) / (events.length ? events.length : cap.duration)
     const aobj = {
         window: window,
         events: {
             markers: events,
-            avg_duration: Core.toEng(Core.avg(events.map(e => e.sample_count)) / cap.sampling_rate, 's'),
+            avg_duration: Core.toEng(Core.avg(events.map(e => e.width)) / cap.sampling_rate, 's'),
             avg_current: Core.toEng(Core.avg(events.map(e => cap.markerCurrent(e))), 'A'),
             avg_energy: Core.toEng(Core.avg(events.map(e => cap.markerEnergy(e))), 'J'),
         },
@@ -44,8 +44,8 @@ function findEvents(cap: Core.Capture): Core.Marker[] {
                 i < (cap.sample_count - 0.5 * cap.sampling_rate)
             ) {
                 res.push({
-                    sample_offset: sample_offset,
-                    sample_count: width,
+                    offset: sample_offset,
+                    width: width,
                 })
             }
             in_event = false

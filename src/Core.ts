@@ -115,7 +115,7 @@ export class Capture {
         this._aobj = aobj
     }
     markerArray(m: Marker): F32 {
-        return this.current_ds.data.subarray(m.sample_offset, m.sample_offset + m.sample_count)
+        return this.current_ds.data.subarray(m.offset, m.offset + m.width)
     }
     markerCharge(m: Marker): number {
         const data = this.markerArray(m)
@@ -127,15 +127,15 @@ export class Capture {
         return data.reduce((sum, x) => sum + x, 0) / data.length
     }
     markerDuration(m: Marker): number {
-        return this.sampleIndexToSecs(m.sample_count)
+        return this.sampleIndexToSecs(m.width)
     }
     markerEnergy(m: Marker) {
         const data = this.markerArray(m)
         const dt = 1 / this.sampling_rate
-        return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.sample_offset + idx) * dt, 0)
+        return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.offset + idx) * dt, 0)
     }
     markerLocation(m: Marker): number {
-        return this.sampleIndexToSecs(m.sample_offset)
+        return this.sampleIndexToSecs(m.offset)
     }
     sampleIndexToSecs(idx: number): number {
         return idx > 0 ? idx / this.sampling_rate : 0
@@ -152,7 +152,7 @@ export class Capture {
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
     toMarker(): Marker {
-        return { sample_offset: 0, sample_count: this.sample_count }
+        return { offset: 0, width: this.sample_count }
     }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
@@ -184,9 +184,14 @@ export class KalmanFilter {
     }
 }
 
-export class Marker {
-    sample_offset: number = 0
-    sample_count: number = 0
+export interface MarkerI {
+    offset: number
+    width: number
+}
+
+export class Marker implements MarkerI {
+    offset: number = 0
+    width: number = 0
 }
 
 export class Progress {
@@ -298,7 +303,7 @@ export class Signal {
     }
 }
 
-class Window {
+class Window implements MarkerI {
     #sig: Signal
     #off: number
     #wid: number
@@ -315,6 +320,9 @@ class Window {
     }
     slide(count: number) {
         this.#off += count
+    }
+    toMarker(): Marker {
+        return { offset: this.#off, width: this.#wid }
     }
     toSignal(): Signal {
         return new Signal(this.#sig.data.subarray(this.#off, this.#off + this.#wid), this.#sig.sample_rate)

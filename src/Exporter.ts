@@ -22,8 +22,13 @@ export function saveMarkers(cap: Core.Capture, cname: string, markers: Core.Mark
     writer.finalize()
 }
 
-export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal) {
-    saveData(cap, cname, sig.data, sig.sample_rate)
+export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal, markers: Core.MarkerI[] = []) {
+    const writer = Writer.create(cap, cname)
+    writer.store(sig.data, sig.sample_rate)
+    for (const m of markers) {
+        writer.addMarker(m)
+    }
+    writer.finalize()
 }
 
 class Writer {
@@ -35,8 +40,8 @@ class Writer {
         this.#jfile = new Jls.Writer(Path.join(this.cap.rootdir, `${cname}.jls`))
     }
     addMarker(m: Core.Marker) {
-        this.#jfile.markerAnnotation(1, m.sample_offset, '1a')
-        this.#jfile.markerAnnotation(1, m.sample_offset + m.sample_count, '1b')
+        this.#jfile.markerAnnotation(1, m.offset, '1a')
+        this.#jfile.markerAnnotation(1, m.offset + m.width, '1b')
     }
     finalize() {
         this.#jfile.close()
