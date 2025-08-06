@@ -112,6 +112,8 @@ function alg5(cap: Core.Capture) {
             const wsig = win.toSignal()
             if (wsig.max() > max_thresh) {
                 charge_list.push(wsig.integral())
+                const rwin = win.scale(rsig)
+                console.log(rwin.offset)
                 // console.log(joules(wsig.integral(), cap.avg_voltage))
                 // console.log(`off = ${start}, wid = ${i - start}`)
             }
