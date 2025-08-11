@@ -80,18 +80,18 @@ export class Capture {
         cap._aobj = yobj.analysis
         cap._current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
-        cap._voltage = yobj.capture.avg_voltage
-        // switch (cap.device) {
-        //     case 'JS220':
-        //         cap._voltage_ds = new SampleSet(cap.sample_count)
-        //         cap.voltage_ds.load(rootdir, 'voltage')
-        //         cap._voltage = -1
-        //         break
-        //     case 'PPK2':
-        //         cap._voltage_ds = new SampleSet(0)
-        //         cap._voltage = yobj.capture.avg_voltage
-        //         break
-        // }
+        // cap._voltage = yobj.capture.avg_voltage
+        switch (cap.device) {
+            case 'JS220':
+                cap._voltage_ds = new SampleSet(cap.sample_count)
+                cap.voltage_ds.load(rootdir, 'voltage')
+                cap._voltage = -1
+                break
+            case 'PPK2':
+                cap._voltage_ds = new SampleSet(0)
+                cap._voltage = yobj.capture.avg_voltage
+                break
+        }
         return cap
     }
 
@@ -121,7 +121,7 @@ export class Capture {
         let sum = 0
         let off = m.offset
         for (let i = 0; i < m.width; i++) {
-            sum += data[off] * dt
+            sum += data[off] * this.voltageAt(off) * dt
             off += 1
         }
         return sum
