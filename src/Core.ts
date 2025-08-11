@@ -164,31 +164,6 @@ export class Capture {
     }
 }
 
-export class KalmanFilter {
-    q: number
-    r: number
-    p: number
-    x: number
-    constructor(
-        initialEstimate: number,
-        processNoise: number,
-        measurementNoise: number,
-        estimateCovariance: number
-    ) {
-        this.x = initialEstimate
-        this.p = estimateCovariance
-        this.q = processNoise
-        this.r = measurementNoise
-    }
-    update(measurement: number): number {
-        this.p += this.q
-        const k = this.p / (this.p + this.r)  // Kalman gain
-        this.x = this.x + k * (measurement - this.x) // Update estimate
-        this.p = (1 - k) * this.p
-        return this.x
-    }
-}
-
 export interface MarkerI {
     offset: number
     width: number
@@ -337,6 +312,10 @@ class Window implements MarkerI {
     }
 }
 
+export function amps(val: number): string {
+    return toEng(val, 'A')
+}
+
 export function avg(data: NumericSequence): number {
     let sum = 0
     for (const x of data) sum += x
@@ -362,6 +341,11 @@ export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
+export function joules(c: number, v: number): string {
+    return toEng(c * v, 'J')
+}
+
+
 export function stdDev(data: NumericSequence): number {
     const mean = avg(data)
     let sumSq = 0
@@ -379,3 +363,5 @@ export function toEng(x: number, u: string): string {
     const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}`, [3]: ` k${u}` }[exp] || `e${exp} ${u}`
     return `${mantissa.toFixed(3)}${unit}`
 }
+
+

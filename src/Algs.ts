@@ -1,8 +1,8 @@
 import * as Analyzer from './Analyzer'
 import * as Core from './Core'
-import * as Exporter from './Exporter'
+import * as Exporter from './Writer'
 
-type SleepInfo = { avg: number, std: number, p95: number, off: number }
+// type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
 // export async function exec(opts: any) {
 //     const alg_nums = opts.algorithmNumbers
@@ -79,99 +79,120 @@ type SleepInfo = { avg: number, std: number, p95: number, off: number }
 //     console.log(`off = ${off}`)
 // }
 
-function alg5(cap: Core.Capture) {
-    const rsig = cap.current_sig
-    const width = rsig.secsToOff(250e-6)
-    const asig = rsig.mapMean(width)
-    const si = findSleep(asig)
-    const min_thresh = si.avg + si.std
-    const max_thresh = 1e-3
-    // printSleep(si, cap.avg_voltage)
-    let active = false
-    let start = -1
-    let charge_list = new Array<number>()
-    let markers = new Array<Core.MarkerI>()
-    for (const [i, v] of asig.data.entries()) {
-        if (!active && v > min_thresh) {
-            active = true
-            start = i
-            continue
-        }
-        if (active && v < min_thresh) {
-            active = false
-            const win = asig.window(i - start, start)
-            const wsig = win.toSignal()
-            if (wsig.max() > max_thresh) {
-                const rwin = win.scale(rsig)
-                markers.push(rwin)
-                charge_list.push(rwin.toSignal().integral())
-                // console.log(joules(wsig.integral(), cap.avg_voltage))
-                // console.log(`off = ${start}, wid = ${i - start}`)
-            }
-        }
+// function alg5(cap: Core.Capture) {
+//     const rsig = cap.current_sig
+//     const width = rsig.secsToOff(250e-6)
+//     const asig = rsig.mapMean(width)
+//     const si = findSleep(asig)
+//     const min_thresh = si.avg + si.std
+//     const max_thresh = 1e-3
+//     // printSleep(si, cap.avg_voltage)
+//     let active = false
+//     let start = -1
+//     let charge_list = new Array<number>()
+//     let markers = new Array<Core.MarkerI>()
+//     for (const [i, v] of asig.data.entries()) {
+//         if (!active && v > min_thresh) {
+//             active = true
+//             start = i
+//             continue
+//         }
+//         if (active && v < min_thresh) {
+//             active = false
+//             const win = asig.window(i - start, start)
+//             const wsig = win.toSignal()
+//             if (wsig.max() > max_thresh) {
+//                 const rwin = win.scale(rsig)
+//                 markers.push(rwin)
+//                 charge_list.push(rwin.toSignal().integral())
+//                 // console.log(joules(wsig.integral(), cap.avg_voltage))
+//                 // console.log(`off = ${start}, wid = ${i - start}`)
+//             }
+//         }
+//     }
+//     console.log(`${charge_list.length} events: ${joules(Core.avg(charge_list), cap.avg_voltage)}`)
+//     Exporter.saveSignal(cap, `${cap.basename}--alg5`, rsig, markers)
+// }
+
+// function amps(val: number): string {
+//     return Core.toEng(val, 'A')
+// }
+
+// function findSleep(osig: Core.Signal): SleepInfo {
+//     let min_cur = Number.POSITIVE_INFINITY
+//     let std = 0
+//     let p95 = 0
+//     let off = 0
+//     const win = osig.window(osig.secsToOff(.5))
+//     while (win.valid()) {
+//         const wsig = win.toSignal()
+//         const cur = wsig.avg()
+//         if (cur < min_cur) {
+//             min_cur = cur
+//             std = wsig.std()
+//             p95 = slopeP95(wsig.data)
+//             off = win.offset
+//         }
+//         win.slide(win.width / 2)
+//     }
+//     return { avg: min_cur, std: std, p95: p95, off: off }
+// }
+// 
+// function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
+//     if (markers.length === 0) return []
+//     const merged: Core.Marker[] = []
+//     let prev = markers[0]
+//     for (let i = 1; i < markers.length; i++) {
+//         const next = markers[i]
+//         const gap = next.offset - (prev.offset + prev.width)
+//         if (gap <= max_gap) {
+//             const new_end = next.offset + next.width
+//             prev.width = new_end - prev.offset
+//         } else {
+//             merged.push(prev)
+//             prev = next
+//         }
+//     }
+//     merged.push(prev)
+//     return merged
+// }
+// 
+// function printSleep(si: SleepInfo, voltage: number) {
+//     console.log(`sleep current = ${amps(si.avg)} @ ${voltage.toFixed(2)} V, std = ${amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+// }
+
+// function slopeP95(data: Float32Array): number {
+//     const slope = new Array<number>()
+//     for (let i = 1; i < data.length; i++) {
+//         slope.push(Math.abs(data[i] - data[i - 1]))
+//     }
+//     const sorted = [...slope].sort((a, b) => a - b)
+//     const p95 = sorted[Math.floor(0.95 * sorted.length)]
+//     return p95
+// }
+
+export class KalmanFilter {
+    q: number
+    r: number
+    p: number
+    x: number
+    constructor(
+        initialEstimate: number,
+        processNoise: number,
+        measurementNoise: number,
+        estimateCovariance: number
+    ) {
+        this.x = initialEstimate
+        this.p = estimateCovariance
+        this.q = processNoise
+        this.r = measurementNoise
     }
-    console.log(`${charge_list.length} events: ${joules(Core.avg(charge_list), cap.avg_voltage)}`)
-    Exporter.saveSignal(cap, `${cap.basename}--alg5`, rsig, markers)
-}
-
-function amps(val: number): string {
-    return Core.toEng(val, 'A')
-}
-
-function findSleep(osig: Core.Signal): SleepInfo {
-    let min_cur = Number.POSITIVE_INFINITY
-    let std = 0
-    let p95 = 0
-    let off = 0
-    const win = osig.window(osig.secsToOff(.5))
-    while (win.valid()) {
-        const wsig = win.toSignal()
-        const cur = wsig.avg()
-        if (cur < min_cur) {
-            min_cur = cur
-            std = wsig.std()
-            p95 = slopeP95(wsig.data)
-            off = win.offset
-        }
-        win.slide(win.width / 2)
+    update(measurement: number): number {
+        this.p += this.q
+        const k = this.p / (this.p + this.r)  // Kalman gain
+        this.x = this.x + k * (measurement - this.x) // Update estimate
+        this.p = (1 - k) * this.p
+        return this.x
     }
-    return { avg: min_cur, std: std, p95: p95, off: off }
-}
-
-function joules(c: number, v: number): string {
-    return Core.toEng(c * v, 'J')
-}
-
-function mergeMarkers(markers: Core.Marker[], max_gap: number): Core.Marker[] {
-    if (markers.length === 0) return []
-    const merged: Core.Marker[] = []
-    let prev = markers[0]
-    for (let i = 1; i < markers.length; i++) {
-        const next = markers[i]
-        const gap = next.offset - (prev.offset + prev.width)
-        if (gap <= max_gap) {
-            const new_end = next.offset + next.width
-            prev.width = new_end - prev.offset
-        } else {
-            merged.push(prev)
-            prev = next
-        }
-    }
-    merged.push(prev)
-    return merged
-}
-
-function printSleep(si: SleepInfo, voltage: number) {
-    console.log(`sleep current = ${amps(si.avg)} @ ${voltage.toFixed(2)} V, std = ${amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
-}
-
-function slopeP95(data: Float32Array): number {
-    const slope = new Array<number>()
-    for (let i = 1; i < data.length; i++) {
-        slope.push(Math.abs(data[i] - data[i - 1]))
-    }
-    const sorted = [...slope].sort((a, b) => a - b)
-    const p95 = sorted[Math.floor(0.95 * sorted.length)]
-    return p95
 }
 
