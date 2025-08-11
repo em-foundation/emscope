@@ -1,5 +1,6 @@
 import * as Core from './Core'
 import * as Detecter from './Detecter'
+import * as Writer from './Writer'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
@@ -7,9 +8,16 @@ export function exec(opts: any) {
     if (opts.eventInfo) {
         printEventInfo(cap, events)
     }
+    if (opts.jlsFile) {
+        genJls(cap, events)
+    }
     if (opts.sleepInfo) {
         printSleepInfo(cap, sleep)
     }
+}
+
+function genJls(cap: Core.Capture, markers: Core.MarkerI[]) {
+    Writer.saveSignal(cap, `${cap.basename}--events`, cap.current_sig, markers)
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.MarkerI[]) {
