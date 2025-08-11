@@ -2,8 +2,8 @@
 
 import * as Detecter from './Detecter'
 import * as Exporter from './Exporter'
-import * as Plotter from './Plotter'
 import * as Recorder from './Recorder'
+import * as Renderer from './Renderer'
 
 import * as Commander from 'commander'
 
@@ -41,7 +41,7 @@ CMD.command('render')
     .option('-p --html-plot <event number>', 'generate a Plotly graph of a designated event', parseFloat, 0)
     .option('-s --sleep-info', 'characterize power consumption when inactive')
     .option('-w --what-if <seconds per event>', 'extrapolate results at a given event rate', parseFloat, 1)
-    .action((opts: any) => Plotter.exec(opts))
+    .action((opts: any) => Renderer.exec(opts))
 
 try {
     CMD.parse(process.argv)

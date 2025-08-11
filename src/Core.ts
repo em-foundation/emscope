@@ -24,8 +24,8 @@ export interface Analysis {
 }
 
 export type F32 = Float32Array<ArrayBufferLike>
-
 export type MinMaxMeanBin = [number, number, number]
+export type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
 export class Capture {
 
@@ -46,7 +46,7 @@ export class Capture {
     private _creation_date?: Date
     private _device?: CaptureDevice
     private _duration?: number
-    private _events = new Array<Window>()
+    private _events = new Array<MarkerI>()
     private _rootdir?: string
     private _sample_count?: number
     private _sampling_rate?: number
@@ -103,7 +103,7 @@ export class Capture {
     get current_sig() { return new Signal(this.current_ds.data, this.sampling_rate) }
     get device() { return this._device! }
     get duration() { return this._duration! }
-    get events(): Readonly<Array<Window>> { return this._events }
+    get events(): Readonly<Array<MarkerI>> { return this._events }
     get rootdir() { return this._rootdir! }
     get sample_count() { return this._sample_count! }
     get sampling_rate() { return this._sampling_rate! }
@@ -115,11 +115,16 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
-    sampleIndexToSecs(idx: number): number {
-        return idx > 0 ? idx / this.sampling_rate : 0
-    }
-    secsToSampleIndex(secs: number): number {
-        return Math.round(secs * this.sampling_rate)
+    energyWithin(m: MarkerI): number {
+        const dt = 1 / this.sampling_rate
+        const data = this.current_ds.data
+        let sum = 0
+        let off = m.offset
+        for (let i = 0; i < m.width; i++) {
+            sum += data[off] * dt
+            off += 1
+        }
+        return sum
     }
     save() {
         this.current_ds.save(this.rootdir, 'current')
@@ -128,6 +133,9 @@ export class Capture {
         const yobj = { capture: cobj, analysis: this._aobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
+    }
+    setEvents(events: MarkerI[]) {
+        this._events = events
     }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
@@ -167,27 +175,27 @@ export class Progress {
 }
 
 export class SampleSet {
-    _data: F32
-    _idx = 0
+    #data: F32
+    #idx = 0
     constructor(readonly size: number) {
-        this._data = new Float32Array(size)
+        this.#data = new Float32Array(size)
     }
-    get data(): Readonly<F32> { return this._data }
-    get is_full(): boolean { return this._idx >= this.size }
-    get length(): number { return this._idx }
+    get data(): Readonly<F32> { return this.#data }
+    get is_full(): boolean { return this.#idx >= this.size }
+    get length(): number { return this.#idx }
     add(value: number) {
         if (!this.is_full) {
-            this._data[this._idx++] = value
+            this.#data[this.#idx++] = value
         }
     }
     load(dir: string, name: string) {
         const fd = Fs.openSync(Path.join(dir, `${name}.f32.bin`), 'r')
-        Fs.readSync(fd, this._data, 0, this._data.length * 4, 0)
-        this._idx = this._data.length
+        Fs.readSync(fd, this.#data, 0, this.#data.length * 4, 0)
+        this.#idx = this.#data.length
         Fs.closeSync(fd)
     }
     save(dir: string, name: string) {
-        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this._data)
+        Fs.writeFileSync(Path.join(dir, `${name}.f32.bin`), this.#data)
     }
 }
 
@@ -288,8 +296,8 @@ export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
-export function joules(c: number, v: number): string {
-    return toEng(c * v, 'J')
+export function joules(j: number): string {
+    return toEng(j, 'J')
 }
 
 export function toEng(x: number, u: string): string {

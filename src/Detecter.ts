@@ -1,19 +1,17 @@
 import * as Core from './Core'
 
-type SleepInfo = { avg: number, std: number, p95: number, off: number }
-
-let cur_si: SleepInfo = {} as any
-
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
+    const [markers, sleepInfo] = detectEvents(cap)
+    cap.setEvents(markers)
 }
 
-export function detectEvents(cap: Core.Capture): Core.MarkerI[] {
+export function detectEvents(cap: Core.Capture): [Core.MarkerI[], Core.SleepInfo] {
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
-    cur_si = detectSleep(asig)
-    const min_thresh = cur_si.avg + cur_si.std
+    const si = detectSleep(asig)
+    const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
     let active = false
     let start = -1
@@ -36,10 +34,10 @@ export function detectEvents(cap: Core.Capture): Core.MarkerI[] {
             }
         }
     }
-    return markers
+    return [markers, si]
 }
 
-export function detectSleep(osig: Core.Signal): SleepInfo {
+export function detectSleep(osig: Core.Signal): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
