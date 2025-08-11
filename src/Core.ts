@@ -10,9 +10,9 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
 ])
 
 export interface Analysis {
-    window: Marker
+    window: MarkerI
     events: {
-        markers: Marker[]
+        markers: MarkerI[]
         avg_duration: string
         avg_current: string
         avg_energy: string
@@ -24,7 +24,6 @@ export interface Analysis {
 }
 
 export type F32 = Float32Array<ArrayBufferLike>
-export type NumericSequence = Iterable<number> & { length: number }
 
 export type MinMaxMeanBin = [number, number, number]
 
@@ -116,32 +115,6 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
-    findEvents(count: number) {
-
-    }
-    //     markerArray(m: Marker): F32 {
-    //         return this.current_ds.data.subarray(m.offset, m.offset + m.width)
-    //     }
-    //     markerCharge(m: Marker): number {
-    //         const data = this.markerArray(m)
-    //         const dt = 1 / this.sampling_rate
-    //         return data.reduce((sum, x) => sum + x * dt, 0)
-    //     }
-    //     markerCurrent(m: Marker): number {
-    //         const data = this.markerArray(m)
-    //         return data.reduce((sum, x) => sum + x, 0) / data.length
-    //     }
-    //     markerDuration(m: Marker): number {
-    //         return this.sampleIndexToSecs(m.width)
-    //     }
-    //     markerEnergy(m: Marker) {
-    //         const data = this.markerArray(m)
-    //         const dt = 1 / this.sampling_rate
-    //         return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.offset + idx) * dt, 0)
-    //     }
-    //     markerLocation(m: Marker): number {
-    //         return this.sampleIndexToSecs(m.offset)
-    //     }
     sampleIndexToSecs(idx: number): number {
         return idx > 0 ? idx / this.sampling_rate : 0
     }
@@ -156,9 +129,6 @@ export class Capture {
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
-    toMarker(): Marker {
-        return { offset: 0, width: this.sample_count }
-    }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
     }
@@ -167,11 +137,6 @@ export class Capture {
 export interface MarkerI {
     offset: number
     width: number
-}
-
-export class Marker implements MarkerI {
-    offset: number = 0
-    width: number = 0
 }
 
 export class Progress {
@@ -267,7 +232,13 @@ export class Signal {
         return Math.round(secs * this.sample_rate)
     }
     std(): number {
-        return stdDev(this.data)
+        const mean = this.avg()
+        let sum_sq = 0
+        for (const x of this.data) {
+            const d = x - mean
+            sum_sq += d * d
+        }
+        return Math.sqrt(sum_sq / this.data.length)
     }
     slope_p95(): number {
         const slope = new Array<number>()
@@ -301,9 +272,6 @@ class Window implements MarkerI {
     slide(count: number) {
         this.#off += count
     }
-    toMarker(): Marker {
-        return { offset: this.#off, width: this.#wid }
-    }
     toSignal(): Signal {
         return new Signal(this.#sig.data.subarray(this.#off, this.#off + this.#wid), this.#sig.sample_rate)
     }
@@ -316,44 +284,12 @@ export function amps(val: number): string {
     return toEng(val, 'A')
 }
 
-export function avg(data: NumericSequence): number {
-    let sum = 0
-    for (const x of data) sum += x
-    return sum / data.length
-}
-
-export function bin3M(data: NumericSequence, width: number): MinMaxMeanBin[] {
-    let res = new Array<MinMaxMeanBin>()
-    const INIT = [width, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0]
-    let [cnt, min, max, sum] = INIT
-    for (const v of data) {
-        min = Math.min(min, v)
-        max = Math.max(max, v)
-        sum += v
-        if (--cnt > 0) continue
-        res.push([min, max, sum / width])
-        { [cnt, min, max, sum] = INIT }
-    }
-    return res
-}
-
 export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
 export function joules(c: number, v: number): string {
     return toEng(c * v, 'J')
-}
-
-
-export function stdDev(data: NumericSequence): number {
-    const mean = avg(data)
-    let sumSq = 0
-    for (const x of data) {
-        const d = x - mean
-        sumSq += d * d
-    }
-    return Math.sqrt(sumSq / data.length)
 }
 
 export function toEng(x: number, u: string): string {
