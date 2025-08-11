@@ -47,6 +47,7 @@ export class Capture {
     private _creation_date?: Date
     private _device?: CaptureDevice
     private _duration?: number
+    private _events = new Array<Window>()
     private _rootdir?: string
     private _sample_count?: number
     private _sampling_rate?: number
@@ -103,6 +104,7 @@ export class Capture {
     get current_sig() { return new Signal(this.current_ds.data, this.sampling_rate) }
     get device() { return this._device! }
     get duration() { return this._duration! }
+    get events(): Readonly<Array<Window>> { return this._events }
     get rootdir() { return this._rootdir! }
     get sample_count() { return this._sample_count! }
     get sampling_rate() { return this._sampling_rate! }
@@ -114,29 +116,32 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
-    markerArray(m: Marker): F32 {
-        return this.current_ds.data.subarray(m.offset, m.offset + m.width)
+    findEvents(count: number) {
+
     }
-    markerCharge(m: Marker): number {
-        const data = this.markerArray(m)
-        const dt = 1 / this.sampling_rate
-        return data.reduce((sum, x) => sum + x * dt, 0)
-    }
-    markerCurrent(m: Marker): number {
-        const data = this.markerArray(m)
-        return data.reduce((sum, x) => sum + x, 0) / data.length
-    }
-    markerDuration(m: Marker): number {
-        return this.sampleIndexToSecs(m.width)
-    }
-    markerEnergy(m: Marker) {
-        const data = this.markerArray(m)
-        const dt = 1 / this.sampling_rate
-        return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.offset + idx) * dt, 0)
-    }
-    markerLocation(m: Marker): number {
-        return this.sampleIndexToSecs(m.offset)
-    }
+    //     markerArray(m: Marker): F32 {
+    //         return this.current_ds.data.subarray(m.offset, m.offset + m.width)
+    //     }
+    //     markerCharge(m: Marker): number {
+    //         const data = this.markerArray(m)
+    //         const dt = 1 / this.sampling_rate
+    //         return data.reduce((sum, x) => sum + x * dt, 0)
+    //     }
+    //     markerCurrent(m: Marker): number {
+    //         const data = this.markerArray(m)
+    //         return data.reduce((sum, x) => sum + x, 0) / data.length
+    //     }
+    //     markerDuration(m: Marker): number {
+    //         return this.sampleIndexToSecs(m.width)
+    //     }
+    //     markerEnergy(m: Marker) {
+    //         const data = this.markerArray(m)
+    //         const dt = 1 / this.sampling_rate
+    //         return data.reduce((sum, x, idx) => sum + x * this.voltageAt(m.offset + idx) * dt, 0)
+    //     }
+    //     markerLocation(m: Marker): number {
+    //         return this.sampleIndexToSecs(m.offset)
+    //     }
     sampleIndexToSecs(idx: number): number {
         return idx > 0 ? idx / this.sampling_rate : 0
     }

@@ -2,92 +2,82 @@ import * as Analyzer from './Analyzer'
 import * as Core from './Core'
 import * as Exporter from './Exporter'
 
-type AlgInfo = [(cap: Core.Capture) => void, string]
 type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
-const ALGS = new Array<AlgInfo>(
-    [alg0, 'default analysis'],
-    [alg1, 'sleep info of raw signal'],
-    [alg2, 'active event search using alg2 output'],
-    [alg3, 'save averaged signal'],
-    [alg4, 'alg1 offset'],
-    [alg5, 'sleep info of averaged signal'],
-)
+// export async function exec(opts: any) {
+//     const alg_nums = opts.algorithmNumbers
+//     if (alg_nums === undefined) {
+//         for (const [i, [_, desc]] of ALGS.entries()) {
+//             console.log(`algorithm ${i}: ${desc}`)
+//         }
+//         return
+//     }
+//     const cap = Core.Capture.load(opts.capture)
+//     for (const i of alg_nums) {
+//         const [algFxn, desc] = ALGS[i]
+//         console.log(`\n---- capture ${cap.basename}: algorithm ${i}: ${desc} ----\n`)
+//         algFxn(cap)
+//     }
+// }
 
-export async function exec(opts: any) {
-    const alg_nums = opts.algorithmNumbers
-    if (alg_nums === undefined) {
-        for (const [i, [_, desc]] of ALGS.entries()) {
-            console.log(`algorithm ${i}: ${desc}`)
-        }
-        return
-    }
-    const cap = Core.Capture.load(opts.capture)
-    for (const i of alg_nums) {
-        const [algFxn, desc] = ALGS[i]
-        console.log(`\n---- capture ${cap.basename}: algorithm ${i}: ${desc} ----\n`)
-        algFxn(cap)
-    }
-}
-
-function alg0(cap: Core.Capture) {
-    const aobj = Analyzer.exec(cap)
-    console.dir(aobj, { depth: null, colors: true })
-}
-
-function alg1(cap: Core.Capture) {
-    const si = findSleep(cap.current_sig)
-    printSleep(si, cap.avg_voltage)
-}
-
-function alg2(cap: Core.Capture) {
-    const { avg, std, p95 } = findSleep(cap.current_sig)
-    const N1 = 5
-    const N2 = 4
-    const ampT = avg + (N1 * std)
-    const slopeT = N2 * p95
-    const eps = 2 * std
-    console.log(`ampT = ${Core.toEng(ampT, 'A')}, slopeT = ${slopeT.toExponential(2)}`)
-    let markers = new Array<Core.Marker>()
-    let y0 = 0
-    let active = false
-    let nxt_marker = new Core.Marker()
-    for (const [i, v] of cap.current_ds.data.entries()) {
-        const dy = v - y0
-        y0 = v
-        if (!active && ((v > ampT) || (Math.abs(dy) > slopeT))) {
-            active = true
-            nxt_marker.offset = i
-            continue
-        }
-        if (active && (v <= avg + eps) && (Math.abs(dy) <= p95)) {
-            active = false
-            nxt_marker.width = i - nxt_marker.offset
-            markers.push(nxt_marker)
-            nxt_marker = new Core.Marker()
-            continue
-        }
-    }
-    const min_samples = cap.secsToSampleIndex(500e-6)
-    const max_gap = cap.secsToSampleIndex(10e-3)
-    const merged = mergeMarkers(markers.filter(m => m.width > min_samples), max_gap)
-    console.log(`    found ${merged.length} events`)
-    // for (const m of merged) {
-    //     console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
-    // }
-    Exporter.saveMarkers(cap, `${cap.basename}--alg2`, merged)
-}
-
-function alg3(cap: Core.Capture) {
-    const sig = cap.current_sig
-    const width = sig.secsToOff(250e-6)
-    Exporter.saveSignal(cap, `${cap.basename}--alg3`, sig.mapMean(width))
-}
-
-function alg4(cap: Core.Capture) {
-    const { off } = findSleep(cap.current_sig)
-    console.log(`off = ${off}`)
-}
+// function alg0(cap: Core.Capture) {
+//     const aobj = Analyzer.exec(cap)
+//     console.dir(aobj, { depth: null, colors: true })
+// }
+// 
+// function alg1(cap: Core.Capture) {
+//     const si = findSleep(cap.current_sig)
+//     printSleep(si, cap.avg_voltage)
+// }
+// 
+// function alg2(cap: Core.Capture) {
+//     const { avg, std, p95 } = findSleep(cap.current_sig)
+//     const N1 = 5
+//     const N2 = 4
+//     const ampT = avg + (N1 * std)
+//     const slopeT = N2 * p95
+//     const eps = 2 * std
+//     console.log(`ampT = ${Core.toEng(ampT, 'A')}, slopeT = ${slopeT.toExponential(2)}`)
+//     let markers = new Array<Core.Marker>()
+//     let y0 = 0
+//     let active = false
+//     let nxt_marker = new Core.Marker()
+//     for (const [i, v] of cap.current_ds.data.entries()) {
+//         const dy = v - y0
+//         y0 = v
+//         if (!active && ((v > ampT) || (Math.abs(dy) > slopeT))) {
+//             active = true
+//             nxt_marker.offset = i
+//             continue
+//         }
+//         if (active && (v <= avg + eps) && (Math.abs(dy) <= p95)) {
+//             active = false
+//             nxt_marker.width = i - nxt_marker.offset
+//             markers.push(nxt_marker)
+//             nxt_marker = new Core.Marker()
+//             continue
+//         }
+//     }
+//     const min_samples = cap.secsToSampleIndex(500e-6)
+//     const max_gap = cap.secsToSampleIndex(10e-3)
+//     const merged = mergeMarkers(markers.filter(m => m.width > min_samples), max_gap)
+//     console.log(`    found ${merged.length} events`)
+//     // for (const m of merged) {
+//     //     console.log(cap.markerLocation(m).toFixed(2).padStart(5, '0'), Core.toEng(cap.markerDuration(m), 's'))
+//     // }
+//     Exporter.saveMarkers(cap, `${cap.basename}--alg2`, merged)
+// }
+// 
+// function alg3(cap: Core.Capture) {
+//     const sig = cap.current_sig
+//     const width = sig.secsToOff(250e-6)
+//     Exporter.saveSignal(cap, `${cap.basename}--alg3`, sig.mapMean(width))
+// }
+// 
+// function alg4(cap: Core.Capture) {
+//     const { off } = findSleep(cap.current_sig)
+//     console.log(`off = ${off}`)
+// }
 
 function alg5(cap: Core.Capture) {
     const rsig = cap.current_sig

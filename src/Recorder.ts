@@ -1,10 +1,6 @@
-import * as Analyzer from './Analyzer'
 import * as Core from './Core'
 import * as Driver_JS220 from './Driver_JS220'
 import * as Driver_PPK2 from './Driver_PPK2'
-import * as Exporter from './Exporter'
-
-import * as Path from 'path'
 
 export async function exec(opts: any) {
     let c: Core.Capture
@@ -17,10 +13,11 @@ export async function exec(opts: any) {
         process.exit(1)
     }
     const cap = c!
-    const aobj = Analyzer.exec(cap)
-    Exporter.saveMarkers(cap, cap.basename, aobj.events.markers)
-    console.log(`    ${aobj.events.markers.length} events ==> ${aobj.efficiency_score}`)
-    cap.bind(aobj)
+    cap.findEvents(opts.eventCount)
+    // const aobj = Analyzer.exec(cap)
+    // Exporter.saveMarkers(cap, cap.basename, aobj.events.markers)
+    // console.log(`    ${aobj.events.markers.length} events ==> ${aobj.efficiency_score}`)
+    // cap.bind(aobj)
     cap.save()
     process.exit()
 }
