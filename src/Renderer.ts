@@ -16,11 +16,11 @@ export function exec(opts: any) {
     }
 }
 
-function genJls(cap: Core.Capture, markers: Core.MarkerI[]) {
+function genJls(cap: Core.Capture, markers: Core.Marker[]) {
     Writer.saveSignal(cap, `${cap.basename}--events`, cap.current_sig, markers)
 }
 
-function printEventInfo(cap: Core.Capture, markers: Core.MarkerI[]) {
+function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     for (const m of markers) {
         console.log(Core.joules(cap.energyWithin(m)))
     }

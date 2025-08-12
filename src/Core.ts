@@ -11,7 +11,7 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
 
 export interface Analysis {
     span: Marker
-    events: MarkerI[]
+    events: Marker[]
     sleep: SleepInfo
 }
 
@@ -39,7 +39,6 @@ export class Capture {
     private _creation_date?: Date
     private _device?: CaptureDevice
     private _duration?: number
-    private _events = new Array<MarkerI>()
     private _rootdir?: string
     private _sample_count?: number
     private _sampling_rate?: number
@@ -96,7 +95,6 @@ export class Capture {
     get current_sig() { return new Signal(this.current_ds.data, this.sampling_rate) }
     get device() { return this._device! }
     get duration() { return this._duration! }
-    get events(): Readonly<Array<MarkerI>> { return this._events }
     get rootdir() { return this._rootdir! }
     get sample_count() { return this._sample_count! }
     get sampling_rate() { return this._sampling_rate! }
@@ -108,7 +106,7 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
     }
-    energyWithin(m: MarkerI): number {
+    energyWithin(m: Marker): number {
         const dt = 1 / this.sampling_rate
         const data = this.current_ds.data
         let sum = 0
@@ -127,17 +125,9 @@ export class Capture {
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
-    setEvents(events: MarkerI[]) {
-        this._events = events
-    }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
     }
-}
-
-export interface MarkerI {
-    offset: number
-    width: number
 }
 
 export class Progress {

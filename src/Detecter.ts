@@ -16,7 +16,7 @@ export function detectEvents(cap: Core.Capture): Core.Analysis {
     let active = false
     let start = -1
     let charge_list = new Array<number>()
-    let markers = new Array<Core.MarkerI>()
+    let markers = new Array<Core.Marker>()
     for (const [i, v] of asig.data.entries()) {
         if (!active && v > min_thresh) {
             active = true
