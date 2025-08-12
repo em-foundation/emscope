@@ -20,9 +20,15 @@ export async function exec(opts: any) {
     Fs.writeFileSync('event.html', html)
 }
 
-function genHtml(signal: Float32Array, width: number, down_sample: number = 1): string {
-    const x_data = Core.decimate(down_sample, Array.from({ length: signal.length }, (_, i) => (i - PRE) * 0.001))
-    const y_data = Core.decimate(down_sample, Array.from(signal).map(y => y * 1000))
+export function generate(samples: Core.SampleSet, event: Core.Marker) {
+    const vals = samples.data.subarray(event.offset - PRE, event.offset + 5100)
+    const html = genHtml(vals, event.width, 2)
+    Fs.writeFileSync('event.html', html)
+}
+
+function genHtml(vals: Float32Array, width: number, down_sample: number = 1): string {
+    const x_data = Core.decimate(down_sample, Array.from({ length: vals.length }, (_, i) => (i - PRE) * 0.001))
+    const y_data = Core.decimate(down_sample, Array.from(vals).map(y => y * 1000))
     const html = `
 <!DOCTYPE html>
 <meta charset="utf-8">

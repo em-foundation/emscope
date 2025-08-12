@@ -7,7 +7,7 @@ import * as Renderer from './Renderer'
 
 import * as Commander from 'commander'
 
-const CAP = ['-c --capture <directory path>', 'working capture directory', '.']
+const CAP = ['-c --capture [directory path]', 'working capture directory', '.']
 
 const CMD = new Commander.Command('emscope')
 
@@ -17,7 +17,7 @@ CMD.command('record')
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
     .option('-J --js220', 'use a Joulescope JS220 device')
     .option('-P --ppk2', 'use a Nordic PPK2 device')
-    .addOption(new Commander.Option('-V, --voltage <value>', 'source voltage').argParser(parseFloat).default(3.3).conflicts('js220'))
+    .addOption(new Commander.Option('-V, --voltage [value]', 'source voltage').argParser(parseFloat).default(3.3).conflicts('js220'))
     .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts(['sourceMode', 'js220']))
     .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts(['ampereMode', 'js220']))
     .action((opts: any) => Recorder.exec(opts))
@@ -30,7 +30,7 @@ CMD.command('detect')
 CMD.command('export')
     .description('pack captured information into a .zip file')
     .option(CAP[0], CAP[1], CAP[2])
-    .option('-o --output <dir>', 'output directory', '.')
+    .option('-o --output [dir]', 'output directory', '.')
     .action((opts: any) => Exporter.exec(opts))
 
 CMD.command('render')
@@ -38,9 +38,9 @@ CMD.command('render')
     .option(CAP[0], CAP[1], CAP[2])
     .option('-e --event-info', 'characterize power consumption when active')
     .option('-j --jls-file', 'generate a Joulescope .jls file containing all events')
-    .option('-p --html-plot <event number>', 'generate a Plotly graph of a designated event', parseFloat, 0)
+    .option('-p --html-plot [event]', 'generate a Plotly graph of a designated event', parseFloat, 0)
     .option('-s --sleep-info', 'characterize power consumption when inactive')
-    .option('-w --what-if <seconds per event>', 'extrapolate results at a given event rate', parseFloat, 1)
+    .option('-w --what-if [seconds per event]', 'extrapolate results at a given event rate', parseFloat, 1)
     .action((opts: any) => Renderer.exec(opts))
 
 try {
