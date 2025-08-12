@@ -29,7 +29,7 @@ export function detectEvents(cap: Core.Capture): Core.Analysis {
             const wsig = win.toSignal()
             if (wsig.max() > max_thresh) {
                 const rwin = win.scale(rsig)
-                markers.push(rwin)
+                markers.push(rwin.marker)
                 charge_list.push(rwin.toSignal().integral())
             }
         }

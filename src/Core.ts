@@ -69,7 +69,7 @@ export class Capture {
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
         }
-        cap._aobj = yobj.analysis
+        // cap._aobj = yobj.analysis
         cap._current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
         // cap._voltage = yobj.capture.avg_voltage
@@ -102,9 +102,11 @@ export class Capture {
     get voltage_ds() { return this._voltage_ds! }
     get voltage_sig() { return new Signal(this.voltage_ds.data, this.sampling_rate) }
 
-
     bind(aobj: Analysis) {
         this._aobj = aobj
+        const ytxt = Yaml.dump(aobj, { indent: 4, flowLevel: 4 })
+        Fs.writeFileSync(Path.join(this.rootdir, 'events.yaml'), ytxt)
+
     }
     energyWithin(m: Marker): number {
         const dt = 1 / this.sampling_rate
