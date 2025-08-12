@@ -132,6 +132,31 @@ export class Capture {
     }
 }
 
+export class KalmanFilter {
+    q: number
+    r: number
+    p: number
+    x: number
+    constructor(
+        initialEstimate: number,
+        processNoise: number,
+        measurementNoise: number,
+        estimateCovariance: number
+    ) {
+        this.x = initialEstimate
+        this.p = estimateCovariance
+        this.q = processNoise
+        this.r = measurementNoise
+    }
+    update(measurement: number): number {
+        this.p += this.q
+        const k = this.p / (this.p + this.r)  // Kalman gain
+        this.x = this.x + k * (measurement - this.x) // Update estimate
+        this.p = (1 - k) * this.p
+        return this.x
+    }
+}
+
 export class Progress {
     _max = 0
     constructor(readonly prefix: string) { }

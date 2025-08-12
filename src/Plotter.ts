@@ -6,20 +6,6 @@ const PRE = 300
 const TOP = 1.05
 const FONT_SIZE = 13
 
-export async function exec(opts: any) {
-    const cap = Core.Capture.load(opts.capture)
-    const markers = cap.analysis.events
-    const ev_num = opts.eventNumber as number
-    if (ev_num >= markers.length) {
-        console.error("*** event number out of range")
-        process.exit(1)
-    }
-    const ev_mark = markers[ev_num]
-    const ev_vals = cap.current_ds.data.subarray(ev_mark.offset - PRE, ev_mark.offset + 5100)
-    const html = genHtml(ev_vals, ev_mark.width, 2)
-    Fs.writeFileSync('event.html', html)
-}
-
 export function generate(samples: Core.SampleSet, event: Core.Marker) {
     const vals = samples.data.subarray(event.offset - PRE, event.offset + 5100)
     const html = genHtml(vals, event.width, 2)

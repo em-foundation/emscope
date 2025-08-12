@@ -7,7 +7,7 @@ import * as Renderer from './Renderer'
 
 import * as Commander from 'commander'
 
-const CAP = ['-c --capture [directory path]', 'working capture directory', '.']
+const CAP = ['-c --capture <directory path>', 'working capture directory', '.']
 
 const CMD = new Commander.Command('emscope')
 
@@ -30,7 +30,7 @@ CMD.command('detect')
 CMD.command('export')
     .description('pack captured information into a .zip file')
     .option(CAP[0], CAP[1], CAP[2])
-    .option('-o --output [dir]', 'output directory', '.')
+    .option('-o --output <dir>', 'output directory', '.')
     .action((opts: any) => Exporter.exec(opts))
 
 CMD.command('render')
