@@ -2,11 +2,11 @@ import * as Core from './Core'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const [markers, sleepInfo] = detectEvents(cap)
-    cap.setEvents(markers)
+    const aobj = detectEvents(cap)
+    cap.bind(aobj)
 }
 
-export function detectEvents(cap: Core.Capture): [Core.MarkerI[], Core.SleepInfo] {
+export function detectEvents(cap: Core.Capture): Core.Analysis {
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
@@ -34,7 +34,8 @@ export function detectEvents(cap: Core.Capture): [Core.MarkerI[], Core.SleepInfo
             }
         }
     }
-    return [markers, si]
+    const span = rsig.window(rsig.data.length).marker
+    return { span: span, events: markers, sleep: si }
 }
 
 export function detectSleep(osig: Core.Signal): Core.SleepInfo {

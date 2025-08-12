@@ -4,15 +4,15 @@ import * as Writer from './Writer'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const [events, sleep] = Detecter.detectEvents(cap)
+    const aobj = Detecter.detectEvents(cap)
     if (opts.eventInfo) {
-        printEventInfo(cap, events)
+        printEventInfo(cap, aobj.events)
     }
     if (opts.jlsFile) {
-        genJls(cap, events)
+        genJls(cap, aobj.events)
     }
     if (opts.sleepInfo) {
-        printSleepInfo(cap, sleep)
+        printSleepInfo(cap, aobj.sleep)
     }
 }
 

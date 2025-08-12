@@ -10,20 +10,13 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
 ])
 
 export interface Analysis {
-    window: MarkerI
-    events: {
-        markers: MarkerI[]
-        avg_duration: string
-        avg_current: string
-        avg_energy: string
-    }
-    energy_per_sec: string
-    energy_per_day: string
-    energy_per_year: string
-    efficiency_score: string
+    span: Marker
+    events: MarkerI[]
+    sleep: SleepInfo
 }
 
 export type F32 = Float32Array<ArrayBufferLike>
+export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
 export type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
@@ -262,7 +255,7 @@ export class Signal {
     }
 }
 
-class Window implements MarkerI {
+class Window {
     #sig: Signal
     #off: number
     #wid: number
@@ -271,6 +264,7 @@ class Window implements MarkerI {
         this.#off = off
         this.#wid = wid
     }
+    get marker(): Marker { return { offset: this.#off, width: this.#wid } }
     get offset() { return this.#off }
     get width() { return this.#wid }
     scale(osig: Signal): Window {

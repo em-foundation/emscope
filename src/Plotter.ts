@@ -8,7 +8,7 @@ const FONT_SIZE = 13
 
 export async function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const markers = cap.analysis.events.markers
+    const markers = cap.analysis.events
     const ev_num = opts.eventNumber as number
     if (ev_num >= markers.length) {
         console.error("*** event number out of range")
