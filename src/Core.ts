@@ -315,6 +315,13 @@ export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
+export function fail(msg: string, cond: boolean = true) {
+    if (cond) {
+        console.log(`*** ${msg}`)
+        process.exit(1)
+    }
+}
+
 export function infoMsg(msg: string) {
     console.log(`${TAB}${msg}`)
 }
