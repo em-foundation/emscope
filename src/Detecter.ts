@@ -2,16 +2,16 @@ import * as Core from './Core'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = detectEvents(cap)
+    const aobj = analyze(cap)
     cap.bind(aobj)
 }
 
-export function detectEvents(cap: Core.Capture): Core.Analysis {
-    console.log('detecting events...')
+export function analyze(cap: Core.Capture): Core.Analysis {
+    console.log('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
-    const si = detectSleep(asig)
+    const si = measureSleep(asig)
     const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
     let active = false
@@ -39,7 +39,7 @@ export function detectEvents(cap: Core.Capture): Core.Analysis {
     return { span: span, events: markers, sleep: si }
 }
 
-export function detectSleep(osig: Core.Signal): Core.SleepInfo {
+function measureSleep(osig: Core.Signal): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0

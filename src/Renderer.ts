@@ -5,7 +5,7 @@ import * as Writer from './Writer'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = cap.analysis ?? Detecter.detectEvents(cap)
+    const aobj = cap.analysis ?? Detecter.analyze(cap)
     if (opts.eventInfo) {
         printEventInfo(cap, aobj.events)
     }

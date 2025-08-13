@@ -2,20 +2,19 @@ import Fs from 'fs'
 import Path from 'path'
 import Yaml from 'js-yaml'
 
-export type CaptureDevice = 'JS220' | 'PPK2'
-
-export const SAMPLING_RATE = new Map<CaptureDevice, number>([
-    ['JS220', 1_000_000],
-    ['PPK2', 100_000],
-])
-
 export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo }
+export type CaptureDevice = 'JS220' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
 export type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
 export class Capture {
+
+    static #SAMPLING_RATE = new Map<CaptureDevice, number>([
+        ['JS220', 1_000_000],
+        ['PPK2', 100_000],
+    ])
 
     static #LOAD_KEYS = [
         'creation_date',
@@ -49,7 +48,7 @@ export class Capture {
         cap._device = device
         cap._voltage = voltage
         cap._creation_date = new Date()
-        cap._sampling_rate = SAMPLING_RATE.get(device) ?? 0
+        cap._sampling_rate = Capture.#SAMPLING_RATE.get(device) ?? 0
         cap._sample_count = duration * cap.sampling_rate
         cap._current_ds = new SampleSet(cap.sample_count)
         cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
@@ -59,7 +58,7 @@ export class Capture {
     static load(rootdir: string): Capture {
         let cap = new Capture()
         cap._rootdir = rootdir
-        const ytxt = Fs.readFileSync(Path.join(rootdir, 'emscope.yaml'), 'utf-8')
+        const ytxt = Fs.readFileSync(cap.#cpath, 'utf-8')
         const yobj = Yaml.load(ytxt) as any
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
@@ -84,6 +83,7 @@ export class Capture {
     }
 
     get #apath() { return Path.join(this.rootdir, 'analysis.yaml') }
+    get #cpath() { return Path.join(this.rootdir, 'capture.yaml') }
 
     get analysis() { return this._aobj }
     get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
@@ -122,7 +122,7 @@ export class Capture {
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
         const yobj = { capture: cobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
-        Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
+        Fs.writeFileSync(this.#cpath, ytxt)
     }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
