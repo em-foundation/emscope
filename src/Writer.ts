@@ -4,7 +4,6 @@ import * as Path from 'path'
 
 export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal, span: Core.Marker, markers: Core.Marker[] = []) {
     const writer = WriterAux.create(cap, cname)
-    console.log(span)
     const msig = sig.window(span.width, span.offset).toSignal()
     writer.store(msig.data, msig.sample_rate)
     for (const m of markers) {
@@ -31,7 +30,6 @@ class WriterAux {
         Core.infoMsg(`wrote '${this.cname}.jls'`)
     }
     store(f32: Readonly<Core.F32>, sample_rate: number) {
-        console.log(f32.length)
         const sdef: Jls.SourceDef = {
             source_id: 1,
             name: 'mysource',

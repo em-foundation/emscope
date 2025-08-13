@@ -82,6 +82,5 @@ function trimEvents(cap: Core.Capture, markers: Core.Marker[]): [Core.Marker, Co
     const wid = rsig.secsToOff(ev_cnt)
     const off = markers[beg_idx].offset - margin
     const span = rsig.window(wid, off).toMarker()
-    console.log(wid, off)
     return [span, markers.slice(beg_idx, end_idx)]
 }
