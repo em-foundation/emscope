@@ -3,7 +3,7 @@
 import * as Detecter from './Detecter'
 import * as Exporter from './Exporter'
 import * as Recorder from './Recorder'
-import * as Renderer from './Presenter'
+import * as Renderer from './Renderer'
 
 import * as Commander from 'commander'
 
