@@ -3,7 +3,7 @@
 import * as Detecter from './Detecter'
 import * as Exporter from './Exporter'
 import * as Recorder from './Recorder'
-import * as Renderer from './Renderer'
+import * as Renderer from './Presenter'
 
 import * as Commander from 'commander'
 
@@ -11,8 +11,8 @@ const CAP = ['-c --capture <directory path>', 'working capture directory', '.']
 
 const CMD = new Commander.Command('emscope')
 
-CMD.command('record')
-    .description('capture information using an analyzer device')
+CMD.command('grab')
+    .description('record power signals with an attached capture device')
     .option(CAP[0], CAP[1], CAP[2])
     .option('-d --duration <value>', 'capture duration in seconds', parseFloat, 3)
     .option('-J --js220', 'use a Joulescope JS220 device')
@@ -22,19 +22,13 @@ CMD.command('record')
     .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts(['ampereMode', 'js220']))
     .action((opts: any) => Recorder.exec(opts))
 
-CMD.command('detect')
-    .description('find events in the captured information')
+CMD.command('find')
+    .description('analyze captured data and locate active events')
     .option(CAP[0], CAP[1], CAP[2])
     .action((opts: any) => Detecter.exec(opts))
 
-CMD.command('export')
-    .description('pack captured information into a .zip file')
-    .option(CAP[0], CAP[1], CAP[2])
-    .option('-o --output <dir>', 'output directory', '.')
-    .action((opts: any) => Exporter.exec(opts))
-
-CMD.command('render')
-    .description('show captured information in different formats')
+CMD.command('view')
+    .description('present captured data in different formats')
     .option(CAP[0], CAP[1], CAP[2])
     .option('-e --event-info', 'characterize power consumption when active')
     .option('-j --jls-file', 'generate a Joulescope .jls file containing all events')
@@ -42,6 +36,12 @@ CMD.command('render')
     .option('-s --sleep-info', 'characterize power consumption when inactive')
     .option('-w --what-if [seconds per event]', 'extrapolate results at a given event rate', parseFloat, 1)
     .action((opts: any) => Renderer.exec(opts))
+
+CMD.command('pack')
+    .description('bundle captured data into a .zip file')
+    .option(CAP[0], CAP[1], CAP[2])
+    .option('-o --output <dir>', 'output directory', '.')
+    .action((opts: any) => Exporter.exec(opts))
 
 try {
     CMD.parse(process.argv)
