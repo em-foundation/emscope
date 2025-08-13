@@ -57,6 +57,11 @@ export class Capture {
         cap._sample_count = duration * cap.sampling_rate
         cap._current_ds = new SampleSet(cap.sample_count)
         cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
+        const wd = cap.#workdir
+        if (Fs.existsSync(wd)) {
+            Fs.rmSync(wd, { recursive: true })
+        }
+        Fs.mkdirSync(wd)
         return cap
     }
 
@@ -69,11 +74,11 @@ export class Capture {
             (cap as any)[`_${k}`] = yobj.capture[k]
         }
         cap._current_ds = new SampleSet(cap.sample_count)
-        cap.current_ds.load(rootdir, 'current')
+        cap.current_ds.load(cap.#workdir, 'current')
         switch (cap.device) {
             case 'JS220':
                 cap._voltage_ds = new SampleSet(cap.sample_count)
-                cap.voltage_ds.load(rootdir, 'voltage')
+                cap.voltage_ds.load(cap.#workdir, 'voltage')
                 cap._voltage = -1
                 break
             case 'PPK2':
@@ -89,6 +94,8 @@ export class Capture {
 
     get #apath() { return Path.join(this.rootdir, Capture.#AFILE) }
     get #cpath() { return Path.join(this.rootdir, Capture.#CFILE) }
+
+    get #workdir() { return Path.join(this.rootdir, '.emscope') }
 
     get analysis() { return this._aobj }
     get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
@@ -124,8 +131,8 @@ export class Capture {
     }
     save() {
         Fs.rmSync(this.#apath, { force: true })
-        this.current_ds.save(this.rootdir, 'current')
-        this.voltage_ds.save(this.rootdir, 'voltage')
+        this.current_ds.save(this.#workdir, 'current')
+        this.voltage_ds.save(this.#workdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
         const yobj = { capture: cobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
@@ -317,7 +324,7 @@ export function decimate<T>(factor: number, data: T[]): T[] {
 
 export function fail(msg: string, cond: boolean = true) {
     if (cond) {
-        console.log(`*** ${msg}`)
+        console.log(`*** ${msg} ***`)
         process.exit(1)
     }
 }

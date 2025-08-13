@@ -9,8 +9,7 @@ export async function exec(opts: any) {
     } else if (opts.ppk2) {
         c = await Driver_PPK2.execCapture(opts)
     } else {
-        console.log('*** you must specify an analyzer device')
-        process.exit(1)
+        Core.fail('you must specify an analyzer device')
     }
     const cap = c!
     cap.save()
