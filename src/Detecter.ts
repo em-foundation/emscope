@@ -7,6 +7,7 @@ export function exec(opts: any) {
 }
 
 export function detectEvents(cap: Core.Capture): Core.Analysis {
+    console.log('detecting events...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)

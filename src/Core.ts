@@ -9,12 +9,7 @@ export const SAMPLING_RATE = new Map<CaptureDevice, number>([
     ['PPK2', 100_000],
 ])
 
-export interface Analysis {
-    span: Marker
-    events: Marker[]
-    sleep: SleepInfo
-}
-
+export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo }
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
@@ -34,7 +29,7 @@ export class Capture {
         ...Capture.#LOAD_KEYS,
     ]
 
-    private _aobj: any = {}
+    private _aobj?: Analysis
     private _current_ds?: SampleSet
     private _creation_date?: Date
     private _device?: CaptureDevice
@@ -69,10 +64,8 @@ export class Capture {
         for (const k of Capture.#LOAD_KEYS) {
             (cap as any)[`_${k}`] = yobj.capture[k]
         }
-        // cap._aobj = yobj.analysis
         cap._current_ds = new SampleSet(cap.sample_count)
         cap.current_ds.load(rootdir, 'current')
-        // cap._voltage = yobj.capture.avg_voltage
         switch (cap.device) {
             case 'JS220':
                 cap._voltage_ds = new SampleSet(cap.sample_count)
@@ -84,10 +77,15 @@ export class Capture {
                 cap._voltage = yobj.capture.avg_voltage
                 break
         }
+        if (Fs.existsSync(cap.#apath)) {
+            cap._aobj = Yaml.load(Fs.readFileSync(cap.#apath, 'utf-8')) as Analysis
+        }
         return cap
     }
 
-    get analysis() { return this._aobj as Analysis }
+    get #apath() { return Path.join(this.rootdir, 'analysis.yaml') }
+
+    get analysis() { return this._aobj }
     get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
     get basename() { return Path.basename(Path.resolve(this.rootdir)) }
     get creation_date() { return this._creation_date! }
@@ -105,8 +103,7 @@ export class Capture {
     bind(aobj: Analysis) {
         this._aobj = aobj
         const ytxt = Yaml.dump(aobj, { indent: 4, flowLevel: 4 })
-        Fs.writeFileSync(Path.join(this.rootdir, 'events.yaml'), ytxt)
-
+        Fs.writeFileSync(this.#apath, ytxt)
     }
     energyWithin(m: Marker): number {
         const dt = 1 / this.sampling_rate
@@ -123,7 +120,7 @@ export class Capture {
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
-        const yobj = { capture: cobj, analysis: this._aobj }
+        const yobj = { capture: cobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(Path.join(this.rootdir, 'emscope.yaml'), ytxt)
     }
