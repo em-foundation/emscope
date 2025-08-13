@@ -42,7 +42,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
 
     drv.open(dev)
     drv.publish(dev.concat("/s/i/range/mode"), "auto")
-    await progress.spin(2000)
+    await progress.spin(3000)
     drv.subscribe(dev.concat("/s/v/!data"), 2, sampleCb)
     drv.subscribe(dev.concat("/s/i/!data"), 2, sampleCb)
     drv.publish(dev.concat("/s/i/ctrl"), 1, 0)

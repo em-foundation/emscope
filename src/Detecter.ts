@@ -7,7 +7,7 @@ export function exec(opts: any) {
 }
 
 export function analyze(cap: Core.Capture): Core.Analysis {
-    console.log('analyzing captured data...')
+    Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)

@@ -2,7 +2,7 @@ import * as Core from './Core'
 import * as Jls from 'node_jls'
 import * as Path from 'path'
 
-export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal, markers: Core.MarkerI[] = []) {
+export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal, markers: Core.Marker[] = []) {
     const writer = WriterAux.create(cap, cname)
     writer.store(sig.data, sig.sample_rate)
     for (const m of markers) {
@@ -19,13 +19,13 @@ class WriterAux {
     private constructor(readonly cap: Core.Capture, readonly cname: string) {
         this.#jfile = new Jls.Writer(Path.join(this.cap.rootdir, `${cname}.jls`))
     }
-    addMarker(m: Core.MarkerI) {
+    addMarker(m: Core.Marker) {
         this.#jfile.markerAnnotation(1, m.offset, '1a')
         this.#jfile.markerAnnotation(1, m.offset + m.width, '1b')
     }
     finalize() {
         this.#jfile.close()
-        console.log(`    wrote '${this.cname}'`)
+        Core.infoMsg(`wrote '${this.cname}.jls'`)
     }
     store(f32: Readonly<Core.F32>, sample_rate: number) {
         const sdef: Jls.SourceDef = {

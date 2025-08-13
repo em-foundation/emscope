@@ -9,7 +9,12 @@ export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
 export type SleepInfo = { avg: number, std: number, p95: number, off: number }
 
+const TAB = '    '
+
 export class Capture {
+
+    static #AFILE = 'analysis.yaml'
+    static #CFILE = 'capture.yaml'
 
     static #SAMPLING_RATE = new Map<CaptureDevice, number>([
         ['JS220', 1_000_000],
@@ -82,8 +87,8 @@ export class Capture {
         return cap
     }
 
-    get #apath() { return Path.join(this.rootdir, 'analysis.yaml') }
-    get #cpath() { return Path.join(this.rootdir, 'capture.yaml') }
+    get #apath() { return Path.join(this.rootdir, Capture.#AFILE) }
+    get #cpath() { return Path.join(this.rootdir, Capture.#CFILE) }
 
     get analysis() { return this._aobj }
     get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
@@ -104,6 +109,7 @@ export class Capture {
         this._aobj = aobj
         const ytxt = Yaml.dump(aobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(this.#apath, ytxt)
+        infoMsg(`wrote '${Capture.#AFILE}'`)
     }
     energyWithin(m: Marker): number {
         const dt = 1 / this.sampling_rate
@@ -117,12 +123,14 @@ export class Capture {
         return sum
     }
     save() {
+        Fs.rmSync(this.#apath, { force: true })
         this.current_ds.save(this.rootdir, 'current')
         this.voltage_ds.save(this.rootdir, 'voltage')
         const cobj = Object.fromEntries(Capture.#SAVE_KEYS.map(k => [k, (this as any)[k]]))
         const yobj = { capture: cobj }
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(this.#cpath, ytxt)
+        infoMsg(`wrote '${Capture.#CFILE}'`)
     }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
@@ -155,28 +163,31 @@ export class KalmanFilter {
 }
 
 export class Progress {
-    _max = 0
-    constructor(readonly prefix: string) { }
+    #max = 0
+    #pre = TAB
+    constructor(prefix: string) {
+        this.#pre += prefix
+    }
     clear() {
-        process.stdout.write(`\r${' '.repeat(this._max)}\r`)
+        process.stdout.write(`\r${' '.repeat(this.#max)}\r`)
     }
     done() {
         this.clear()
-        process.stdout.write(`\r${this.prefix}done.\n`)
+        process.stdout.write(`\r${this.#pre}done.\n`)
     }
     async spin(ms: number) {
         const spinner = ['|', '/', '-', '\\']
         let i = 0
         const interval = setInterval(() => {
-            process.stdout.write(`\r${this.prefix}${spinner[i++ % spinner.length]} `)
+            process.stdout.write(`\r${this.#pre}${spinner[i++ % spinner.length]} `)
         }, 30)
         await new Promise(resolve => setTimeout(resolve, ms))
         clearInterval(interval)
         process.stdout.write('\r      ')
     }
     update(msg: string) {
-        const line = `${this.prefix}${msg} ...`
-        this._max = Math.max(this._max, line.length)
+        const line = `${this.#pre}${msg} ...`
+        this.#max = Math.max(this.#max, line.length)
         process.stdout.write(`\r${line}`)
     }
 }
@@ -302,6 +313,10 @@ export function amps(val: number): string {
 
 export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
+}
+
+export function infoMsg(msg: string) {
+    console.log(`${TAB}${msg}`)
 }
 
 export function joules(j: number): string {
