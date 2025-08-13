@@ -14,7 +14,7 @@ export function exec(opts: any) {
         genHtml(cap, aobj.events[idx])
     }
     if (opts.jlsFile) {
-        genJls(cap, aobj.events)
+        genJls(cap, aobj)
     }
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
@@ -25,8 +25,8 @@ function genHtml(cap: Core.Capture, event: Core.Marker) {
     Plotter.generate(cap.current_ds, event)
 }
 
-function genJls(cap: Core.Capture, markers: Core.Marker[]) {
-    Writer.saveSignal(cap, `${cap.basename}--events`, cap.current_sig, markers)
+function genJls(cap: Core.Capture, aobj: Core.Analysis) {
+    Writer.saveSignal(cap, `${cap.basename}--events`, cap.current_sig, aobj.span, aobj.events)
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
@@ -38,7 +38,7 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
         Core.infoMsg(`${Core.joules(egy)}`)
     }
     Core.infoMsg('----')
-    Core.infoMsg(`average energy per event: ${Core.joules(avg)}`)
+    Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.joules(avg)}`)
 
 }
 

@@ -289,15 +289,15 @@ class Window {
         this.#off = off
         this.#wid = wid
     }
-    get marker(): Marker { return { offset: this.#off, width: this.#wid } }
-    get offset() { return this.#off }
-    get width() { return this.#wid }
     scale(osig: Signal): Window {
         const sf = Math.round(osig.sample_rate / this.#sig.sample_rate)
         return osig.window(this.#wid * sf, this.#off * sf)
     }
     slide(count: number) {
         this.#off += count
+    }
+    toMarker(): Marker {
+        return { offset: this.#off, width: this.#wid }
     }
     toSignal(): Signal {
         return new Signal(this.#sig.data.subarray(this.#off, this.#off + this.#wid), this.#sig.sample_rate)

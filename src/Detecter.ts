@@ -29,11 +29,11 @@ export function analyze(cap: Core.Capture, trim?: boolean): Core.Analysis {
             const wsig = win.toSignal()
             if (wsig.max() > max_thresh) {
                 const rwin = win.scale(rsig)
-                markers.push(rwin.marker)
+                markers.push(rwin.toMarker())
             }
         }
     }
-    let span = rsig.window(rsig.data.length).marker
+    let span = rsig.window(rsig.data.length).toMarker()
     if (trim) {
         [span, markers] = trimEvents(cap, markers)
     }
@@ -50,13 +50,14 @@ function measureSleep(osig: Core.Signal): Core.SleepInfo {
     while (win.valid()) {
         const wsig = win.toSignal()
         const cur = wsig.avg()
+        const m = win.toMarker()
         if (cur < min_cur) {
             min_cur = cur
             std = wsig.std()
             p95 = slopeP95(wsig.data)
-            off = win.offset
+            off = m.offset
         }
-        win.slide(win.width / 2)
+        win.slide(m.width / 2)
     }
     return { avg: min_cur, std: std, p95: p95, off: off }
 }
@@ -80,6 +81,7 @@ function trimEvents(cap: Core.Capture, markers: Core.Marker[]): [Core.Marker, Co
     const beg_idx = end_idx - ev_cnt
     const wid = rsig.secsToOff(ev_cnt)
     const off = markers[beg_idx].offset - margin
-    const span = rsig.window(wid, off)
+    const span = rsig.window(wid, off).toMarker()
+    console.log(wid, off)
     return [span, markers.slice(beg_idx, end_idx)]
 }
