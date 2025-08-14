@@ -22,7 +22,7 @@ export function exec(opts: any) {
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
         if (ev_rate == 1) {
-            printStdResults(cap, aobj)
+            printDefResults(cap, aobj)
         } else {
             printExtResults(cap, aobj, ev_rate)
         }
@@ -47,7 +47,11 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     }
     Core.infoMsg('----')
     Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.joules(avg)}`)
+}
 
+function printCycleRate(ev_rate: number) {
+    Core.infoMsg(`event cycle rate: ${ev_rate} seconds`)
+    Core.infoMsg('----')
 }
 
 function printExtResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
@@ -61,20 +65,18 @@ function printExtResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number
     const sleep_time = (ev_rate - (wid_avg / cap.sampling_rate))
     const sleep_egy = (aobj.sleep.avg * cap.avg_voltage * sleep_time)
     const egy_1c = sleep_egy + egy_avg
-    Core.infoMsg(`energy per ${ev_rate} second cycle: ${Core.joules(egy_1c)}`)
-    const egy_1d = egy_1c * 86400 / ev_rate
-    Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
-    const egy_1m = egy_1d * 30
-    const ems = 2400 / egy_1m
-    Core.infoMsg('----')
-    Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
+    printCycleRate(ev_rate)
+    Core.infoMsg(`energy per cycle: ${Core.joules(egy_1c)}`)
+    printScores(egy_1c * 86400 / ev_rate)
 }
 
-
-function printStdResults(cap: Core.Capture, aobj: Core.Analysis) {
+function printDefResults(cap: Core.Capture, aobj: Core.Analysis) {
     const egy_1s = cap.energyWithin(aobj.span) / aobj.events.length
     Core.infoMsg(`energy per second: ${Core.joules(egy_1s)}`)
-    const egy_1d = egy_1s * 86400
+    printScores(egy_1s * 86400)
+}
+
+function printScores(egy_1d: number) {
     Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
