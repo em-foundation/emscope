@@ -58,6 +58,16 @@ function printExtResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number
         egy_avg += cap.energyWithin(m) * scale
         wid_avg += m.width * scale
     }
+    const sleep_time = (ev_rate - (wid_avg / cap.sampling_rate))
+    const sleep_egy = (aobj.sleep.avg * cap.avg_voltage * sleep_time)
+    const egy_1c = sleep_egy + egy_avg
+    Core.infoMsg(`energy per ${ev_rate} second cycle: ${Core.joules(egy_1c)}`)
+    const egy_1d = egy_1c * 86400 / ev_rate
+    Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
+    const egy_1m = egy_1d * 30
+    const ems = 2400 / egy_1m
+    Core.infoMsg('----')
+    Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
 }
 
 
