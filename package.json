@@ -4,12 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "esbuild --bundle --external:vscode --external:joulescope_driver --external:node_jls --external:@serialport/bindings --external:@serialport/bindings-cpp ./src/Main --outdir=out --platform=node --format=cjs",
+        "build": "esbuild --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:node_jls --external:@serialport/bindings --external:@serialport/bindings-cpp ./src/Main --outdir=out --platform=node --format=cjs",
         "watch": "npm run build -- --sourcemap --watch"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/em-foundation/em-flux.git"
+        "url": "git+https://github.com/em-foundation/emscope.git"
     },
     "keywords": [],
     "author": "",
@@ -23,6 +23,7 @@
         "@types/js-yaml": "^4.0.9",
         "adm-zip": "^0.5.16",
         "commander": "^14.0.0",
+        "jls-writer": "file:../jls-writer/jls-writer-0.0.1.tgz",
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",
         "node_jls": "file:../jscope/jls/node_jls/node_jls-1.0.0.tgz",
