@@ -6,6 +6,6 @@
 /node_modules/
 /out/
 
-**/*.jls
+.emscope/
 
 .DS_Store
