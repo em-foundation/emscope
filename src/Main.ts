@@ -39,9 +39,8 @@ CMD.command('view')
     .action((opts: any) => Renderer.exec(opts))
 
 CMD.command('pack')
-    .description('bundle captured data into a .zip file')
+    .description(`bundle captured data into an 'emscope.zip' file`)
     .option(CAP[0], CAP[1], CAP[2])
-    .option('-o --output <dir>', 'output directory', '.')
     .action((opts: any) => Exporter.exec(opts))
 
 try {
