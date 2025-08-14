@@ -19,6 +19,14 @@ export function exec(opts: any) {
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
     }
+    if (opts.whatIf !== undefined) {
+        const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
+        if (ev_rate == 1) {
+            printStdResults(cap, aobj)
+        } else {
+            printExtResults(cap, aobj, ev_rate)
+        }
+    }
 }
 
 function genHtml(cap: Core.Capture, event: Core.Marker) {
@@ -42,6 +50,28 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
 
 }
 
+function printExtResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
+    const scale = 1 / aobj.events.length
+    let egy_avg = 0
+    let wid_avg = 0
+    for (const m of aobj.events) {
+        egy_avg += cap.energyWithin(m) * scale
+        wid_avg += m.width * scale
+    }
+}
+
+
+function printStdResults(cap: Core.Capture, aobj: Core.Analysis) {
+    const egy_1s = cap.energyWithin(aobj.span) / aobj.events.length
+    Core.infoMsg(`energy per second: ${Core.joules(egy_1s)}`)
+    const egy_1d = egy_1s * 86400
+    Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
+    const egy_1m = egy_1d * 30
+    const ems = 2400 / egy_1m
+    Core.infoMsg('----')
+    Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
+}
+
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
-    console.log(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
 }

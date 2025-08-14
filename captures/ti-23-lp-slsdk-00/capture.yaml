@@ -1,6 +1,6 @@
 capture:
-    creation_date: 2025-08-13T23:15:28.624Z
+    creation_date: 2025-08-14T02:44:02.346Z
     device: JS220
-    duration: 3
+    duration: 12
     sampling_rate: 1000000
-    sample_count: 3000000
+    sample_count: 12000000
