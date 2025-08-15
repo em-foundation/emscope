@@ -6,7 +6,8 @@ export function saveSignal(cap: Core.Capture, cname: string, span: Core.Marker, 
     const writer = WriterAux.create(cap, cname)
     const msig_I = cap.current_sig.window(span.width, span.offset).toSignal()
     const msig_V = cap.voltage_sig.window(span.width, span.offset).toSignal()
-    writer.store(msig_I.data, msig_V.data, msig_I.sample_rate)
+    const data_V = msig_V.data.length > 0 ? msig_V.data : new Float32Array(msig_I.data.length).fill(cap.avg_voltage)
+    writer.store(msig_I.data, data_V, msig_I.sample_rate)
     for (const m of markers) {
         const m2: Core.Marker = { offset: m.offset - span.offset, width: m.width, }
         writer.addMarker(m2)
@@ -66,7 +67,7 @@ class WriterAux {
         this.#jfile.signalDef(sigdef)
         this.#jfile.writeF32(2, f32_V)
         //
-        let f32_W = new Float32Array(f32_I.length)
+        const f32_W = new Float32Array(f32_I.length)
         for (let i = 0; i < f32_W.length; i++) {
             f32_W[i] = f32_I[i] * f32_V[i]
         }

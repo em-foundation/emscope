@@ -27,6 +27,7 @@ export class Capture {
         'duration',
         'sampling_rate',
         'sample_count',
+        'voltage',
     ]
 
     static #SAVE_KEYS = [
@@ -79,11 +80,11 @@ export class Capture {
             case 'JS220':
                 cap._voltage_ds = new SampleSet(cap.sample_count)
                 cap.voltage_ds.load(cap.#workdir, 'voltage')
-                cap._voltage = -1
+                // cap._voltage = -1
                 break
             case 'PPK2':
                 cap._voltage_ds = new SampleSet(0)
-                cap._voltage = yobj.capture.avg_voltage
+                // cap._voltage = yobj.capture.avg_voltage
                 break
         }
         if (Fs.existsSync(cap.#apath)) {

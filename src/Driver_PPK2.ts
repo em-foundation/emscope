@@ -80,7 +80,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     await new Promise<void>((resolve, reject) => {
         port.open(err => (err ? reject(err) : resolve()))
     })
-    await progress.spin(500)
+    await progress.spin(2500)
     port.on('data', () => { })
     const cap = Core.Capture.create(opts.capture, opts.duration, 'PPK2', opts.voltage)
     const ppk = new PPK2(port, cap)
