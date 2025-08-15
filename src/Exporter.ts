@@ -1,6 +1,7 @@
 import * as Core from './Core'
 
 import AdmZip from 'adm-zip'
+import ChildProc from 'child_process'
 import Fs from 'fs'
 import Path from 'path'
 
@@ -16,7 +17,6 @@ export async function exec(opts: any) {
 }
 
 function deflate(capdir: string) {
-    const chain = new Array<string>()
     let repo = ''
     let dir = capdir
     while (dir !== Path.parse(dir).root) {
@@ -30,14 +30,19 @@ function deflate(capdir: string) {
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     for (const fn of Fs.readdirSync(capdir)) {
         const fpath = Path.join(capdir, fn)
-        if (fn.match(/^(emscope-capture\.zip|.+\.jls)$/i)) {
-            console.log(fn, isLfsDesc(fpath))
+        if (fn == 'emscope-capture.zip' && isLfsDesc(fpath)) {
+            deflateLfs(fpath, repo, prefix)
         }
     }
 }
 
 const LFS_MAGIC = 'version https://git-lfs.github.com/spec'
 const HEAD_BYTES = 512
+
+function deflateLfs(path: string, repo: string, prefix: string) {
+    ChildProc.execFileSync('git', ['lfs', 'pull', '--include', prefix], { cwd: repo, stdio: 'inherit' })
+    ChildProc.execFileSync('git', ['lfs', 'checkout', prefix], { cwd: repo, stdio: 'inherit' })
+}
 
 function isLfsDesc(path: string): boolean {
     const fd = Fs.openSync(path, 'r')
