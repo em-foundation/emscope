@@ -42,6 +42,8 @@ CMD.command('pack')
     .description(`bundle captured data into an 'emscope.zip' file`)
     .option(CAP[0], CAP[1], CAP[2])
     .option('-u --unpack', `deflate an 'emscope.zip' file for local use`)
+    .option('--lfs-status', `git status of the 'emscope.zip' file (debug only)`)
+    .option('--lfs-restore', `restores the 'emscope.zip' LFS descriptor (debug only)`)
     .action((opts: any) => Exporter.exec(opts))
 
 try {
