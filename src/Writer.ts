@@ -1,5 +1,5 @@
 import * as Core from './Core'
-import * as Jls from 'node_jls'
+import * as Jls from 'jls-writer'
 import * as Path from 'path'
 
 export function saveSignal(cap: Core.Capture, cname: string, sig: Core.Signal, span: Core.Marker, markers: Core.Marker[] = []) {

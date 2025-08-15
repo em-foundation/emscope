@@ -8,4 +8,6 @@
 
 .emscope/
 
+*.jls
+
 .DS_Store

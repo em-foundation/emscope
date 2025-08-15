@@ -15,9 +15,9 @@
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/em-foundation/em-flux/issues"
+        "url": "https://github.com/em-foundation/emscope/issues"
     },
-    "homepage": "https://github.com/em-foundation/em-flux#readme",
+    "homepage": "https://github.com/em-foundation/emscope#readme",
     "dependencies": {
         "@types/adm-zip": "^0.5.7",
         "@types/js-yaml": "^4.0.9",
