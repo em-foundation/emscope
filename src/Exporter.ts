@@ -8,7 +8,7 @@ import Path from 'path'
 export async function exec(opts: any) {
     const capdir = Path.resolve(opts.capture)
     if (opts.lfsStatus || opts.lfsRestore || opts.unpack) {
-        toggleLfs(capdir, opts.lfsStatus)
+        toggleLfs(capdir, opts)
     } else {
         const zip = new AdmZip()
         zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
@@ -50,22 +50,28 @@ function restoreLfs(repo: string, gpath: string) {
     ChildProc.execFileSync('git', ['checkout', 'HEAD', '--', gpath], { cwd: repo, stdio: 'inherit' })
 }
 
-function toggleLfs(capdir: string, stat_only: boolean) {
+function toggleLfs(capdir: string, opts: any) {
     const repo = findRepoDir(capdir)
     const zpath = Path.join(capdir, 'emscope-capture.zip')
     Core.fail(`no 'emscope-capture.zip' file found in the capture directory`, !Fs.existsSync(zpath))
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     const gpath = `${prefix}/emscope-capture.zip`
     const desc_flag = isLfsDesc(zpath)
-    if (stat_only) {
+    if (opts.lfsStatus) {
         const stat_msg = desc_flag ? 'is an LFS descriptor' : 'is locally deflated'
         Core.infoMsg(`'emscope-capture.zip' ${stat_msg}`)
+        return
     }
-    else if (desc_flag) {
-        deflateLfs(repo, gpath)
-        const zip = new AdmZip(zpath)
-        zip.extractAllTo(capdir, true)
-    } else {
+    if (opts.lfsRestore) {
         restoreLfs(repo, gpath)
+        Fs.rmSync(Core.Capture.workdir(capdir), { recursive: true })
+        return
     }
+    // opts.unpack == true
+    if (desc_flag) {
+        deflateLfs(repo, gpath)
+    }
+    const zip = new AdmZip(zpath)
+    zip.extractAllTo(capdir, true)
+    Core.infoMsg('captured data now available locally')
 }
