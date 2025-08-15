@@ -34,7 +34,7 @@ function genHtml(cap: Core.Capture, event: Core.Marker) {
 }
 
 function genJls(cap: Core.Capture, aobj: Core.Analysis) {
-    Writer.saveSignal(cap, `${cap.basename}--events`, cap.current_sig, aobj.span, aobj.events)
+    Writer.saveSignal(cap, `${cap.basename}--events`, aobj.span, aobj.events)
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
