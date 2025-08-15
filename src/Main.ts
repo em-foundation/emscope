@@ -41,7 +41,7 @@ CMD.command('view')
 CMD.command('pack')
     .description(`bundle captured data into an 'emscope.zip' file`)
     .option(CAP[0], CAP[1], CAP[2])
-    .option('-u --unpack', 'deflate large files')
+    .option('-u --unpack', `deflate an 'emscope.zip' file for local use`)
     .action((opts: any) => Exporter.exec(opts))
 
 try {
