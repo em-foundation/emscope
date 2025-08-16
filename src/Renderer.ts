@@ -40,10 +40,13 @@ function genJls(cap: Core.Capture, aobj: Core.Analysis) {
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     const scale = 1 / markers.length
     let avg = 0
+    let lab = 'A'
     for (const m of markers) {
         const egy = cap.energyWithin(m)
         avg += egy * scale
-        Core.infoMsg(`${Core.joules(egy)}`)
+        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(6, ' ')
+        Core.infoMsg(`${lab} -- ${Core.joules(egy)}, ${dur} ms`)
+        lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
     Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.joules(avg)}`)

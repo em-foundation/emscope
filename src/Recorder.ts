@@ -1,4 +1,5 @@
 import * as Core from './Core'
+import * as Detecter from './Detecter'
 import * as Driver_JS220 from './Driver_JS220'
 import * as Driver_PPK2 from './Driver_PPK2'
 
@@ -13,5 +14,5 @@ export async function exec(opts: any) {
     }
     const cap = c!
     cap.save()
-    process.exit()
+    cap.bind(Detecter.analyze(cap))
 }
