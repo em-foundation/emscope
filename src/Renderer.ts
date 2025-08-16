@@ -21,11 +21,7 @@ export function exec(opts: any) {
     }
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        if (ev_rate == 1) {
-            printDefResults(cap, aobj)
-        } else {
-            printExtResults(cap, aobj, ev_rate)
-        }
+        printResults(cap, aobj, ev_rate)
     }
 }
 
@@ -52,34 +48,17 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.joules(avg)}`)
 }
 
-function printCycleRate(ev_rate: number) {
-    Core.infoMsg(`event cycle rate: ${ev_rate} seconds`)
+function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
+    const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
+    Core.infoMsg(`event cycle rate: ${ev_rate} s`)
     Core.infoMsg('----')
-}
-
-function printExtResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
-    const scale = 1 / aobj.events.length
-    let egy_avg = 0
-    let wid_avg = 0
-    for (const m of aobj.events) {
-        egy_avg += cap.energyWithin(m) * scale
-        wid_avg += m.width * scale
-    }
-    const sleep_time = (ev_rate - (wid_avg / cap.sampling_rate))
-    const sleep_egy = (aobj.sleep.avg * cap.avg_voltage * sleep_time)
-    const egy_1c = sleep_egy + egy_avg
-    printCycleRate(ev_rate)
+    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
+    const egy_1e = egy_1s - sleep_pwr * 1
+    const egy_1c = (sleep_pwr * ev_rate) + egy_1e
+    Core.infoMsg(`representative event: ${Core.joules(egy_1e)}`)
     Core.infoMsg(`energy per cycle: ${Core.joules(egy_1c)}`)
-    printScores(egy_1c * 86400 / ev_rate)
-}
-
-function printDefResults(cap: Core.Capture, aobj: Core.Analysis) {
-    const egy_1s = cap.energyWithin(aobj.span) / aobj.events.length
-    Core.infoMsg(`energy per second: ${Core.joules(egy_1s)}`)
-    printScores(egy_1s * 86400)
-}
-
-function printScores(egy_1d: number) {
+    const egy_1d = egy_1c * 86400 / ev_rate
     Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
