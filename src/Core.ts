@@ -346,7 +346,7 @@ export function toEng(x: number, u: string): string {
     const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
     const mantissa = x / 10 ** exp
     const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}`, [3]: ` k${u}` }[exp] || `e${exp} ${u}`
-    return `${mantissa.toFixed(3)}${unit}`
+    return `${mantissa.toFixed(3).padStart(7, ' ')}${unit}`
 }
 
 

@@ -3,6 +3,9 @@ import * as Detecter from './Detecter'
 import * as Plotter from './Plotter'
 import * as Writer from './Writer'
 
+import ChildProc from 'child_process'
+import Path from 'path'
+
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     const aobj = cap.analysis ?? Detecter.analyze(cap)
@@ -14,7 +17,7 @@ export function exec(opts: any) {
         genHtml(cap, aobj.events[idx])
     }
     if (opts.jlsFile) {
-        genJls(cap, aobj)
+        execJls(cap, aobj)
     }
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
@@ -25,12 +28,18 @@ export function exec(opts: any) {
     }
 }
 
+
 function genHtml(cap: Core.Capture, event: Core.Marker) {
     Plotter.generate(cap.current_ds, event)
 }
 
-function genJls(cap: Core.Capture, aobj: Core.Analysis) {
-    Writer.saveSignal(cap, `${cap.basename}--events`, aobj.span, aobj.events)
+function execJls(cap: Core.Capture, aobj: Core.Analysis) {
+    const jfile = `${cap.basename}--events`
+    const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
+    Writer.saveSignal(cap, jfile, aobj.span, aobj.events)
+    const exe = `C:/Program Files/Joulescope/joulescope.exe`
+    const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
+    p.unref()
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
@@ -40,8 +49,9 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     for (const m of markers) {
         const egy = cap.energyWithin(m)
         avg += egy * scale
-        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(6, ' ')
-        Core.infoMsg(`${lab} -- ${Core.joules(egy)}, ${dur} ms`)
+        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(7, ' ')
+        const dur_s = cap.current_sig.offToSecs(m.width)
+        Core.infoMsg(`${lab} :: ${Core.joules(egy)}, ${Core.toEng(dur_s, 's')}`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
@@ -69,3 +79,11 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
     Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
 }
+
+function spawnJoulescope(file: string) {
+    const exe = `C:Program Files/Joulescope/joulescope.exe`
+    const p = ChildProc.spawn(exe, [])
+
+}
+
+
