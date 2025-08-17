@@ -39,6 +39,7 @@ CMD.command('view')
     .option('-p --html-plot <event number>', 'generate a Plotly graph of a designated event', parseFloat)
     .option('-s --sleep-info', 'characterize power consumption when inactive')
     .option('-w --what-if [seconds per event]', 'extrapolate results at a given event rate (default: 1)', parseFloat)
+    .option('--score', 'print the EM•eralds benchmark score')
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Renderer.exec, opts, cmd.parent!.opts()))
 
 CMD.command('pack')

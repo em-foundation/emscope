@@ -23,9 +23,12 @@ export function exec(opts: any) {
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
     }
+    if (opts.score) {
+        printResults(cap, aobj, 1, true)
+    }
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        printResults(cap, aobj, ev_rate)
+        printResults(cap, aobj, ev_rate, false)
     }
 }
 
@@ -58,32 +61,24 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.joules(avg)}`)
 }
 
-function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
+function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
-    Core.infoMsg(`event cycle rate: ${ev_rate} s`)
-    Core.infoMsg('----')
+    score_only || Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
+    score_only || Core.infoMsg(`event cycle rate: ${ev_rate} s`)
+    score_only || Core.infoMsg('----')
     const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
     const egy_1e = egy_1s - sleep_pwr * 1
     const egy_1c = (sleep_pwr * ev_rate) + egy_1e
-    Core.infoMsg(`representative event: ${Core.joules(egy_1e)}`)
-    Core.infoMsg(`energy per cycle: ${Core.joules(egy_1c)}`)
+    score_only || Core.infoMsg(`representative event: ${Core.joules(egy_1e)}`)
+    score_only || Core.infoMsg(`energy per cycle: ${Core.joules(egy_1c)}`)
     const egy_1d = egy_1c * 86400 / ev_rate
-    Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
+    score_only || Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
-    Core.infoMsg('----')
+    score_only || Core.infoMsg('----')
     Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
     Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
 }
-
-function spawnJoulescope(file: string) {
-    const exe = `C:Program Files/Joulescope/joulescope.exe`
-    const p = ChildProc.spawn(exe, [])
-
-}
-
-
