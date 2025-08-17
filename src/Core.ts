@@ -327,8 +327,15 @@ export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
-export function execCmd(fxn: CmdFxn, opts: any) {
-    fxn(opts)
+export function execCmd(fxn: CmdFxn, opts: any, popts: any) {
+    const glob_opt = popts.captureGlob
+    if (glob_opt === undefined) {
+        fxn(opts)
+        return
+    }
+    const glob = (glob_opt === true) ? '*' : (glob_opt as string)
+    console.log(glob)
+
 }
 
 export function fail(msg: string, cond: boolean = true) {
