@@ -26,5 +26,5 @@ npm install
 npm build
 mkdir -p /opt/emscope
 cp out/Main.js /opt/emscope/emscope
-export $PATH=/opt/emscope:$PATH
+export $PATH=/opt/emscope:$PATH                 # recommend adding this line to your $HOME/.bashrc file
 ```
