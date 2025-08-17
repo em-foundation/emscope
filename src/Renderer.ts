@@ -29,11 +29,6 @@ export function exec(opts: any) {
     }
 }
 
-
-function genHtml(cap: Core.Capture, event: Core.Marker) {
-    Plotter.generate(cap.current_ds, event)
-}
-
 function execJls(cap: Core.Capture, aobj: Core.Analysis) {
     const jfile = `${cap.basename}--events`
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
@@ -41,6 +36,10 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis) {
     const exe = Os.platform() === 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` : '/opt/joulescope_launcher'
     const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
     p.unref()
+}
+
+function genHtml(cap: Core.Capture, event: Core.Marker) {
+    Plotter.generate(cap.current_ds, event)
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
