@@ -4,7 +4,6 @@ import Yaml from 'js-yaml'
 
 export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[] }
 export type CaptureDevice = 'JS220' | 'PPK2'
-export type CmdFxn = (opts: any) => void
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
@@ -325,17 +324,6 @@ export function amps(val: number): string {
 
 export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
-}
-
-export function execCmd(fxn: CmdFxn, opts: any, popts: any) {
-    const glob_opt = popts.captureGlob
-    if (glob_opt === undefined) {
-        fxn(opts)
-        return
-    }
-    const glob = (glob_opt === true) ? '*' : (glob_opt as string)
-    console.log(glob)
-
 }
 
 export function fail(msg: string, cond: boolean = true) {

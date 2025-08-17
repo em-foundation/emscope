@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import * as Core from './Core'
+import * as CmdApply from './CmdApply'
 import * as Detecter from './Detecter'
 import * as Exporter from './Exporter'
 import * as Recorder from './Recorder'
@@ -22,14 +22,14 @@ CMD.command('grab')
     .addOption(new Commander.Option('-V, --voltage [value]', 'source voltage').argParser(parseFloat).default(3.3).conflicts('js220'))
     .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts(['sourceMode', 'js220']))
     .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts(['ampereMode', 'js220']))
-    .action((opts: any, cmd: Commander.Command) => Core.execCmd(Recorder.exec, opts, cmd.parent!.opts()))
+    .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Recorder.exec, opts, cmd.parent!.opts()))
 
 CMD.command('scan')
     .description('analyze captured data and locate active events')
     .option(CAP[0], CAP[1], CAP[2])
     .option('-g, --gap <milliseconds>', 'combine adjacent events whose gap is under a threshold', parseFloat)
     .option('-t --trim', 'remove extra events')
-    .action((opts: any, cmd: Commander.Command) => Core.execCmd(Detecter.exec, opts, cmd.parent!.opts()))
+    .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Detecter.exec, opts, cmd.parent!.opts()))
 
 CMD.command('view')
     .description('present captured data in different formats')
@@ -39,7 +39,7 @@ CMD.command('view')
     .option('-p --html-plot <event number>', 'generate a Plotly graph of a designated event', parseFloat)
     .option('-s --sleep-info', 'characterize power consumption when inactive')
     .option('-w --what-if [seconds per event]', 'extrapolate results at a given event rate (default: 1)', parseFloat)
-    .action((opts: any, cmd: Commander.Command) => Core.execCmd(Renderer.exec, opts, cmd.parent!.opts()))
+    .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Renderer.exec, opts, cmd.parent!.opts()))
 
 CMD.command('pack')
     .description(`bundle captured data into an 'emscope.zip' file`)
@@ -47,7 +47,7 @@ CMD.command('pack')
     .option('-u --unpack', `deflate an 'emscope.zip' file for local use`)
     .option('--lfs-status', `git status of the 'emscope.zip' file (debug only)`)
     .option('--lfs-restore', `restores the 'emscope.zip' LFS descriptor (debug only)`)
-    .action((opts: any, cmd: Commander.Command) => Core.execCmd(Exporter.exec, opts, cmd.parent!.opts()))
+    .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Exporter.exec, opts, cmd.parent!.opts()))
 
 try {
     CMD.parse(process.argv)
@@ -55,3 +55,4 @@ try {
     console.log(err)
     process.exit(1)
 }
+
