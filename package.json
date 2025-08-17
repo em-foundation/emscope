@@ -26,6 +26,7 @@
         "jls-writer": "https://github.com/em-foundation/npm-packages/releases/download/resources/jls-writer-0.0.1.tgz",
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",
+        "picomatch": "^4.0.3",
         "serialport": "^12.0.0",
         "ts-node": "^10.9.2"
     },
