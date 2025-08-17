@@ -25,6 +25,7 @@ CMD.command('grab')
 CMD.command('scan')
     .description('analyze captured data and locate active events')
     .option(CAP[0], CAP[1], CAP[2])
+    .option('-g, --gap <milliseconds>', 'combine adjacent events whose gap is under a threshold', parseFloat)
     .option('-t --trim', 'remove extra events')
     .action((opts: any) => Detecter.exec(opts))
 

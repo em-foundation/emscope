@@ -2,7 +2,7 @@ import Fs from 'fs'
 import Path from 'path'
 import Yaml from 'js-yaml'
 
-export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo }
+export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[] }
 export type CaptureDevice = 'JS220' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }

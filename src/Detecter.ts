@@ -2,11 +2,11 @@ import * as Core from './Core'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = analyze(cap, opts.trim)
+    const aobj = analyze(cap, opts.trim, opts.gap)
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, trim?: boolean): Core.Analysis {
+export function analyze(cap: Core.Capture, trim?: boolean, gap?: number): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
@@ -33,14 +33,36 @@ export function analyze(cap: Core.Capture, trim?: boolean): Core.Analysis {
             }
         }
     }
+    let options = new Array<string>()
+    if (gap !== undefined) {
+        markers = combineMarkers(rsig, markers, rsig.secsToOff(gap / 1000))
+        options.push(`--gap ${gap}`)
+    }
     let span = rsig.window(rsig.data.length).toMarker()
     if (trim) {
         [span, markers] = trimEvents(cap, markers)
+        options.push(`--trim`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
-    return { span: span, events: markers, sleep: si }
+    return { span: span, events: markers, sleep: si, options: options }
 }
 
+function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): Core.Marker[] {
+    let res = new Array<Core.Marker>()
+    for (const m of markers) {
+        if (res.length == 0) {
+            res.push(m)
+            continue
+        }
+        const last = res[res.length - 1]
+        if ((last.offset + last.width + gap) < m.offset) {
+            res.push(m)
+            continue
+        }
+        last.width += gap + m.width
+    }
+    return res
+}
 function measureSleep(osig: Core.Signal): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
