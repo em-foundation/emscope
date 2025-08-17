@@ -4,6 +4,7 @@ import * as Plotter from './Plotter'
 import * as Writer from './Writer'
 
 import ChildProc from 'child_process'
+import Os from 'os'
 import Path from 'path'
 
 export function exec(opts: any) {
@@ -37,7 +38,7 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis) {
     const jfile = `${cap.basename}--events`
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
     Writer.saveSignal(cap, jfile, aobj.span, aobj.events)
-    const exe = `C:/Program Files/Joulescope/joulescope.exe`
+    const exe = Os.platform() === 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` : '/opt/joulescope_launcher'
     const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
     p.unref()
 }
