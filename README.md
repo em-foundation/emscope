@@ -23,8 +23,9 @@ export PATH=${output_folder}:$PATH               # recommend adding this line to
 git clone git@github.com:em-foundation/emscope.git
 cd emscope
 npm install
-npm build
-mkdir -p /opt/emscope
-cp out/Main.js /opt/emscope/emscope
-export $PATH=/opt/emscope:$PATH                 # recommend adding this line to your $HOME/.bashrc file
+npm run build
+sudo mkdir -p /opt/emscope
+sudo cp -r node_modules /opt/emscope/
+sudo cp -r out/Main.js /opt/emscope/emscope
+export PATH=/opt/emscope:$PATH                 # recommend adding this line to your $HOME/.bashrc file
 ```
