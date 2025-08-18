@@ -1,0 +1,37 @@
+{
+    "name": "emscope",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "build": "esbuild --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings --external:@serialport/bindings-cpp ./src/Main --outdir=out --platform=node --format=cjs",
+        "watch": "npm run build -- --sourcemap --watch"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/em-foundation/emscope.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/em-foundation/emscope/issues"
+    },
+    "homepage": "https://github.com/em-foundation/emscope#readme",
+    "dependencies": {
+        "@types/adm-zip": "^0.5.7",
+        "@types/js-yaml": "^4.0.9",
+        "adm-zip": "^0.5.16",
+        "commander": "^14.0.0",
+        "jls-writer": "https://github.com/em-foundation/npm-packages/releases/download/resources/jls-writer-0.0.1.tgz",
+        "joulescope_driver": "^1.10.0",
+        "js-yaml": "^4.1.0",
+        "picomatch": "^4.0.3",
+        "serialport": "^12.0.0",
+        "ts-node": "^10.9.2"
+    },
+    "devDependencies": {
+        "@types/picomatch": "^4.0.2",
+        "esbuild": "^0.25.8"
+    }
+}
