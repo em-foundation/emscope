@@ -103,8 +103,9 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
 async function findDevices(): Promise<Array<string>> {
     let res = new Array<string>()
     for (const port of await SerialPort.list()) {
-        const name: string = (port as any).friendlyName
-        if (name.startsWith('nRF Connect')) {
+        const vid: string = (port as any).vendorId
+        const pid: string = (port as any).productId
+        if (vid == '1915' && pid.toLowerCase() == 'c00a') {
             res.push(port.path)
         }
     }
