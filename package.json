@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings --external:@serialport/bindings-cpp --outfile=dist/emscope --platform=node --format=cjs",
+        "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings --external:@serialport/bindings-cpp --outdir=dist --outfile=dist/emscope --platform=node --format=cjs",
         "watch": "npm run build -- --sourcemap --watch"
     },
     "repository": {
