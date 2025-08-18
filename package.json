@@ -3,8 +3,12 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
+    "bin": {
+        "emscope": "dist/emscope"
+    },
     "scripts": {
-        "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings --external:@serialport/bindings-cpp --outdir=dist --outfile=dist/emscope --platform=node --format=cjs",
+        "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings-cpp --outfile=dist/emscope --platform=node --format=cjs",
+        "postinstall": "npm run build",
         "watch": "npm run build -- --sourcemap --watch"
     },
     "repository": {
@@ -19,6 +23,7 @@
     },
     "homepage": "https://github.com/em-foundation/emscope#readme",
     "dependencies": {
+        "@serialport/bindings-cpp": "^13.0.1",
         "@types/adm-zip": "^0.5.7",
         "@types/js-yaml": "^4.0.9",
         "adm-zip": "^0.5.16",
@@ -27,7 +32,7 @@
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",
         "picomatch": "^4.0.3",
-        "serialport": "^12.0.0",
+        "serialport": "^13.0.0",
         "ts-node": "^10.9.2"
     },
     "devDependencies": {
