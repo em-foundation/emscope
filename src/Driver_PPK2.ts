@@ -96,8 +96,6 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     ppk.togglePower('off')
     ppk.close()
     return cap
-    // Analyzer.exec(cap)
-    // cap.save()
 }
 
 async function findDevices(): Promise<Array<string>> {
