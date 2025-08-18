@@ -4,6 +4,7 @@
 /junk*/
 /.junk/
 /node_modules/
+/dist/
 /out/
 
 .emscope/
