@@ -33,3 +33,4 @@ rm -r node_modules
 npm pack
 gh release upload ${release_tag} emscope-${version}.tgz --repo ${npm_package_repo}
 rm emscope-${version}.tgz
+```
