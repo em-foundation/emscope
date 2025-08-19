@@ -18,7 +18,7 @@ export function exec(opts: any) {
         genHtml(cap, aobj.events[idx])
     }
     if (opts.jlsFile) {
-        execJls(cap, aobj)
+        execJls(cap, aobj, opts.jlsFile === true ? '' : (opts.jlsFile as string))
     }
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
@@ -32,10 +32,21 @@ export function exec(opts: any) {
     }
 }
 
-function execJls(cap: Core.Capture, aobj: Core.Analysis) {
-    const jfile = `${cap.basename}-events`
+function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
+    let jfile = `${cap.basename}-events`
+    let span = aobj.span
+    let events = aobj.events
+    if (eid) {
+        const eidx = eid.charCodeAt(0) - 'A'.charCodeAt(0)
+        Core.fail(`event '${eid}' not found`, aobj.events[eidx] === undefined)
+        const ev = aobj.events[eidx]
+        const rsig = cap.current_sig
+        jfile = `${cap.basename}-event-${eid}`
+        span = { offset: ev.offset - rsig.secsToOff(1e-3), width: rsig.secsToOff(5e-3) }
+        events = [ev]
+    }
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
-    Writer.saveSignal(cap, jfile, aobj.span, aobj.events)
+    Writer.saveSignal(cap, jfile, span, events)
     const exe = Os.platform() === 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` : 'joulescope_launcher'
     const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
     p.unref()
