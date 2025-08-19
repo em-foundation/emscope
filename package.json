@@ -8,7 +8,6 @@
     },
     "scripts": {
         "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings-cpp --outfile=dist/emscope --platform=node --format=cjs",
-        "postinstall": "npm run build",
         "watch": "npm run build -- --sourcemap --watch"
     },
     "repository": {
