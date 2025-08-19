@@ -37,13 +37,13 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis) {
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
     Writer.saveSignal(cap, jfile, aobj.span, aobj.events)
     const plat = Os.platform()
-    const exe = 
-        plat == 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` : 
-        plat == 'linux' ? '/opt/joulescope/joulescope_launcher' :
-        plat == 'darwin' ? '/Applications/joulescope.app/Contents/MacOS/joulescope_launcher' :
-        ''
+    const exe =
+        plat == 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` :
+            plat == 'linux' ? '/opt/joulescope/joulescope_launcher' :
+                plat == 'darwin' ? '/Applications/joulescope.app/Contents/MacOS/joulescope_launcher' :
+                    ''
     Core.fail(`unsupported os platform: ${plat}`, exe == '')
-    const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
+    const p = ChildProc.spawn(exe, [jpath], { detached: true, shell: (plat == 'linux'), stdio: 'ignore' })
     p.once('error', err => {
         Core.fail(`failed to launch joulescope: ${err.message}`)
     })
