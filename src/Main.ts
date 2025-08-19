@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import * as Core from './Core'
+
 import * as CmdApply from './CmdApply'
 import * as Detecter from './Detecter'
 import * as Exporter from './Exporter'
@@ -10,8 +12,11 @@ import * as Commander from 'commander'
 
 const CAP = ['-c --capture <directory path>', 'working capture directory', '.']
 
+const VERS = Core.version()
+
 const CMD = new Commander.Command('emscope')
     .option('-C, --capture-glob [name pattern]', `apply this command to each matching child capture directory (default "*")`)
+    .version(VERS)
 
 CMD.command('grab')
     .description('record power signals with an attached capture device')

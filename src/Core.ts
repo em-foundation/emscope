@@ -349,4 +349,10 @@ export function toEng(x: number, u: string): string {
     return `${mantissa.toFixed(3).padStart(7, ' ')}${unit}`
 }
 
+export function version(): string {
+    const path = Path.resolve(__dirname, '..', 'package.json')
+    const jobj = JSON.parse(Fs.readFileSync(path, 'utf-8'))
+    return jobj.version
+}
+
 
