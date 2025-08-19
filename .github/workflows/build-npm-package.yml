@@ -1,6 +1,9 @@
 name: Build npm package
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
