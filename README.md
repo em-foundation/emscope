@@ -16,12 +16,3 @@ sudo mkdir -p ${output_folder}
 sudo tar -xf ${tar_file} --strip-components=1 --no-same-owner -C ${output_folder}
 export PATH=${output_folder}:$PATH               # recommend adding this line to your $HOME/.bashrc file
 ```
-
-## Install emscope
-
-``` bash
-git clone git@github.com:em-foundation/emscope.git
-cd emscope
-npm install
-npm install -g   # this will install it into the system's PATH
-```
