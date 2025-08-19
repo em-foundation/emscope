@@ -46,7 +46,7 @@ jobs:
       - name: Tag repo
         run: |
           VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
-          for repo in emscope jls-writer
+          for repo in emscope
           do
             pushd $repo
             git config --global user.name 'build workflow'
