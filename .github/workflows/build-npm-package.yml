@@ -32,7 +32,7 @@ jobs:
         run: |
           VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
           pushd emscope
-          npm install
+          npm ci
           npm run build
           rm -rf node_modules
           npm pack
