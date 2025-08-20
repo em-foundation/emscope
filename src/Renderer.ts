@@ -46,7 +46,7 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
         events = [ev]
     }
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
-    Writer.saveSignal(cap, jfile, aobj.span, aobj.events)
+    Writer.saveSignal(cap, jfile, span, events)
     const plat = Os.platform()
     const exe =
         plat == 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` :
