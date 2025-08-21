@@ -39,8 +39,12 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 **EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
 
 <p align="center">
-    <img src=".github/images/modes.png" alt="EM•Scope Modes" width="750">
+    <img src=".github/images/modes.png" alt="EM•Scope Modes" width="600">
 </p>
 
+> [!TIP]
+> Use `emscope help [sub-command]` to refresh your memory as well as to explore further.
+
+Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated initially with raw signal data acquired through the `emscope grab` sub-command.&thinsp;  Within the latter mode, you'll physically connect a **Joulescope** [JS220](https://www.joulescope.com/products/js220-joulescope-precision-energy-analyzer) or **Nordic** [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2) to your target embedded system. 
 
 
