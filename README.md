@@ -10,7 +10,7 @@
 
 <h3 align="center">
   <a href="#installation">Installation</a>&nbsp;&#xFF5C;&nbsp;
-  <a href="#usage">Usage</a>&nbsp;&#xFF5C;&nbsp;
+  <a href="#basic-usage">Basic Usage</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#examples">Examples</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#contributing">Contributing</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#license">License</a>
@@ -54,4 +54,8 @@ In practice, you'll typically begin using **EM&bull;Scope** with captures previo
 >
 > We hope this embryonic repository will encourage others to contribute captures for a wide range of embedded BLE systems &ndash; enabling more rational and robust comparative benchmarks between different HW/SW providers who all claim "ultra-low-power".
 
-Commanding `emscope pack --unpack` within any of the labeled capture directories in this repository will effectively download/deflate a special `emscope-capture.zip` file found in these folders.
+Use the `emscope pack --unpack` command to first deflate a special file named `emscope-capture.zip` found in each of the repository's labeled capture directories.
+
+At this stage, you can use the `emscope scan` and `emscope view` sub-commands to explore the raw signal data captured at an earlier time &ndash; as if you had just commanded `emscope grab`.
+
+Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip`.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
