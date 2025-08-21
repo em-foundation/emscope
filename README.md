@@ -32,7 +32,7 @@ npm install -g @em-foundation/emscope
 > npm install -g https://github.com/em-foundation/npm-packages/releases/download/resources/emscope-25.0.1.tgz
 > ```
 
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also download and install the **Joulescope Application Software** (version 1.3.7) from [here](https://download.joulescope.com/joulescope_install/index.html).
+Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also download and install the **Joulescope Application Software** (version 1.3.7) for your host computer from [here](https://download.joulescope.com/joulescope_install/index.html).
 
 ## Basic Usage
 
