@@ -59,3 +59,43 @@ Use the `emscope pack --unpack` command to first deflate a special file named `e
 At this stage, you can use the `emscope scan` and `emscope view` sub-commands to explore the raw signal data captured at an earlier time &ndash; as if you had just commanded `emscope grab`.
 
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip`.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
+
+## Examples
+
+### recording raw power signals
+
+```console
+$ emscope grab -J
+    wrote 'capture.yaml'
+    analyzing captured data...
+    found 3 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> Capture raw data using an attached **Joulescope JS220** power analyzer, appropriately wired to your target system; by default, `emscope grab` records just three seconds of data.&thinsp; We'll explain more about the generated output shortly.
+
+```console
+$ emscope grab -PS
+    wrote 'capture.yaml'
+    analyzing captured data...
+    found 3 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes (`-A, --ampere-mode` or `-S, --source-mode`) selected by an additional `emscope grab` option.
+
+```console
+$ emscope grab -PAV 1.8
+    wrote 'capture.yaml'
+    analyzing captured data...
+    found 3 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> Use the **Nordic PPK2** in _ampere mode_, as well as specify the target's nominal `-V --voltage` value.&thinsp; By combining the latter with the `-PS` options, we designate the target voltage which the **PPK2** will actually supply when in _source mode_.
+
+
+
