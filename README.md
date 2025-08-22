@@ -8,6 +8,7 @@
 
 <br>
 <br>
+<br>
 
 <p align="right">
   <a href="README.md"><sup>for a better view <b>&#x27a6;</b></sup></a>
@@ -103,6 +104,8 @@ $ emscope grab -PAV 1.8
 
 > [!NOTE]
 > Use the **Nordic PPK2** in _ampere mode_, as well as specify the target's nominal `-V --voltage` value.&thinsp; By combining the latter with the `-PS` options, we designate the target voltage which the **PPK2** will actually supply when in _source mode_.
+>
+> Unlike the **Joulescope JS220** &ndash; which captures **I** _and_ **V** signals &ndash; the **Nordic PPK2** does not record voltage.&thinsp; The `-V, --voltage` option (defaults to 3.3&thinsp;V) supplies this essential piece of information used when reporting power consumption.
 
 
 
