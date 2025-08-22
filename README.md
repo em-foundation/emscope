@@ -6,6 +6,13 @@
     <img src=".github/images/tagline.png" alt="EM•Scope TagLine" width="750">
 </p>
 
+<br>
+<br>
+
+<p align="right">
+  <a href="README.md"><sup>for a better view <b>&#x27a6;</b></sup></a>
+</p>
+
 -----
 
 <h3 align="center">
