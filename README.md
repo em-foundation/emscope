@@ -1,9 +1,9 @@
 <p align="center">
-    <img src=".github/images/logo.png" alt="EM•Scope Logo" width="400">
+    <img src="docs/images/logo.png" alt="EM•Scope Logo" width="400">
 </p>
 <br>
 <p align="center">
-    <img src=".github/images/tagline.png" alt="EM•Scope TagLine" width="750">
+    <img src="docs/images/tagline.png" alt="EM•Scope TagLine" width="750">
 </p>
 
 <br>
@@ -47,7 +47,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 **EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
 
 <p align="center">
-    <img src=".github/images/modes.png" alt="EM•Scope Modes" width="600">
+    <img src="docs/images/modes.png" alt="EM•Scope Modes" width="600">
 </p>
 
 > [!TIP]
@@ -134,4 +134,6 @@ $ emscope view -e
 > [!NOTE]
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
 
-
+<p align="center">
+    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="750">
+</p>
