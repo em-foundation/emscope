@@ -3,33 +3,40 @@ import * as Jls from 'jls-writer'
 import * as Path from 'path'
 
 export function saveSignal(cap: Core.Capture, cname: string, span: Core.Marker, markers: Core.Marker[] = []) {
+    const is_single = markers.length == 1
     const writer = WriterAux.create(cap, cname)
     const msig_I = cap.current_sig.window(span.width, span.offset).toSignal()
     const msig_V = cap.voltage_sig.window(span.width, span.offset).toSignal()
     const data_V = msig_V.data.length > 0 ? msig_V.data : new Float32Array(msig_I.data.length).fill(cap.avg_voltage)
     writer.store(msig_I.data, data_V, msig_I.sample_rate)
-
-    writer.addConfig({
-        "id": "joulescope.ui.waveform_widget",
-        "version": "1.0",
-        "plots": {
-            "p": {
-                "enabled": true,
-                "range_mode": "manual",
-                "range": [-0.002, 0.030],
+    let cobj: any = {
+        id: 'joulescope.ui.waveform_widget',
+        version: '1.0',
+        plots: {
+            p: {
+                enabled: true,
+                range_mode: 'manual',
+                range: [-0.002, 0.030],
             },
-            "i": {
-                "enabled": false,
+            i: {
+                enabled: false,
             },
-            "v": {
-                "enabled": false,
+            v: {
+                enabled: false,
             },
         },
-        "settings": [
-            ["show_min_max", "off"],
-            ["show_statistics", false]
-        ]
-    })
+        settings: [
+            ['show_min_max', 'off'],
+            ['show_statistics', false],
+        ],
+        actions: []
+    }
+    if (is_single) {
+        cobj.settings.push(['control_location', 'off'])
+        cobj.settings.push(['show_summary', false])
+        cobj.actions.push(['!save_image', `${cname}.png`])
+    }
+    writer.addConfig(cobj)
 
     for (const m of markers) {
         const m2: Core.Marker = { offset: m.offset - span.offset, width: m.width, }
