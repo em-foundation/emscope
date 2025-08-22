@@ -63,7 +63,8 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
         avg += egy * scale
         const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(7, ' ')
         const dur_s = cap.current_sig.offToSecs(m.width)
-        Core.infoMsg(`${lab} :: ${Core.joules(egy)}, ${Core.toEng(dur_s, 's')}`)
+        const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
+        Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.joules(egy)}, duration = ${Core.toEng(dur_s, 's')}`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
@@ -89,5 +90,5 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
-    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, standard deviation = ${Core.amps(si.std)}`)
 }
