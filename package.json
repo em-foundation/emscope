@@ -27,7 +27,7 @@
         "@types/js-yaml": "^4.0.9",
         "adm-zip": "^0.5.16",
         "commander": "^14.0.0",
-        "jls-writer": "https://github.com/em-foundation/npm-packages/releases/download/resources/jls-writer-0.0.1.tgz",
+        "jls-writer": "https://github.com/em-foundation/npm-packages/releases/download/resources/jls-writer-0.0.2.tgz",
         "joulescope_driver": "^1.10.0",
         "js-yaml": "^4.1.0",
         "picomatch": "^4.0.3",
