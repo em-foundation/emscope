@@ -102,10 +102,36 @@ $ emscope grab -PAV 1.8
     wrote 'analysis.yaml'
 ```
 
-> [!NOTE]
-> Use the **Nordic PPK2** in _ampere mode_, as well as specify the target's nominal `-V --voltage` value.&thinsp; By combining the latter with the `-PS` options, we designate the target voltage which the **PPK2** will actually supply when in _source mode_.
->
-> Unlike the **Joulescope JS220** &ndash; which captures **I** _and_ **V** signals &ndash; the **Nordic PPK2** does not record voltage.&thinsp; The `-V, --voltage` option (defaults to 3.3&thinsp;V) supplies this essential piece of information used when reporting power consumption.
+> [!TIP]
+> The next series of examples run from the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then command `emscope pack -u` within this folder, if you want to play along at home. 
 
+### viewing captured information
+
+```console
+$ emscope view -s
+    sleep current = 589.092 nA @ 3.29 V, standard deviation =  14.548 µA
+```
+
+> [!NOTE]
+> The `-s, --sleep` option reports average power consumption during periods of inactivity within the target system &ndash; values that should align with a vendor data sheet.&thinsp; The standard deviation reflects  _recharge pulses_ which often occur during deep-sleep.
+
+```console
+$ emscope view -e
+    A :: time =  1.06 s, energy =  30.840 µJ, duration =   3.250 ms
+    B :: time =  2.07 s, energy =  30.910 µJ, duration =   3.250 ms
+    C :: time =  3.07 s, energy =  30.913 µJ, duration =   3.250 ms
+    D :: time =  4.07 s, energy =  30.962 µJ, duration =   3.000 ms
+    E :: time =  5.08 s, energy =  30.945 µJ, duration =   3.000 ms
+    F :: time =  6.08 s, energy =  31.166 µJ, duration =   3.250 ms
+    G :: time =  7.09 s, energy =  30.863 µJ, duration =   3.000 ms
+    H :: time =  8.10 s, energy =  30.745 µJ, duration =   3.000 ms
+    I :: time =  9.10 s, energy =  31.252 µJ, duration =   3.000 ms
+    J :: time = 10.10 s, energy =  30.931 µJ, duration =   3.000 ms
+    ----
+    average energy over 10 event(s):  30.953 µJ
+```
+
+> [!NOTE]
+> The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
 
 
