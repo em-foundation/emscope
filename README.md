@@ -40,7 +40,7 @@ npm install -g @em-foundation/emscope
 > npm install -g https://github.com/em-foundation/npm-packages/releases/download/resources/emscope-25.0.1.tgz
 > ```
 
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also download and install the **Joulescope Application Software** (version 1.3.7) for your host computer from [here](https://download.joulescope.com/joulescope_install/index.html).
+Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also download and install the **Joulescope Application Software** (version 1.3.8) for your host computer from [here](https://download.joulescope.com/joulescope_install/index.html).
 
 ## Basic Usage
 
@@ -70,7 +70,7 @@ Only the original supplier of the raw data, however, would use `emscope pack` to
 
 ## Examples
 
-### recording raw power signals
+### 🟠&nbsp;recording raw power signals
 
 ```console
 $ emscope grab -J
@@ -83,6 +83,8 @@ $ emscope grab -J
 > [!NOTE]
 > Capture raw data using an attached **Joulescope JS220** power analyzer, appropriately wired to your target system; by default, `emscope grab` records just three seconds of data.&thinsp; We'll explain more about the generated output shortly.
 
+<br> 
+
 ```console
 $ emscope grab -PS
     wrote 'capture.yaml'
@@ -94,6 +96,8 @@ $ emscope grab -PS
 > [!NOTE]
 > Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes (`-A, --ampere-mode` or `-S, --source-mode`) selected by an additional `emscope grab` option.
 
+<br> 
+
 ```console
 $ emscope grab -PAV 1.8
     wrote 'capture.yaml'
@@ -101,11 +105,12 @@ $ emscope grab -PAV 1.8
     found 3 event(s)
     wrote 'analysis.yaml'
 ```
+<br> 
 
 > [!TIP]
 > The next series of examples run from the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then command `emscope pack -u` within this folder, if you want to play along at home. 
 
-### viewing captured information
+### 🟠&nbsp;viewing captured information
 
 ```console
 $ emscope view -s
@@ -114,6 +119,8 @@ $ emscope view -s
 
 > [!NOTE]
 > The `-s, --sleep` option reports average power consumption during periods of inactivity within the target system &ndash; values that should align with a vendor data sheet.&thinsp; The standard deviation reflects  _recharge pulses_ which often occur during deep-sleep.
+
+<br> 
 
 ```console
 $ emscope view -e
@@ -134,6 +141,8 @@ $ emscope view -e
 > [!NOTE]
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
 
+<br> 
+
 ```
 $ emscope view -j
     wrote 'ti-23-lp-slsdk-J-events.jls'
@@ -150,6 +159,8 @@ $ emscope view -j
 > [!TIP]
 > Somewhat daunting at first, take some time to familiarize yourself with the **Joulescope File Viewer**.&thinsp; As you start zooming in on portions of the capture &ndash; and perhaps find yourself a little lost &ndash; simply exit the program and re-run the `emscope view -j` command.
 
+<br> 
+
 ```
 $ emscope view -jB
     wrote 'ti-23-lp-slsdk-J-event-B.jls'
@@ -162,3 +173,27 @@ $ emscope view -jB
 ><p align="center">
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
 ></p>
+
+### 🟠&nbsp;refining event detection
+
+```
+$ emscope scan
+    analyzing captured data...
+    found 3 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> This command performs a baseline analysis of the raw signal data, discriminating event activity from periods of deep-sleep.&thinsp; Saving results to `analysis.yaml`, the `emscope grab` command seen earlier in fact performs an initial `emscope scan` after recording the data.
+
+<br> 
+
+```
+$ emscope scan -t
+    analyzing captured data...
+    found 1 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> The `-t, --trim` option will typically drop the first and last events its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _n+2_ seconds should yield a clean set of _n_ events. 
