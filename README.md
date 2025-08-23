@@ -135,5 +135,10 @@ $ emscope view -e
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
 
 <p align="center">
+    <img src="docs/images/joulescope.png" alt="Joulescope File Viewer" width="750">
+</p>
+
+
+<p align="center">
     <img src="docs/images/event.png" alt="EM•Scope Event Image" width="750">
 </p>

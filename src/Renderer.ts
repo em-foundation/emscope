@@ -57,7 +57,7 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
     const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
     Core.infoMsg('launching the Joulescope File Viewer...')
     if (eid) {
-        Core.infoMsg(`generated the ${jfile}.png image`)
+        Core.infoMsg(`generated '${jfile}.png'`)
     }
     p.once('error', err => {
         Core.fail(`failed to launch Joulescope: ${err.message}`)
