@@ -134,11 +134,31 @@ $ emscope view -e
 > [!NOTE]
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
 
-<p align="center">
-    <img src="docs/images/joulescope.png" alt="Joulescope File Viewer" width="750">
-</p>
+```
+$ emscope view -j
+    wrote 'ti-23-lp-slsdk-J-events.jls'
+    launching the Joulescope File Viewer...
+```
 
+> [!NOTE]
+> The `-j, --jls-file` option launches the **Joulescope File Viewer** (installed earlier) with a generated `.jls` file containing the raw signal data, annotated with markers deliniating each of the active events listed earlier.
+>
+><p align="center">
+>    <img src="docs/images/joulescope.png" alt="Joulescope File Viewer" width="850">
+></p>
 
-<p align="center">
-    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="750">
-</p>
+> [!TIP]
+> Somewhat daunting at first, take some time to familiarize yourself with the **Joulescope File Viewer**.&thinsp; As you start zooming in on portions of the capture &ndash; and perhaps find yourself a little lost &ndash; simply exit the program and re-run the `emscope view -j` command.
+
+```
+$ emscope view -jB
+    wrote 'ti-23-lp-slsdk-J-event-B.jls'
+    launching the Joulescope File Viewer...
+    generated 'ti-23-lp-slsdk-J-event-B.png'
+```
+> [!NOTE]
+> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen earlier in the output of the `emscope view -s` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
+> 
+><p align="center">
+>    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
+></p>
