@@ -143,7 +143,7 @@ $ emscope view -e
 
 <br> 
 
-```
+```console
 $ emscope view -j
     wrote 'ti-23-lp-slsdk-J-events.jls'
     launching the Joulescope File Viewer...
@@ -161,7 +161,7 @@ $ emscope view -j
 
 <br> 
 
-```
+```console
 $ emscope view -jB
     wrote 'ti-23-lp-slsdk-J-event-B.jls'
     launching the Joulescope File Viewer...
@@ -176,7 +176,7 @@ $ emscope view -jB
 
 ### 🟠&ensp;refining event detection
 
-```
+```console
 $ emscope scan
     analyzing captured data...
     found 3 event(s)
@@ -188,7 +188,7 @@ $ emscope scan
 
 <br> 
 
-```
+```console
 $ emscope scan -t
     analyzing captured data...
     found 1 event(s)
@@ -200,7 +200,7 @@ $ emscope scan -t
 
 <br> 
 
-```
+```console
 $ emscope scan -tg 5
     analyzing captured data...
     found 1 event(s)
@@ -220,3 +220,96 @@ $ emscope scan -tg 5
 > ```
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
+
+### 🟠&ensp;publishing captured information
+
+```
+emscope pack
+... prepare other capture directory artifacts
+git commit ...   
+```
+
+> [!NOTE]
+> By convention, you'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit the `capture.yaml` and `analysis.yaml` files described earlier as well as the (large) `emscope-capture.zip` generated here.
+>
+> Owners of the repo will often prescribe other required artifacts (such as a `README`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ in general retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+
+### 🟠&ensp;scoring energy efficiency
+
+```console
+$ emscope view -w
+    average sleep power:   1.941 µW
+    event cycle duration: 00:00:01
+    ----
+    representative event:  30.980 µJ
+    energy per cycle:  32.921 µJ
+    energy per day:   2.844 J
+    ----
+    28.13 EM•eralds
+```
+
+> [!NOTE]
+> The `-w, --what-if` option summarizes the energy efficiency of previously captured power signals.&thinsp; Like all forms of `emscope view`, the underlying `analysis.yaml` file provides a source for this information but otherwise remains unmodified by this command.
+>
+> As you might imagine, the overwhelming percentage of energy consumed per 1&thinsp;s event-cycle happens in under 1% of real-time &ndash; an inherent and enduring trait of most "sleepy" applications for embedded systems.
+
+<br>
+
+```console
+$ emscope view -w 5
+    average sleep power:   1.941 µW
+    event cycle duration: 00:00:05
+    ----
+    representative event:  30.980 µJ
+    energy per cycle:  40.684 µJ
+    energy per day: 703.019 mJ
+    ----
+    113.79 EM•eralds
+```
+
+> [!NOTE]
+> The `-w, --what-if` accepts an optional value defining the event cycle duration in `hh:mm:ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
+
+<br>
+
+```console
+$ emscope view --score
+    28.13 EM•eralds
+$ emscope view -w 5 --score
+    113.79 EM•eralds
+```
+
+>[!NOTE]
+> Using the `--score` option by itself (or in conjunction with `-w`) funnels the output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ value (as reported earlier), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
+>
+> Why 2400&thinsp;???&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 220&thinsp;mAH and nominally delivering 3V.
+>
+><p align="center"><b>CR2032 energy:&nbsp; 225 mAh × 3.6 × 3.0 V ≈ 2.43 kJ</b></p>
+><p align="center"><b>1 EM•erald ≈ 1 CR2032-month</b></p>
+>
+> More **EM•eralds**, more efficiency....&thinsp; And while our embedded system may use alternatives to the CR2032 battery as its source of energy, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
+
+<br>
+
+```console
+$ emscope view --score -C '*-J'
+
+adi-m17-evk-msdk-J:
+    14.75 EM•eralds
+
+in-100-dk-none-J:
+    41.92 EM•eralds
+
+nrf-52-dk-zephyr-J:
+    27.72 EM•eralds
+
+nrf-54-dk-zephyr-J:
+    41.93 EM•eralds
+
+ti-23-lp-emsdk-J:
+    48.62 EM•eralds
+
+ti-23-lp-slsdk-J:
+    28.13 EM•eralds
+```
+
