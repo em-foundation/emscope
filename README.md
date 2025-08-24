@@ -11,7 +11,7 @@
 <br>
 
 <p align="right">
-  <a href="README.md"><sup>for a better view <b>&#x27a6;</b></sup></a>
+  <sup><a href="README.md">for a better view <b>&#x27a6;</b></a></sup>
 </p>
 
 -----
@@ -20,7 +20,7 @@
 
 <h3 align="center">
   <a href="#installation">Installation</a>&nbsp;&#xFF5C;&nbsp;
-  <a href="#basic-usage">Usage</a>&nbsp;&#xFF5C;&nbsp;
+  <a href="#usage">Usage</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#examples">Examples</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#contributing">Contributing</a>
 </h3>
@@ -41,9 +41,9 @@ npm install -g @em-foundation/emscope
 > npm install -g https://github.com/em-foundation/npm-packages/releases/download/resources/emscope-25.0.1.tgz
 > ```
 
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also download and install the **Joulescope Application Software** (version 1.3.8) for your host computer from [here](https://download.joulescope.com/joulescope_install/index.html).
+Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.8 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
 
-## Basic Usage
+## Usage
 
 **EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
 
@@ -71,7 +71,7 @@ Only the original supplier of the raw data, however, would use `emscope pack` to
 
 ## Examples
 
-### 🟠&ensp;recording raw power signals
+### 🟠&ensp;recording raw power signals &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
 $ emscope grab -J
@@ -177,7 +177,7 @@ $ emscope view -jB
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
 ></p>
 
-### 🟠&ensp;refining event detection
+### 🟠&ensp;refining event detection &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
 $ emscope scan
@@ -224,7 +224,7 @@ $ emscope scan -tg 5
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
 
-### 🟠&ensp;publishing captured information
+### 🟠&ensp;publishing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```
 emscope pack
@@ -237,7 +237,7 @@ git commit ...
 >
 > Owners of the repo will often prescribe other required artifacts (such as a `README`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ in general retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
 
-### 🟠&ensp;scoring energy efficiency
+### 🟠&ensp;scoring energy efficiency &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
 $ emscope view -w
@@ -322,7 +322,7 @@ ti-23-lp-slsdk-J:
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
-Have fun&thinsp;!!! 🥳
+Enjoy the ride&thinsp;!!! **🎢**
 
 ## Contributing
 
