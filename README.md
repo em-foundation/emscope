@@ -16,6 +16,8 @@
 
 -----
 
+<a id="toc"></a>
+
 <h3 align="center">
   <a href="#installation">Installation</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#basic-usage">Usage</a>&nbsp;&#xFF5C;&nbsp;
@@ -111,7 +113,7 @@ $ emscope grab -PAV 1.8
 >
 > Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on. 
 
-### 🟠&ensp;viewing captured information
+### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
 $ emscope view -s
