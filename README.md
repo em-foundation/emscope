@@ -108,7 +108,9 @@ $ emscope grab -PAV 1.8
 <br> 
 
 > [!TIP]
-> The next series of examples run from the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then command `emscope pack -u` within this folder, if you want to play along at home. 
+> The next series of examples run inside the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then run `emscope pack -u` command within this folder, if you want to play along at home.
+>
+> Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on. 
 
 ### 🟠&ensp;viewing captured information
 
@@ -292,6 +294,7 @@ $ emscope view -w 5 --score
 <br>
 
 ```console
+$ cd .../bleadv-captures
 $ emscope view --score -C '*-J'
 
 adi-m17-evk-msdk-J:
@@ -312,4 +315,11 @@ ti-23-lp-emsdk-J:
 ti-23-lp-slsdk-J:
     28.13 EM•eralds
 ```
+
+>[!NOTE]
+> The `-C, --capture-glob` option used here in general enables execution of some `emscope` command within _any_ child directory whose name matches a given pattern (default `'*'`).
+>
+> Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
+
+Have fun&thinsp;!!! 🥳
 
