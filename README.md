@@ -18,10 +18,9 @@
 
 <h3 align="center">
   <a href="#installation">Installation</a>&nbsp;&#xFF5C;&nbsp;
-  <a href="#basic-usage">Basic Usage</a>&nbsp;&#xFF5C;&nbsp;
+  <a href="#basic-usage">Usage</a>&nbsp;&#xFF5C;&nbsp;
   <a href="#examples">Examples</a>&nbsp;&#xFF5C;&nbsp;
-  <a href="#contributing">Contributing</a>&nbsp;&#xFF5C;&nbsp;
-  <a href="#license">License</a>
+  <a href="#contributing">Contributing</a>
 </h3>
 
 <br>
@@ -322,4 +321,8 @@ ti-23-lp-slsdk-J:
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
 Have fun&thinsp;!!! 🥳
+
+## Contributing
+
+
 
