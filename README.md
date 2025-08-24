@@ -70,7 +70,7 @@ Only the original supplier of the raw data, however, would use `emscope pack` to
 
 ## Examples
 
-### 🟠&nbsp;recording raw power signals
+### 🟠&ensp;recording raw power signals
 
 ```console
 $ emscope grab -J
@@ -110,7 +110,7 @@ $ emscope grab -PAV 1.8
 > [!TIP]
 > The next series of examples run from the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then command `emscope pack -u` within this folder, if you want to play along at home. 
 
-### 🟠&nbsp;viewing captured information
+### 🟠&ensp;viewing captured information
 
 ```console
 $ emscope view -s
@@ -174,7 +174,7 @@ $ emscope view -jB
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
 ></p>
 
-### 🟠&nbsp;refining event detection
+### 🟠&ensp;refining event detection
 
 ```
 $ emscope scan
@@ -197,3 +197,23 @@ $ emscope scan -t
 
 > [!NOTE]
 > The `-t, --trim` option will typically drop the first and last events its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _n+2_ seconds should yield a clean set of _n_ events. 
+
+<br> 
+
+```
+$ emscope scan -tg 5
+    analyzing captured data...
+    found 1 event(s)
+    wrote 'analysis.yaml'
+```
+
+> [!NOTE]
+> Adding in the `-g, --gap <milliseconds>` option coalesces adjacent events whose separation falls under a given threshold.&thinsp; Benign in most cases, this filter nevertheless has proven useful when working with some target systems.
+
+<br>
+
+> [!IMPORTANT]
+> The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the current capture directory.&thinsp; Along with the `capture.yaml` file written initially by `emscope grab`, this pair of special files source much of the information presented through the `emscope view` command &ndash; often used in tandem with `emscope view` to refine the event analysis _before_ publishing the capture itself.
+
+> [!TIP]
+> Feel free, however, to 
