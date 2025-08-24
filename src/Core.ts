@@ -341,6 +341,24 @@ export function joules(j: number): string {
     return toEng(j, 'J')
 }
 
+export function parseHms(s: string): number {
+    if (/^\d+$/.test(s)) return Number(s)                             // SS
+    let m = s.match(/^([0-5]?\d):([0-5]\d)$/)                         // MM:SS
+    if (m) return (+m[1]) * 60 + (+m[2])
+    m = s.match(/^(\d+):([0-5]\d):([0-5]\d)$/)                        // HH:MM:SS
+    if (m) return (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3])
+    fail('expected SS, MM:SS, or HH:MM:SS')
+    return NaN
+}
+
+export function secsToHms(total: number): string {
+    const h = Math.floor(total / 3600)
+    const m = Math.floor((total % 3600) / 60)
+    const s = Math.floor(total % 60)
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${pad(h)}:${pad(m)}:${pad(s)}`
+}
+
 export function toEng(x: number, u: string): string {
     if (x == 0) return `0 ${u}`
     const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3

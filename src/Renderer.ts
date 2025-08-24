@@ -1,6 +1,5 @@
 import * as Core from './Core'
 import * as Detecter from './Detecter'
-import * as Plotter from './Plotter'
 import * as Writer from './Writer'
 
 import ChildProc from 'child_process'
@@ -12,23 +11,24 @@ export function exec(opts: any) {
     const aobj = cap.analysis ?? Detecter.analyze(cap)
     if (opts.eventInfo) {
         printEventInfo(cap, aobj.events)
-    }
-    if (opts.htmlPlot !== undefined) {
-        const idx = (opts.htmlPlot === true) ? 0 : (opts.htmlPlot as number)
-        genHtml(cap, aobj.events[idx])
+        return
     }
     if (opts.jlsFile) {
         execJls(cap, aobj, opts.jlsFile === true ? '' : (opts.jlsFile as string))
+        return
     }
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
-    }
-    if (opts.score) {
-        printResults(cap, aobj, 1, true)
+        return
     }
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        printResults(cap, aobj, ev_rate, false)
+        printResults(cap, aobj, ev_rate, opts.score)
+        return
+    }
+    if (opts.score) {
+        printResults(cap, aobj, 1, true)
+        return
     }
 }
 
@@ -65,10 +65,6 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
     p.unref()
 }
 
-function genHtml(cap: Core.Capture, event: Core.Marker) {
-    Plotter.generate(cap.current_ds, event)
-}
-
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     const scale = 1 / markers.length
     let avg = 0
@@ -88,8 +84,8 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    score_only || Core.infoMsg(`event cycle duration: ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
-    score_only || Core.infoMsg(`event cycle rate: ${ev_rate} s`)
     score_only || Core.infoMsg('----')
     const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
     const egy_1e = egy_1s - sleep_pwr * 1
