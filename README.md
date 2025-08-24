@@ -216,4 +216,7 @@ $ emscope scan -tg 5
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the current capture directory.&thinsp; Along with the `capture.yaml` file written initially by `emscope grab`, this pair of special files source much of the information presented through the `emscope view` command &ndash; often used in tandem with `emscope view` to refine the event analysis _before_ publishing the capture itself.
 
 > [!TIP]
-> Feel free, however, to 
+> Feel free, however, to use `emscope scan` within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command anywhere inside the repo:
+> ```
+> git -C "$(git rev-parse --show-toplevel)" reset --hard
+> ```
