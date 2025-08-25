@@ -80,34 +80,39 @@ $ emscope grab -J
     analyzing captured data...
     found 3 event(s)
     wrote 'analysis.yaml'
-```
 
-> [!NOTE]
-> Capture raw data using an attached **Joulescope JS220** power analyzer, wired to your target system; by default, `emscope grab` will record just three seconds of data.&thinsp; We'll explain more about the generated output shortly.
-
-<br> 
-
-```console
-$ emscope grab -PS
+$ emscope grab -J -d 12
     wrote 'capture.yaml'
     analyzing captured data...
-    found 3 event(s)
+    found 12 event(s)
     wrote 'analysis.yaml'
 ```
 
 > [!NOTE]
-> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`).
+> Capture raw data using an attached **Joulescope JS220** power analyzer, wired to your target system; the `-d, --duration` option specifies the capture duration in seconds (default: 3).&thinsp; We'll explain more about the generated output shortly.
 
 <br> 
 
 ```console
-$ emscope grab -PAV 1.8
+$ emscope grab -PA
     wrote 'capture.yaml'
     analyzing captured data...
     found 3 event(s)
     wrote 'analysis.yaml'
+
+$ emscope grab -PSV 1.8
+    wrote 'capture.yaml'
+    analyzing captured data...
+    found 12 event(s)
+    wrote 'analysis.yaml'
 ```
-<br> 
+
+> [!NOTE]
+> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target will likely differ in each case.
+>
+> Unlike the **JS220**, the **PPK2** does _not_ record the voltage signal **V** &ndash; only the current signal **I**.&thinsp; The `-V, --voltage` option (default: 3.3) basically informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
+
+---
 
 > [!TIP]
 > We'll run remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
@@ -209,7 +214,7 @@ $ emscope scan -t
 ```
 
 > [!NOTE]
-> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _n+2_ seconds should yield a clean set of _n_ events. 
+> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 seconds should yield a clean set of _d_ events. 
 
 <br> 
 
@@ -355,7 +360,7 @@ ti-23-lp-slsdk-J:
 
 ## Contributing
 
-At this early stage in its development, the **EM&bull;Scope** team has four requests to the community at large:
+At this early stage of development, the **EM&bull;Scope** team has four requests to the community at large:
 
 🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
 🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.yml) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.yml) issues when needed<br>
