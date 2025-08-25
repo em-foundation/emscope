@@ -1,0 +1,64 @@
+name: Build npm package to release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout emscope
+        uses: actions/checkout@v4
+        with:
+          path: emscope
+          token: ${{ secrets.token }}
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Get current version and date
+        id: date
+        run: |
+          echo "date=$(date -u +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
+          echo "version=$(cat emscope/package.json | jq -r .version)" >> $GITHUB_OUTPUT
+
+      - name: Build emscope package
+        run: |
+          pushd emscope
+          npm ci
+          npm run build
+          popd
+
+      - name: Test emscope executable
+        run: |
+          ./emscope/dist/emscope --version
+
+      - name: Pack emscope package
+        run: |
+          pushd emscope
+          rm -rf node_modules
+          npm pack
+          popd
+
+      - name: Tag repo
+        run: |
+          for repo in emscope
+          do
+            pushd $repo
+            git config --global user.name 'build workflow'
+            git config --global user.email 'hello@openem.org'
+            git remote set-url origin https://x-access-token:${{ secrets.token }}@github.com/em-foundation/$repo.git
+            git tag v${{ steps.date.outputs.version }}
+            git push --tags
+            popd
+          done
+
+      - name: Upload emscope package tag release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: emscope/emscope-${{ steps.date.outputs.version }}.tgz
+          token: ${{ secrets.token }}
+          tag_name: v${{ steps.date.outputs.version }}
