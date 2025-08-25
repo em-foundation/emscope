@@ -1,6 +1,5 @@
 import * as Core from './Core'
 import * as Detecter from './Detecter'
-import * as Plotter from './Plotter'
 import * as Writer from './Writer'
 
 import ChildProc from 'child_process'
@@ -12,23 +11,24 @@ export function exec(opts: any) {
     const aobj = cap.analysis ?? Detecter.analyze(cap)
     if (opts.eventInfo) {
         printEventInfo(cap, aobj.events)
-    }
-    if (opts.htmlPlot !== undefined) {
-        const idx = (opts.htmlPlot === true) ? 0 : (opts.htmlPlot as number)
-        genHtml(cap, aobj.events[idx])
+        return
     }
     if (opts.jlsFile) {
         execJls(cap, aobj, opts.jlsFile === true ? '' : (opts.jlsFile as string))
+        return
     }
     if (opts.sleepInfo) {
         printSleepInfo(cap, aobj.sleep)
-    }
-    if (opts.score) {
-        printResults(cap, aobj, 1, true)
+        return
     }
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        printResults(cap, aobj, ev_rate, false)
+        printResults(cap, aobj, ev_rate, opts.score)
+        return
+    }
+    if (opts.score) {
+        printResults(cap, aobj, 1, true)
+        return
     }
 }
 
@@ -55,14 +55,14 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
                     ''
     Core.fail(`unsupported os platform: ${plat}`, exe == '')
     const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
+    Core.infoMsg('launching the Joulescope File Viewer...')
+    if (eid) {
+        Core.infoMsg(`generated '${jfile}.png'`)
+    }
     p.once('error', err => {
-        Core.fail(`failed to launch joulescope: ${err.message}`)
+        Core.fail(`failed to launch Joulescope: ${err.message}`)
     })
     p.unref()
-}
-
-function genHtml(cap: Core.Capture, event: Core.Marker) {
-    Plotter.generate(cap.current_ds, event)
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
@@ -74,7 +74,8 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
         avg += egy * scale
         const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(7, ' ')
         const dur_s = cap.current_sig.offToSecs(m.width)
-        Core.infoMsg(`${lab} :: ${Core.joules(egy)}, ${Core.toEng(dur_s, 's')}`)
+        const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
+        Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.joules(egy)}, duration = ${Core.toEng(dur_s, 's')}`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
@@ -83,8 +84,8 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    score_only || Core.infoMsg(`event cycle duration: ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
-    score_only || Core.infoMsg(`event cycle rate: ${ev_rate} s`)
     score_only || Core.infoMsg('----')
     const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
     const egy_1e = egy_1s - sleep_pwr * 1
@@ -100,5 +101,5 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
-    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, std = ${Core.amps(si.std)}, p95 = ${si.p95.toExponential(2)}`)
+    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, standard deviation = ${Core.amps(si.std)}`)
 }
