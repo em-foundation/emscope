@@ -30,6 +30,7 @@ jobs:
 
       - name: Build emscope package
         run: |
+          VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
           pushd emscope
           npm ci
           npm run build
@@ -37,15 +38,24 @@ jobs:
           npm pack
           popd
 
-      - name: Tag repo
-        uses: rickstaa/action-create-tag@v1
+      - name: Upload emscope package to npm-packages/resources
+        uses: softprops/action-gh-release@v1
         with:
-          tag: v${{ steps.date.outputs.version }}
-
-      - name: Upload emscope package tag release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: emscope/emscope-${{ steps.date.outputs.version }}.tgz
-          overwrite_files: false
+          files: emscope/emscope-*.tgz
+          repository: em-foundation/npm-packages
           token: ${{ secrets.token }}
-          tag_name: v${{ steps.date.outputs.version }}
+          tag_name: resources
+  
+      - name: Tag repo
+        run: |
+          VERSION_WITH_TIMESTAMP=${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}
+          for repo in emscope
+          do
+            pushd $repo
+            git config --global user.name 'build workflow'
+            git config --global user.email 'hello@openem.org'
+            git remote set-url origin https://x-access-token:${{ secrets.token }}@github.com/em-foundation/$repo.git
+            git tag $VERSION_WITH_TIMESTAMP
+            git push --tags
+            popd
+          done
