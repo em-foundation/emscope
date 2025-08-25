@@ -30,13 +30,18 @@ jobs:
           pushd emscope
           npm ci
           npm run build
-          rm -rf node_modules
-          npm pack
           popd
 
       - name: Test emscope executable
         run: |
           ./emscope/dist/emscope --version
+
+      - name: Pack emscope package
+        run: |
+          pushd emscope
+          rm -rf node_modules
+          npm pack
+          popd
 
       - name: Tag repo
         uses: rickstaa/action-create-tag@v1
