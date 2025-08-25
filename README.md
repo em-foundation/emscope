@@ -59,7 +59,7 @@ Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated 
 In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, we've prepared the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures) repo which you'll provision locally.
 
 > [!WARNING]
-> The `bleadv-captures` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer.
+> The `bleadv-captures` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
 
 At this stage, you would use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
 
@@ -110,15 +110,17 @@ $ emscope grab -PAV 1.8
 <br> 
 
 > [!TIP]
-> The next series of examples run inside the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; Clone this repo and then run `emscope pack -u` command within this folder, if you want to play along at home.
+> We'll run remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
-> ```
+>```
 > $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/bleadv-captures.git
 > $ cd bleadv-captures
 > $ git lfs install --local --skip-smudge
+> $ cd ti-23-lp-slsdk-J
+> $ emscope pack --unpack
 >```
 >
-> Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on. 
+> Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
 
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
@@ -150,7 +152,7 @@ $ emscope view -e
 ```
 
 > [!NOTE]
-> The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, 10 one-second event cycles provides a reasonable sample set.  
+> The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, a set of 10 one-second event cycles provides a reasonable sample.  
 
 <br> 
 
@@ -357,8 +359,8 @@ At this early stage in its development, the **EM&bull;Scope** team has four requ
 
 🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
 🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.yml) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.yml) issues when needed<br>
-🟢 &ensp; consider publishing your own capture &ndash; and [**Fork** 🍴](https://github.com/em-foundation/bleadv-captures) `bleadv-captures` to get going<br>
-🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star** ⭐](https://github.com/em-foundation/emscope)&thinsp; **&bull;** &thinsp;[**Watch** 👀](https://github.com/em-foundation/emscope) this repo<br>
+🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/bleadv-captures)🍴&thinsp;`bleadv-captures` to get going<br>
+🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star**](https://github.com/em-foundation/emscope)⭐&thinsp; **&bull;** &thinsp;[**Watch**](https://github.com/em-foundation/emscope)👀 this repo<br>
 
 
 
