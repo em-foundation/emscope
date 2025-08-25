@@ -36,7 +36,7 @@ jobs:
 
       - name: Test emscope executable
         run: |
-          .emscope/dist/emscope --version
+          ./emscope/dist/emscope --version
 
       - name: Tag repo
         uses: rickstaa/action-create-tag@v1
