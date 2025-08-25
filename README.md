@@ -214,7 +214,7 @@ $ emscope scan -tg 5
 > [!NOTE]
 > Adding in the `-g, --gap <milliseconds>` option coalesces adjacent events whose separation falls under a given threshold.&thinsp; Benign in most cases, this filter nevertheless has proven useful when working with some target systems.
 
-<br>
+---
 
 > [!IMPORTANT]
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
@@ -284,6 +284,8 @@ $ emscope view -w 2:00
 > [!NOTE]
 > The `-w, --what-if` accepts an optional value defining the event cycle duration in `hh:mm:ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
 
+---
+
 > [!IMPORTANT]
 > The amount of energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
 
@@ -299,9 +301,9 @@ $ emscope view -w 2:00 --score
 ```
 
 >[!NOTE]
-> Using the `--score` option by itself (or in conjunction with `-w`) funnels the output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ value (as reported earlier), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
+> Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with an _energy per day_ value (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
 >
-> Why 2400&thinsp;???&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 220&thinsp;mAH and nominally delivering 3V.
+> Why 2400?&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 220&thinsp;mAH and nominally delivering 3V.
 >
 ><p align="center"><b>CR2032 energy:&nbsp; 225 mAh × 3.6 × 3.0 V ≈ 2.43 kJ</b></p>
 ><p align="center"><b>1 EM•erald ≈ 1 CR2032-month</b></p>
@@ -334,22 +336,23 @@ ti-23-lp-slsdk-J:
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option used here in general enables execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default `'*'`).
+> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default `'*'`).
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
 ### Enjoy the ride&thinsp;!!! **🎢**
 
-<br>
-
 ## Contributing
 
 At this early stage in its development, the **EM&bull;Scope** team has four requests to the community at large:
 
-🟢 &ensp; re-read this overview &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
-🟢 &ensp; play with the `emscope` command &ndash; and file [bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.yml) or [feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.yml) issues when needed<br>
-🟢 &ensp; read the docs <br>
-🟢 &ensp; read the docs <br>
+🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
+🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.yml) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.yml) issues when needed<br>
+🟢 &ensp; consider publishing your own capture &ndash; and [**Fork** 🍴](https://github.com/em-foundation/bleadv-captures) `bleadv-captures` to get going<br>
+🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star** ⭐](https://github.com/em-foundation/emscope)&thinsp; **&bull;** &thinsp;[**Watch** 👀](https://github.com/em-foundation/emscope) this repo<br>
+
+
+
 
 
 
