@@ -23,12 +23,11 @@ function visit(dir: string, glob: string, cmd: CmdDesc) {
     for (const de of Fs.readdirSync(dir, { withFileTypes: true })) {
         if (!de.isDirectory()) continue
         const dpath = Path.join(de.parentPath, de.name)
-        if (!Fs.existsSync(Path.join(dpath, 'capture.yaml'))) continue
-        if (Pico.isMatch(de.name, glob)) {
+        if (Fs.existsSync(Path.join(dpath, 'capture.yaml')) && Pico.isMatch(de.name, glob)) {
             console.log(`\n${de.name}:`)
             cmd.fxn({ ...cmd.opts, capture: dpath })
         } else {
-            visit(Path.join(dir, de.name), glob, cmd)
+            visit(Path.join(dpath), glob, cmd)
         }
     }
 }
