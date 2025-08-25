@@ -38,7 +38,7 @@ npm install -g @em-foundation/emscope
 > [!IMPORTANT]
 > Until the 25.1.0 release of **EM&bull;Scope**, use
 > ```
-> npm install -g https://github.com/em-foundation/npm-packages/releases/download/resources/emscope-25.0.1.tgz
+> npm install -g https://github.com/em-foundation/emscope/releases/download/resources/emscope-25.0.1.tgz
 > ```
 
 Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.8 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
@@ -59,20 +59,20 @@ Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated 
 In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, go ahead and clone the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures) repo.
 
 > [!NOTE]
-> All of these captures record the energy consumped by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; transmitting a stock BLE packet on all three advertising channels once per-second with 0&thinsp;dB of radio power.
+> All of these captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; transmitting a stock BLE packet on all three advertising channels once per-second with 0&thinsp;dB of radio power.
 >
 > We hope this embryonic repository will encourage others to contribute captures for a wide range of embedded BLE systems &ndash; enabling more rational and robust comparative benchmarks between different HW/SW providers who all claim "ultra-low-power".
 
 Use the `emscope pack --unpack` command to first deflate a special file named `emscope-capture.zip` found in each of the repository's labeled capture directories.
 
-At this stage, you can use the `emscope scan` and `emscope view` sub-commands to explore the raw signal data captured at an earlier time &ndash; as if you had just commanded `emscope grab`.
+At this stage, you can use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
 
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip`.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
 
 ## Examples
 
 ### 🟠&ensp;recording raw power signals &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
-
+<a id="grab"></a>
 ```console
 $ emscope grab -J
     wrote 'capture.yaml'
@@ -82,7 +82,7 @@ $ emscope grab -J
 ```
 
 > [!NOTE]
-> Capture raw data using an attached **Joulescope JS220** power analyzer, appropriately wired to your target system; by default, `emscope grab` records just three seconds of data.&thinsp; We'll explain more about the generated output shortly.
+> Capture raw data using an attached **Joulescope JS220** power analyzer, wired to your target system; by default, `emscope grab` will record just three seconds of data.&thinsp; We'll explain more about the generated output shortly.
 
 <br> 
 
@@ -95,7 +95,7 @@ $ emscope grab -PS
 ```
 
 > [!NOTE]
-> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes (`-A, --ampere-mode` or `-S, --source-mode`) selected by an additional `emscope grab` option.
+> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`).
 
 <br> 
 
@@ -109,7 +109,7 @@ $ emscope grab -PAV 1.8
 <br> 
 
 > [!TIP]
-> The next series of examples run inside the `ti-23-lp-slsdk-J` capture directory found in the `bleadv-captures` **Git** repository.&thinsp; Clone this repo and then run `emscope pack -u` command within this folder, if you want to play along at home.
+> The next series of examples run inside the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; Clone this repo and then run `emscope pack -u` command within this folder, if you want to play along at home.
 >
 > Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on. 
 
@@ -125,6 +125,7 @@ $ emscope view -s
 
 <br> 
 
+<a id="view-s"></a>
 ```console
 $ emscope view -e
     A :: time =  1.06 s, energy =  30.840 µJ, duration =   3.250 ms
@@ -171,7 +172,7 @@ $ emscope view -jB
     generated 'ti-23-lp-slsdk-J-event-B.png'
 ```
 > [!NOTE]
-> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen earlier in the output of the `emscope view -s` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
+> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen [earlier](#view-s) in the output of the `emscope view -s` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
 > 
 ><p align="center">
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
@@ -187,7 +188,7 @@ $ emscope scan
 ```
 
 > [!NOTE]
-> This command performs a baseline analysis of the raw signal data, discriminating event activity from periods of deep-sleep.&thinsp; Saving results to `analysis.yaml`, the `emscope grab` command seen earlier in fact performs an initial `emscope scan` after recording the data.
+> This command performs a baseline analysis of the raw signal data, discriminating event activity from periods of deep-sleep.&thinsp; Saving results to `analysis.yaml`, the `emscope grab` command seen [earlier](#grab) in fact performs an initial `emscope scan` after recording the data.
 
 <br> 
 
@@ -199,7 +200,7 @@ $ emscope scan -t
 ```
 
 > [!NOTE]
-> The `-t, --trim` option will typically drop the first and last events its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _n+2_ seconds should yield a clean set of _n_ events. 
+> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _n+2_ seconds should yield a clean set of _n_ events. 
 
 <br> 
 
@@ -216,7 +217,7 @@ $ emscope scan -tg 5
 <br>
 
 > [!IMPORTANT]
-> The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the current capture directory.&thinsp; Along with the `capture.yaml` file written initially by `emscope grab`, this pair of special files source much of the information presented through the `emscope view` command &ndash; often used in tandem with `emscope view` to refine the event analysis _before_ publishing the capture itself.
+> The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
 
 > [!TIP]
 > Feel free, however, to use `emscope scan` within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command anywhere inside the repo:
@@ -241,8 +242,8 @@ git commit ...
 
 ```console
 $ emscope view -w
-    average sleep power:   1.941 µW
     event cycle duration: 00:00:01
+    average sleep power:   1.941 µW
     ----
     representative event:  30.980 µJ
     energy per cycle:  32.921 µJ
@@ -259,19 +260,32 @@ $ emscope view -w
 <br>
 
 ```console
-$ emscope view -w 5
-    average sleep power:   1.941 µW
+$ emscope-dev view -w 5
     event cycle duration: 00:00:05
+    average sleep power:   1.941 µW
     ----
     representative event:  30.980 µJ
     energy per cycle:  40.684 µJ
     energy per day: 703.019 mJ
     ----
     113.79 EM•eralds
+
+$ emscope view -w 2:00
+    event cycle duration: 00:02:00
+    average sleep power:   1.941 µW
+    ----
+    representative event:  30.980 µJ
+    energy per cycle: 263.880 µJ
+    energy per day: 189.994 mJ
+    ----
+    421.07 EM•eralds
 ```
 
 > [!NOTE]
 > The `-w, --what-if` accepts an optional value defining the event cycle duration in `hh:mm:ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
+
+> [!IMPORTANT]
+> The amount of energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
 
 <br>
 
@@ -280,6 +294,8 @@ $ emscope view --score
     28.13 EM•eralds
 $ emscope view -w 5 --score
     113.79 EM•eralds
+$ emscope view -w 2:00 --score
+    421.07 EM•eralds
 ```
 
 >[!NOTE]
@@ -318,11 +334,13 @@ ti-23-lp-slsdk-J:
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option used here in general enables execution of some `emscope` command within _any_ child directory whose name matches a given pattern (default `'*'`).
+> The `-C, --capture-glob` option used here in general enables execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default `'*'`).
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
-Enjoy the ride&thinsp;!!! **🎢**
+<br>
+
+### Enjoy the ride&thinsp;!!! **🎢**
 
 ## Contributing
 
