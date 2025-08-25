@@ -1,4 +1,4 @@
-name: Build npm package
+name: Build npm package to release
 
 on:
   workflow_dispatch:
