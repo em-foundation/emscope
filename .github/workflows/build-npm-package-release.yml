@@ -44,9 +44,17 @@ jobs:
           popd
 
       - name: Tag repo
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: v${{ steps.date.outputs.version }}
+        run: |
+          for repo in emscope
+          do
+            pushd $repo
+            git config --global user.name 'build workflow'
+            git config --global user.email 'hello@openem.org'
+            git remote set-url origin https://x-access-token:${{ secrets.token }}@github.com/em-foundation/$repo.git
+            git tag v${{ steps.date.outputs.version }}
+            git push --tags
+            popd
+          done
 
       - name: Upload emscope package tag release
         uses: softprops/action-gh-release@v2
