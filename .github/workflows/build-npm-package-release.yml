@@ -1,0 +1,52 @@
+name: Build npm package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout emscope
+        uses: actions/checkout@v4
+        with:
+          path: emscope
+          token: ${{ secrets.token }}
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Get current version and date
+        id: date
+        run: |
+          echo "date=$(date -u +%Y%m%d%H%M)" >> $GITHUB_OUTPUT
+          echo "version=$(cat emscope/package.json | jq -r .version)" >> $GITHUB_OUTPUT
+
+      - name: Build emscope package
+        run: |
+          pushd emscope
+          npm ci
+          npm run build
+          rm -rf node_modules
+          npm pack
+          popd
+
+      - name: Test emscope executable
+        run: |
+          .emscope/dist/emscope --version
+
+      - name: Tag repo
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: v${{ steps.date.outputs.version }}
+
+      - name: Upload emscope package tag release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: emscope/emscope-${{ steps.date.outputs.version }}.tgz
+          overwrite_files: false
+          token: ${{ secrets.token }}
+          tag_name: v${{ steps.date.outputs.version }}
