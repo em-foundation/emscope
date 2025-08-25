@@ -338,11 +338,18 @@ ti-23-lp-slsdk-J:
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
-<br>
-
 ### Enjoy the ride&thinsp;!!! **🎢**
 
+<br>
+
 ## Contributing
+
+At this early stage in its development, the **EM&bull;Scope** team has four requests to the community at large:
+
+🟢 &ensp; re-read this overview &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
+🟢 &ensp; play with the `emscope` command &ndash; and file [bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.yml) or [feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.yml) issues when needed<br>
+🟢 &ensp; read the docs <br>
+🟢 &ensp; read the docs <br>
 
 
 
