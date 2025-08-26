@@ -43,6 +43,9 @@ npm install -g @em-foundation/emscope
 
 Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.8 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
 
+> [!TIP]
+> Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
+
 ## Usage
 
 **EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
@@ -110,12 +113,12 @@ $ emscope grab -PSV 1.8
 > [!NOTE]
 > Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target will likely differ in each case.
 >
-> Unlike the **JS220**, the **PPK2** does _not_ record the voltage signal **V** &ndash; only the current signal **I**.&thinsp; The `-V, --voltage` option (default: 3.3) basically informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
+> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-V, --voltage` option (default: 3.3) basically informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
 
 ---
 
 > [!TIP]
-> We'll run remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
 > $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/bleadv-captures.git
