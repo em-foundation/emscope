@@ -76,7 +76,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
         process.exit(1)
     }
     const progress = new Core.Progress('capturing: ')
-    const port = new SerialPort({ path: path_list[0], baudRate: 115200, autoOpen: false })
+    const port = new SerialPort({ path: path_list[0], baudRate: 9600, autoOpen: false })
     await new Promise<void>((resolve, reject) => {
         port.open(err => (err ? reject(err) : resolve()))
     })
@@ -96,15 +96,14 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     ppk.togglePower('off')
     ppk.close()
     return cap
-    // Analyzer.exec(cap)
-    // cap.save()
 }
 
 async function findDevices(): Promise<Array<string>> {
     let res = new Array<string>()
     for (const port of await SerialPort.list()) {
-        const name: string = (port as any).friendlyName
-        if (name.startsWith('nRF Connect')) {
+        const vid: string = (port as any).vendorId
+        const pid: string = (port as any).productId
+        if (vid == '1915' && pid.toLowerCase() == 'c00a') {
             res.push(port.path)
         }
     }
