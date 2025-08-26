@@ -15,4 +15,5 @@ export async function exec(opts: any) {
     const cap = c!
     cap.save()
     cap.bind(Detecter.analyze(cap))
+    process.exit()
 }

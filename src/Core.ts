@@ -69,7 +69,7 @@ export class Capture {
     static load(rootdir: string): Capture {
         let cap = new Capture()
         cap._rootdir = rootdir
-        fail(`captured data not found locally, try running'emscope pack -u'`, !Fs.existsSync(Capture.workdir(rootdir)))
+        fail(`captured data not found locally, try running 'emscope pack -u'`, !Fs.existsSync(Capture.workdir(rootdir)))
         const ytxt = Fs.readFileSync(cap.#cpath, 'utf-8')
         const yobj = Yaml.load(ytxt) as any
         for (const k of Capture.#LOAD_KEYS) {
