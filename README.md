@@ -36,9 +36,9 @@ npm install -g @em-foundation/emscope
 ```
 
 > [!IMPORTANT]
-> Until the 25.1.0 release of **EM&bull;Scope**, use
+> Until the 25.1.0 release of **EM&bull;Scope**, we will _not_ upload its package to the public `npm` registry.&thinsp; Instead, you'll find versions of this package named `emscope-<version>.tar.gz` archived on our **GitHub** [releases](http://github.com/em-foundation/emscope/releases) page.&thinsp; Copy the link of your choice (likely the latest) and then execute the following command:
 > ```
-> npm install -g https://github.com/em-foundation/emscope/releases/download/resources/emscope-25.0.1.tgz
+> npm ci -g <package URL> 
 > ```
 
 Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.8 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
