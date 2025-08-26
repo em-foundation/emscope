@@ -217,7 +217,7 @@ $ emscope scan -t
 ```
 
 > [!NOTE]
-> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 seconds should yield a clean set of _d_ events. 
+> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 seconds should yield a clean set of _d_ 1Hz events. 
 
 <br> 
 
@@ -229,7 +229,7 @@ $ emscope scan -tg 5
 ```
 
 > [!NOTE]
-> Adding in the `-g, --gap <milliseconds>` option coalesces adjacent events whose separation falls under a given threshold.&thinsp; Benign in most cases, this filter nevertheless has proven useful when working with some target systems.
+> Adding in the `-g, --gap <milliseconds>` option coalesces adjacent events whose separation falls under a given threshold.&thinsp; Benign in most cases, this filter nevertheless has proven useful when working with certain target systems.
 
 ---
 
@@ -237,7 +237,7 @@ $ emscope scan -tg 5
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
 
 > [!TIP]
-> Feel free, however, to use `emscope scan` within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command anywhere inside the repo:
+> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command from anywhere inside the repo:
 > ```
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
@@ -299,7 +299,7 @@ $ emscope view -w 2:00
 ```
 
 > [!NOTE]
-> The `-w, --what-if` accepts an optional value defining the event cycle duration in `hh:mm:ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
+> The `-w, --what-if` accepts an optional value defining the event cycle duration in `[[hh:]mm:]ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
 
 ---
 
@@ -355,11 +355,13 @@ ti-23-lp-slsdk-J:
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default `'*'`).
+> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'*'`).
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
 ### Enjoy the ride&thinsp;!!! **🎢**
+
+<br>
 
 ## Contributing
 
