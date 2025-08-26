@@ -30,6 +30,7 @@ export function exec(opts: any) {
         printResults(cap, aobj, 1, true)
         return
     }
+    Core.fail(`no options found: run 'emscope view -h'`)
 }
 
 function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
