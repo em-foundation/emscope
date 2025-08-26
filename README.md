@@ -299,7 +299,7 @@ $ emscope view -w 2:00
 ```
 
 > [!NOTE]
-> The `-w, --what-if` accepts an optional value defining the event cycle duration in `hh:mm:ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
+> The `-w, --what-if` accepts an optional value defining the event cycle duration in `[[hh:]mm:]ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
 
 ---
 
@@ -355,11 +355,13 @@ ti-23-lp-slsdk-J:
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default `'*'`).
+> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'*'`).
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
 ### Enjoy the ride&thinsp;!!! **🎢**
+
+<br>
 
 ## Contributing
 
