@@ -76,7 +76,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
         process.exit(1)
     }
     const progress = new Core.Progress('capturing: ')
-    const port = new SerialPort({ path: path_list[0], baudRate: 115200, autoOpen: false })
+    const port = new SerialPort({ path: path_list[0], baudRate: 9600, autoOpen: false })
     await new Promise<void>((resolve, reject) => {
         port.open(err => (err ? reject(err) : resolve()))
     })
