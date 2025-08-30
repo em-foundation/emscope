@@ -1,3 +1,4 @@
+import * as AboutFile from './AboutFile'
 import * as Core from './Core'
 
 import AdmZip from 'adm-zip'
@@ -9,11 +10,13 @@ export async function exec(opts: any) {
     const capdir = Path.resolve(opts.capture)
     if (opts.lfsStatus || opts.lfsRestore || opts.unpack) {
         toggleLfs(capdir, opts)
-    } else {
-        const zip = new AdmZip()
-        zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
-        zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
+        return
     }
+    AboutFile.update(capdir)
+    if (opts.aboutFile) return
+    const zip = new AdmZip()
+    zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
+    zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
 }
 
 const LFS_MAGIC = 'version https://git-lfs.github.com/spec'
