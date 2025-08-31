@@ -50,9 +50,9 @@ CMD.command('pack')
     .description(`bundle captured data into an 'emscope.zip' file`)
     .option(CAP[0], CAP[1], CAP[2])
     .option('-a --about-file', `update the 'ABOUT.md' file only`)
+    .option('-s,--status', `status of the 'emscope.zip' file`)
     .option('-u --unpack', `deflate an 'emscope.zip' file for local use`)
-    .option('--lfs-status', `git status of the 'emscope.zip' file (debug only)`)
-    .option('--lfs-restore', `restores the 'emscope.zip' LFS descriptor (debug only)`)
+    .option('--restore', `restores the 'emscope.zip' LFS descriptor (debug only)`)
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Exporter.exec, opts, cmd.parent!.opts()))
 
 try {

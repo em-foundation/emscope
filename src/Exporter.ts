@@ -8,7 +8,7 @@ import Path from 'path'
 
 export async function exec(opts: any) {
     const capdir = Path.resolve(opts.capture)
-    if (opts.lfsStatus || opts.lfsRestore || opts.unpack) {
+    if (opts.status || opts.restore || opts.unpack) {
         toggleLfs(capdir, opts)
         return
     }
@@ -60,12 +60,12 @@ function toggleLfs(capdir: string, opts: any) {
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     const gpath = `${prefix}/emscope-capture.zip`
     const desc_flag = isLfsDesc(zpath)
-    if (opts.lfsStatus) {
+    if (opts.status) {
         const stat_msg = desc_flag ? 'is an LFS descriptor' : 'is locally deflated'
         Core.infoMsg(`'emscope-capture.zip' ${stat_msg}`)
         return
     }
-    if (opts.lfsRestore) {
+    if (opts.restore) {
         restoreLfs(repo, gpath)
         Fs.rmSync(Core.Capture.workdir(capdir), { recursive: true })
         return
