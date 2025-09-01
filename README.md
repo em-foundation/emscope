@@ -59,7 +59,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated initially with raw signal data acquired through the `emscope grab` sub-command.&thinsp;  Within the latter mode, you'll physically connect a **Joulescope** [JS220](https://www.joulescope.com/products/js220-joulescope-precision-energy-analyzer) or **Nordic** [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2) to your target embedded system.
 
-In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, we've prepared the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures) repo which you'll provision locally.
+In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, we've prepared the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures/blob/dev-25.0.2/README.md) repo which you'll provision locally.
 
 > [!WARNING]
 > The `bleadv-captures` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
