@@ -251,9 +251,9 @@ git commit ...
 ```
 
 > [!NOTE]
-> By convention, you'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit the `capture.yaml` and `analysis.yaml` files described earlier as well as the (large) `emscope-capture.zip` generated here.
+> You'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit the `capture.yaml` and `analysis.yaml` files described earlier as well as the (large) `emscope-capture.zip` generated here.
 >
-> Owners of the repo will often prescribe other required artifacts (such as a `README`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ in general retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+> Repo owners will often prescribe other required artifacts (such as `ABOUT.md`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
 
 ### 🟠&ensp;scoring energy efficiency &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
@@ -299,12 +299,12 @@ $ emscope view -w 2:00
 ```
 
 > [!NOTE]
-> The `-w, --what-if` accepts an optional value defining the event cycle duration in `[[hh:]mm:]ss` format &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
+> The `-w, --what-if` accepts an optional `[[hh:]mm:]ss` value defining the event cycle duration &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
 
 ---
 
 > [!IMPORTANT]
-> The amount of energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
+> The energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
 
 <br>
 
@@ -318,7 +318,7 @@ $ emscope view -w 2:00 --score
 ```
 
 >[!NOTE]
-> Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with an _energy per day_ value (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
+> Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
 >
 > <p align="center"><b>EM•eralds = 2400 / (<i>Joules per day</i> * 30) = 800 / <i>Joules per day</i></b></p>
 >
@@ -327,7 +327,7 @@ $ emscope view -w 2:00 --score
 ><p align="center"><b>CR2032 energy:&nbsp; 225 mAh × 3.6 × 3.0 V ≈ 2.43 kJ</b></p>
 ><p align="center"><b>1 EM•erald ≈ 1 CR2032-month</b></p>
 >
-> More **EM•eralds**, more efficiency....&thinsp; And while our embedded system may use alternatives to the CR2032 battery as its source of energy, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
+> More **EM•eralds**, more efficiency....&nbsp; And while our embedded system may use other sources of energy than a CR2032 battery, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
 
 <br>
 
