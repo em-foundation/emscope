@@ -1,3 +1,4 @@
+import * as AboutFile from './AboutFile'
 import * as Core from './Core'
 
 import AdmZip from 'adm-zip'
@@ -7,13 +8,15 @@ import Path from 'path'
 
 export async function exec(opts: any) {
     const capdir = Path.resolve(opts.capture)
-    if (opts.lfsStatus || opts.lfsRestore || opts.unpack) {
+    if (opts.status || opts.restore || opts.unpack) {
         toggleLfs(capdir, opts)
-    } else {
-        const zip = new AdmZip()
-        zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
-        zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
+        return
     }
+    AboutFile.update(capdir)
+    if (opts.aboutFile) return
+    const zip = new AdmZip()
+    zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
+    zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
 }
 
 const LFS_MAGIC = 'version https://git-lfs.github.com/spec'
@@ -57,12 +60,12 @@ function toggleLfs(capdir: string, opts: any) {
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     const gpath = `${prefix}/emscope-capture.zip`
     const desc_flag = isLfsDesc(zpath)
-    if (opts.lfsStatus) {
+    if (opts.status) {
         const stat_msg = desc_flag ? 'is an LFS descriptor' : 'is locally deflated'
         Core.infoMsg(`'emscope-capture.zip' ${stat_msg}`)
         return
     }
-    if (opts.lfsRestore) {
+    if (opts.restore) {
         restoreLfs(repo, gpath)
         Fs.rmSync(Core.Capture.workdir(capdir), { recursive: true })
         return
