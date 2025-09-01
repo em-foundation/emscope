@@ -113,7 +113,7 @@ $ emscope grab -PSV 1.8
 > [!NOTE]
 > Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target will likely differ in each case.
 >
-> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-V, --voltage` option (default: 3.3) basically informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
+> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-V, --voltage` option (default: 3.3) informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
 
 ---
 
@@ -142,7 +142,7 @@ $ emscope view -s
 
 <br> 
 
-<a id="view-s"></a>
+<a id="view-e"></a>
 ```console
 $ emscope view -e
     A :: time =  1.06 s, energy =  30.840 µJ, duration =   3.250 ms
@@ -189,7 +189,7 @@ $ emscope view -jB
     generated 'ti-23-lp-slsdk-J-event-B.png'
 ```
 > [!NOTE]
-> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen [earlier](#view-s) in the output of the `emscope view -s` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
+> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen [earlier](#view-e) in the output of the `emscope view -e` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
 > 
 ><p align="center">
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
