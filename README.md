@@ -103,7 +103,7 @@ $ emscope grab -PA
     found 3 event(s)
     wrote 'analysis.yaml'
 
-$ emscope grab -PSV 1.8
+$ emscope grab -PSv 1.8
     wrote 'capture.yaml'
     analyzing captured data...
     found 12 event(s)
@@ -111,9 +111,9 @@ $ emscope grab -PSV 1.8
 ```
 
 > [!NOTE]
-> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target will likely differ in each case.
+> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target HW will likely differ in each case.
 >
-> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-V, --voltage` option (default: 3.3) informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
+> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-v, --voltage` option (default: 3.3) informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
 
 ---
 
@@ -200,7 +200,7 @@ $ emscope view -jB
 ```console
 $ emscope scan
     analyzing captured data...
-    found 3 event(s)
+    found 12 event(s)
     wrote 'analysis.yaml'
 ```
 
@@ -210,21 +210,21 @@ $ emscope scan
 <br> 
 
 ```console
-$ emscope scan -t
+$ emscope scan -t 10
     analyzing captured data...
-    found 1 event(s)
+    found 10 event(s)
     wrote 'analysis.yaml'
 ```
 
 > [!NOTE]
-> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 seconds should yield a clean set of _d_ 1Hz events. 
+> The `-t, --trim` option updates `analysis.yaml` to contain a specific number of events bounded by &ge;&thinsp;500&thinsp;ms of inactivity on either end.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 (or more) seconds should yield a clean set of _d_ 1Hz events. 
 
 <br> 
 
 ```console
-$ emscope scan -tg 5
+$ emscope scan -t 10 -g 5
     analyzing captured data...
-    found 1 event(s)
+    found 10 event(s)
     wrote 'analysis.yaml'
 ```
 
@@ -237,7 +237,7 @@ $ emscope scan -tg 5
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
 
 > [!TIP]
-> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `BlueJoule` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command from anywhere inside the repo:
+> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `BlueJoule` benchmark repository &ndash; implicitly modifying its `analysis.yaml` file.&thinsp; To revert `BlueJoule` to its original state, run the following command from anywhere inside the repo:
 > ```
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
