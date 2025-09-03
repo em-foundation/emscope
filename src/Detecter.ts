@@ -6,7 +6,7 @@ export function exec(opts: any) {
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, trim?: boolean, gap?: number): Core.Analysis {
+export function analyze(cap: Core.Capture, trim?: number, gap?: number): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
@@ -40,7 +40,7 @@ export function analyze(cap: Core.Capture, trim?: boolean, gap?: number): Core.A
     }
     let span = rsig.window(rsig.data.length).toMarker()
     if (trim) {
-        [span, markers] = trimEvents(cap, markers)
+        [span, markers] = trimEvents(cap, markers, trim)
         options.push(`--trim`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
@@ -94,14 +94,14 @@ function slopeP95(data: Float32Array): number {
     return p95
 }
 
-function trimEvents(cap: Core.Capture, markers: Core.Marker[]): [Core.Marker, Core.Marker[]] {
-    const ev_cnt = cap.duration - 2
-    Core.fail('insufficient number of events', markers.length < ev_cnt)
+function trimEvents(cap: Core.Capture, markers: Core.Marker[], count: number): [Core.Marker, Core.Marker[]] {
+    Core.fail('insufficient number of events', markers.length < count)
     const rsig = cap.current_sig
     const margin = rsig.secsToOff(.5)
     const end_idx = markers.findLastIndex(m => (m.offset + margin) < rsig.data.length)
-    const beg_idx = end_idx - ev_cnt
-    const wid = rsig.secsToOff(ev_cnt)
+    const beg_idx = end_idx - count
+    Core.fail('insufficient number of events', markers[beg_idx].offset < margin)
+    const wid = rsig.secsToOff(count)
     const off = markers[beg_idx].offset - margin
     const span = rsig.window(wid, off).toMarker()
     return [span, markers.slice(beg_idx, end_idx)]
