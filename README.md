@@ -59,19 +59,19 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated initially with raw signal data acquired through the `emscope grab` sub-command.&thinsp;  Within the latter mode, you'll physically connect a **Joulescope** [JS220](https://www.joulescope.com/products/js220-joulescope-precision-energy-analyzer) or **Nordic** [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2) to your target embedded system.
 
-In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, we've prepared the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures/blob/dev-25.0.2/README.md) repo which you'll provision locally.
+In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; For now, we'll rely upon the [em-foundation/BlueJoule](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md) benchmark repo to support the examples which follow.
 
 > [!WARNING]
-> The `bleadv-captures` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
+> The `BlueJoule` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
 
-At this stage, you would use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
+Once provisioned locally, you would use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
 
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip` files.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
 
 > [!IMPORTANT]
-> All of these captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; transmitting a stock BLE packet on all three advertising channels once per-second with 0&thinsp;dB of radio power.
+> All `BlueJoule` captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; in this case, transmitting a [prescribed BLE packet](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#application) on all three advertising channels once per-second.
 >
-> We hope this embryonic repository will encourage others to contribute captures for a wide range of embedded BLE systems &ndash; enabling more rational and robust comparative benchmarks between different HW/SW providers who all claim "ultra-low-power".
+> We hope our embryonic `BlueJoule` repository will encourage others to [contribute captures](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#contributing) for a wide range of embedded BLE systems &ndash; enabling more robust comparative benchmarks between different HW/SW providers who all claim _"ultra-low-power"_.
 
 ## Examples
 
@@ -118,17 +118,17 @@ $ emscope grab -PSV 1.8
 ---
 
 > [!TIP]
-> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
-> $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/bleadv-captures.git
-> $ cd bleadv-captures
+> $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
+> $ cd BlueJoule
 > $ git lfs install --local --skip-smudge
 > $ cd ti-23-lp-slsdk-J
 > $ emscope pack --unpack
 >```
 >
-> Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
+> Alternatively, execute `emscope pack -u -C` from the root of the `BlueJoule` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
 
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
@@ -237,7 +237,7 @@ $ emscope scan -tg 5
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
 
 > [!TIP]
-> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command from anywhere inside the repo:
+> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `BlueJoule` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command from anywhere inside the repo:
 > ```
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
@@ -332,7 +332,7 @@ $ emscope view -w 2:00 --score
 <br>
 
 ```console
-$ cd .../bleadv-captures
+$ cd .../BlueJoule
 $ emscope view --score -C '*-J'
 
 adi-m17-evk-msdk-J:
@@ -369,7 +369,7 @@ At this early stage of development, the **EM&bull;Scope** team has four requests
 
 🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
 🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.md) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.md) issues when needed<br>
-🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/bleadv-captures)🍴&thinsp;`bleadv-captures` to get going<br>
+🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/BlueJoule)🍴&thinsp;`BlueJoule` to get going<br>
 🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star**](https://github.com/em-foundation/emscope)⭐&thinsp; **&bull;** &thinsp;[**Watch**](https://github.com/em-foundation/emscope)👀 this repo<br>
 
 
