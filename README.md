@@ -130,6 +130,8 @@ $ emscope grab -PSv 1.8
 >
 > Alternatively, execute `emscope pack -u -C` from the root of the `BlueJoule` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
 
+<br>
+
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
@@ -195,6 +197,8 @@ $ emscope view -jB
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
 ></p>
 
+<br>
+
 ### 🟠&ensp;refining event detection &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```console
@@ -242,18 +246,29 @@ $ emscope scan -t 10 -g 5
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
 
+<br>
+
 ### 🟠&ensp;publishing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ```
-emscope pack
-... prepare other capture directory artifacts
+emscope pack -a                                    # generate ABOUT.md
+    ... add other information to the ABOUT file
+emscope pack -z                                    # generate emscope-capture.zip
+    ... prepare other capture directory artifacts
 git commit ...   
 ```
 
 > [!NOTE]
 > You'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit the `capture.yaml` and `analysis.yaml` files described earlier as well as the (large) `emscope-capture.zip` generated here.
 >
-> Repo owners will often prescribe other required artifacts (such as `ABOUT.md`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+> Repo owners will often prescribe other required artifacts (such as `ABOUT.md`) as well as naming conventions for the capture directory itself.&thinsp; The repo should _not_ retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+
+> [!TIP]
+> In practice, you'll regularly run `emscope pack -a` as you refine `analysis.yaml`.&thinsp; Partially populated with results from `emscope view`, the `emscope pack -a` command in fact preserves _all_ edits you've already made to the generated `ABOUT.md` file.&thinsp;
+>
+> The `BlueJoule` capture directories abound with examples illustrating this juxtaposition of generated data with edited information.
+
+<br>
 
 ### 🟠&ensp;scoring energy efficiency &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
