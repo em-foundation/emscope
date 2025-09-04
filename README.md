@@ -48,7 +48,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 ## Usage
 
-**EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
+**EM&bull;Scope** has four main modes of operation, corresponding to these `emscope` sub-commands:
 
 <p align="center">
     <img src="docs/images/modes.png" alt="EM•Scope Modes" width="600">
@@ -59,7 +59,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated initially with raw signal data acquired through the `emscope grab` sub-command.&thinsp;  Within the latter mode, you'll physically connect a **Joulescope** [JS220](https://www.joulescope.com/products/js220-joulescope-precision-energy-analyzer) or **Nordic** [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2) to your target embedded system.
 
-In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; For now, we'll rely upon the [em-foundation/BlueJoule](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md) benchmark repo to support the examples which follow.
+In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; For this purpose, we'll rely upon the [em-foundation/BlueJoule](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md) benchmark repo to support the examples which follow.
 
 > [!WARNING]
 > The `BlueJoule` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
@@ -68,7 +68,7 @@ Once provisioned locally, you would use the `emscope scan` and `emscope view` co
 
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip` files.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
 
-> [!IMPORTANT]
+> [!NOTE]
 > All `BlueJoule` captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; in this case, transmitting a [prescribed BLE packet](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#application) on all three advertising channels once per-second.
 >
 > We hope our embryonic `BlueJoule` repository will encourage others to [contribute captures](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#contributing) for a wide range of embedded BLE systems &ndash; enabling more robust comparative benchmarks between different HW/SW providers who all claim _"ultra-low-power"_.
@@ -77,6 +77,9 @@ Only the original supplier of the raw data, however, would use `emscope pack` to
 
 ### 🟠&ensp;recording raw power signals &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 <a id="grab"></a>
+
+> [!IMPORTANT]
+> Even if you don't have a **Joulescope JS220** or **Nordic PPK2** analyzer at hand, understanding typical use of `emscope grab` sets the stage for other modes of the `emscope` command illustrated later.
 
 ---
 
