@@ -34,7 +34,7 @@ export function exec(opts: any) {
 }
 
 function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
-    let jfile = `${cap.basename}-events`
+    let jfile = `events`
     let span = aobj.span
     let events = aobj.events
     if (eid) {
@@ -42,7 +42,7 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
         Core.fail(`event '${eid}' not found`, aobj.events[eidx] === undefined)
         const ev = aobj.events[eidx]
         const rsig = cap.current_sig
-        jfile = `${cap.basename}-event-${eid}`
+        jfile = `event-${eid}`
         span = { offset: ev.offset - rsig.secsToOff(1e-3), width: rsig.secsToOff(5e-3) }
         events = [ev]
     }
@@ -85,14 +85,14 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    score_only || Core.infoMsg(`event cycle duration: ${Core.secsToHms(ev_rate)}`)
+    score_only || Core.infoMsg(`event period: ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
     score_only || Core.infoMsg('----')
     const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
     const egy_1e = egy_1s - sleep_pwr * 1
     const egy_1c = (sleep_pwr * ev_rate) + egy_1e
     score_only || Core.infoMsg(`representative event: ${Core.joules(egy_1e)}`)
-    score_only || Core.infoMsg(`energy per cycle: ${Core.joules(egy_1c)}`)
+    score_only || Core.infoMsg(`energy per period: ${Core.joules(egy_1c)}`)
     const egy_1d = egy_1c * 86400 / ev_rate
     score_only || Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
     const egy_1m = egy_1d * 30

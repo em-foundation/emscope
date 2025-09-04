@@ -42,7 +42,7 @@ CMD.command('view')
     .option('-e --event-info', 'characterize power consumption when active')
     .option('-j --jls-file [event ID]', 'generate a Joulescope .jls file containing events')
     .option('-s --sleep-info', 'characterize power consumption when inactive')
-    .option('-w --what-if [event-cycle rate]', `extrapolate results at a given event rate (default: '00:00:01')`, Core.parseHms)
+    .option('-w --what-if [event period]', `extrapolate results for a given event period (default: '00:00:01')`, Core.parseHms)
     .option('--score', 'only print the EM•eralds benchmark score')
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Renderer.exec, opts, cmd.parent!.opts()))
 
