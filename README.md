@@ -77,6 +77,9 @@ Only the original supplier of the raw data, however, would use `emscope pack` to
 
 ### 🟠&ensp;recording raw power signals &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 <a id="grab"></a>
+
+---
+
 ```console
 $ emscope grab -J
     wrote 'capture.yaml'
@@ -133,6 +136,8 @@ $ emscope grab -PSv 1.8
 <br>
 
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
 
 ```console
 $ emscope view -s
@@ -201,6 +206,8 @@ $ emscope view -jB
 
 ### 🟠&ensp;refining event detection &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
+---
+
 ```console
 $ emscope scan
     analyzing captured data...
@@ -250,6 +257,8 @@ $ emscope scan -t 10 -g 5
 
 ### 🟠&ensp;publishing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
+---
+
 ```
 emscope pack -a                                    # generate ABOUT.md
     ... add other information to the ABOUT file
@@ -271,6 +280,8 @@ git commit ...
 <br>
 
 ### 🟠&ensp;scoring energy efficiency &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
 
 ```console
 $ emscope view -w
