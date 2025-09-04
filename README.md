@@ -94,7 +94,7 @@ $ emscope grab -J -d 12
 > [!NOTE]
 > Capture raw data using an attached **Joulescope JS220** power analyzer, wired to your target system; the `-d, --duration` option specifies the capture duration in seconds (default: 3).&thinsp; We'll explain more about the generated output shortly.
 
-<br> 
+---
 
 ```console
 $ emscope grab -PA
@@ -142,7 +142,7 @@ $ emscope view -s
 > [!NOTE]
 > The `-s, --sleep` option reports average power consumption during periods of inactivity within the target system &ndash; values that should align with a vendor data sheet.&thinsp; The standard deviation reflects  _recharge pulses_ which often occur during deep-sleep.
 
-<br> 
+---
 
 <a id="view-e"></a>
 ```console
@@ -164,7 +164,7 @@ $ emscope view -e
 > [!NOTE]
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, a set of 10 one-second event cycles provides a reasonable sample.  
 
-<br> 
+---
 
 ```console
 $ emscope view -j
@@ -182,7 +182,7 @@ $ emscope view -j
 > [!TIP]
 > Somewhat daunting at first, take some time to familiarize yourself with the **Joulescope File Viewer**.&thinsp; As you start zooming in on portions of the capture &ndash; and perhaps find yourself a little lost &ndash; simply exit the program and re-run the `emscope view -j` command.
 
-<br> 
+--- 
 
 ```console
 $ emscope view -jB
@@ -211,7 +211,7 @@ $ emscope scan
 > [!NOTE]
 > This command performs a baseline analysis of the raw signal data, discriminating event activity from periods of deep-sleep.&thinsp; Saving results to `analysis.yaml`, the `emscope grab` command seen [earlier](#grab) in fact performs an initial `emscope scan` after recording the data.
 
-<br> 
+---
 
 ```console
 $ emscope scan -t 10
@@ -223,7 +223,7 @@ $ emscope scan -t 10
 > [!NOTE]
 > The `-t, --trim` option updates `analysis.yaml` to contain a specific number of events bounded by &ge;&thinsp;500&thinsp;ms of inactivity on either end.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 (or more) seconds should yield a clean set of _d_ 1Hz events. 
 
-<br> 
+--- 
 
 ```console
 $ emscope scan -t 10 -g 5
@@ -289,7 +289,7 @@ $ emscope view -w
 >
 > As you might imagine, the overwhelming percentage of energy consumed per 1&thinsp;s event-cycle happens in under 1% of real-time &ndash; an inherent and enduring trait of most "sleepy" applications for embedded systems.
 
-<br>
+---
 
 ```console
 $ emscope-dev view -w 5
@@ -321,7 +321,7 @@ $ emscope view -w 2:00
 > [!IMPORTANT]
 > The energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
 
-<br>
+---
 
 ```console
 $ emscope view --score
@@ -344,7 +344,7 @@ $ emscope view -w 2:00 --score
 >
 > More **EM•eralds**, more efficiency....&nbsp; And while our embedded system may use other sources of energy than a CR2032 battery, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
 
-<br>
+---
 
 ```console
 $ cd .../BlueJoule
@@ -373,6 +373,8 @@ ti-23-lp-slsdk-J:
 > The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'*'`).
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
+
+---
 
 ### Enjoy the ride&thinsp;!!! **🎢**
 
