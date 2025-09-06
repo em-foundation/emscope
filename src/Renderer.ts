@@ -42,8 +42,10 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
         Core.fail(`event '${eid}' not found`, aobj.events[eidx] === undefined)
         const ev = aobj.events[eidx]
         const rsig = cap.current_sig
+        const dur = rsig.offToSecs(ev.width)
+        const wid = rsig.secsToOff(Math.ceil((dur + 2e-3) * 1000) / 1000)
         jfile = `event-${eid}`
-        span = { offset: ev.offset - rsig.secsToOff(1e-3), width: rsig.secsToOff(5e-3) }
+        span = { offset: ev.offset - rsig.secsToOff(1e-3), width: wid }
         events = [ev]
     }
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)

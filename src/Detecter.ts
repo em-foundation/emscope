@@ -2,11 +2,11 @@ import * as Core from './Core'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = analyze(cap, opts.trim, opts.gap)
+    const aobj = analyze(cap, opts.trim, opts.gap, opts.minDuration)
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, trim?: number, gap?: number): Core.Analysis {
+export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?: number): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
@@ -34,14 +34,20 @@ export function analyze(cap: Core.Capture, trim?: number, gap?: number): Core.An
         }
     }
     let options = new Array<string>()
+    if (min_dur != undefined) {
+        const min_wid = rsig.secsToOff(min_dur / 1000)
+        markers = markers.filter(m => m.width >= min_wid)
+        options.push(`--min-duration ${min_dur}`)
+    }
     if (gap !== undefined) {
         markers = combineMarkers(rsig, markers, rsig.secsToOff(gap / 1000))
         options.push(`--gap ${gap}`)
     }
+
     let span = rsig.window(rsig.data.length).toMarker()
     if (trim) {
         [span, markers] = trimEvents(cap, markers, trim)
-        options.push(`--trim`)
+        options.push(`--trim ${trim}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, sleep: si, options: options }

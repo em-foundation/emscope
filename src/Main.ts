@@ -33,6 +33,7 @@ CMD.command('scan')
     .description('analyze captured data and locate active events')
     .option(CAP[0], CAP[1], CAP[2])
     .option('-g, --gap <milliseconds>', 'combine adjacent events whose gap is under a threshold', parseFloat)
+    .option('-m, --min-duration <milliseconds>', 'delete events whose duration is under a threshold', parseFloat)
     .option('-t --trim <event count>', 'remove extra events', parseFloat)
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Detecter.exec, opts, cmd.parent!.opts()))
 
