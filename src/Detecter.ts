@@ -2,11 +2,11 @@ import * as Core from './Core'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = analyze(cap, opts.trim, opts.gap, opts.minDuration)
+    const aobj = analyze(cap, opts.trim, opts.gap, opts.minDuration, opts.minEnergy)
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?: number): Core.Analysis {
+export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?: number, min_egy?: number): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
@@ -34,14 +34,18 @@ export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?
         }
     }
     let options = new Array<string>()
+    if (gap !== undefined) {
+        markers = combineMarkers(rsig, markers, rsig.secsToOff(gap / 1000))
+        options.push(`--gap ${gap}`)
+    }
     if (min_dur != undefined) {
         const min_wid = rsig.secsToOff(min_dur / 1000)
         markers = markers.filter(m => m.width >= min_wid)
         options.push(`--min-duration ${min_dur}`)
     }
-    if (gap !== undefined) {
-        markers = combineMarkers(rsig, markers, rsig.secsToOff(gap / 1000))
-        options.push(`--gap ${gap}`)
+    if (min_egy != undefined) {
+        markers = markers.filter(m => cap.energyWithin(m) >= min_egy / 1_000_000)
+        options.push(`--min-energy ${min_egy}`)
     }
 
     let span = rsig.window(rsig.data.length).toMarker()
