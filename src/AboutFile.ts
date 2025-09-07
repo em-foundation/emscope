@@ -26,7 +26,7 @@ ${END}
 ## Typical event
 
 <p align="center">
-    <img src="${cap.basename}-event-ID.png" alt="Event" width="900">
+    <img src="event-ID.png" alt="Event" width="900">
 </p>
 
 ## Observations
@@ -71,15 +71,15 @@ export function mkGen(cap: Core.Capture): string {
 |:---:|:---:|:---:|:---:|
 | ${sl_v.toFixed(2)} V | ${Core.amps(sl_avg)} | ${Core.amps(sl_std)} | ${Core.toEng(sl_pwr, 'W')} |
 
-### 🟠&ensp;1&thinsp;s event cycle
+### 🟠&ensp;1&thinsp;s event period
 
-| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per cycle&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
+| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|
 | ${Core.joules(egy1_e)} | ${Core.joules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
 
-### 🟠&ensp;10&thinsp;s event cycle
+### 🟠&ensp;10&thinsp;s event period
 
-| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per cycle&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
+| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|
 | ${Core.joules(egy1_e)} | ${Core.joules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |
 

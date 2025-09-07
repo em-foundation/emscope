@@ -12,11 +12,17 @@ export async function exec(opts: any) {
         toggleLfs(capdir, opts)
         return
     }
-    AboutFile.update(capdir)
-    if (opts.aboutFile) return
-    const zip = new AdmZip()
-    zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
-    zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
+    if (opts.aboutFile) {
+        AboutFile.update(capdir)
+        return
+    }
+    if (opts.zipFile) {
+        const zip = new AdmZip()
+        zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
+        zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
+        return
+    }
+    Core.fail(`no options found: run 'emscope pack -h'`)
 }
 
 const LFS_MAGIC = 'version https://git-lfs.github.com/spec'

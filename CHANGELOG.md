@@ -1,7 +1,13 @@
 ## VERSION-25-0.2
 
-* new `emscope pack -a, --about-file` option
+* uses `BlueJoule` repo as exemplar
+* updated `README` documentation
 * renamed `emscope grab -v, --voltage` option
+* new `emscope scan -d, --min-duration` option 
+* new `emscope scan -e, --min-energy` option 
+* `emscope scan -t, --trim` option requires an event count
+* new `emscope pack -a, --about-file` option
+* new `emscope pack -z, --zip-file` option
 * renamed `emscope pack -s, --status` option
 * renamed `emscope pack --restore` option
 
