@@ -1,5 +1,7 @@
 ## VERSION-25-0.2
 
+* uses `BlueJoule` repo as exemplar
+* updated `README` documentation
 * renamed `emscope grab -v, --voltage` option
 * new `emscope scan -d, --min-duration` option 
 * new `emscope scan -e, --min-energy` option 
