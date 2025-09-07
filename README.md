@@ -48,7 +48,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 ## Usage
 
-**EM&bull;Scope** has four primary modes of operation, corresponding to these `emscope` sub-commands:
+**EM&bull;Scope** has four main modes of operation, corresponding to these `emscope` sub-commands:
 
 <p align="center">
     <img src="docs/images/modes.png" alt="EM•Scope Modes" width="600">
@@ -59,24 +59,30 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 
 Use of **EM&bull;Scope** centers around a _capture directory_ &ndash; populated initially with raw signal data acquired through the `emscope grab` sub-command.&thinsp;  Within the latter mode, you'll physically connect a **Joulescope** [JS220](https://www.joulescope.com/products/js220-joulescope-precision-energy-analyzer) or **Nordic** [PPK2](https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2) to your target embedded system.
 
-In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; To support the examples which follow, we've prepared the [em-foundation/bleadv-captures](https://github.com/em-foundation/bleadv-captures/blob/dev-25.0.2/README.md) repo which you'll provision locally.
+In practice, you'll typically begin using **EM&bull;Scope** with captures previously grabbed by others and then published within a curated **Git** repository.&thinsp; For this purpose, we'll rely upon the [em-foundation/BlueJoule](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md) benchmark repo to support the examples which follow.
 
 > [!WARNING]
-> The `bleadv-captures` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
+> The `BlueJoule` repo stores (large) `emscope-capture.zip` files using **Git LFS** pointers.&thinsp; We'll soon illustrate how to clone this repo as well as deflate its `emscope-capture.zip` files onto your host computer using `emscope pack --unpack`.
 
-At this stage, you would use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
+Once provisioned locally, you would use the `emscope scan` and `emscope view` commands to explore raw signal data captured at an earlier time &ndash; as if you had just executed `emscope grab`.
 
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip` files.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
 
-> [!IMPORTANT]
-> All of these captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; transmitting a stock BLE packet on all three advertising channels once per-second with 0&thinsp;dB of radio power.
+> [!NOTE]
+> All `BlueJoule` captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; in this case, transmitting a [prescribed BLE packet](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#application) on all three advertising channels once per-second.
 >
-> We hope this embryonic repository will encourage others to contribute captures for a wide range of embedded BLE systems &ndash; enabling more rational and robust comparative benchmarks between different HW/SW providers who all claim "ultra-low-power".
+> We hope our embryonic `BlueJoule` repository will encourage others to [contribute captures](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#contributing) for a wide range of embedded BLE systems &ndash; enabling more robust comparative benchmarks between different HW/SW providers who all claim _"ultra-low-power"_.
 
 ## Examples
 
 ### 🟠&ensp;recording raw power signals &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 <a id="grab"></a>
+
+> [!IMPORTANT]
+> Even if you don't have a **Joulescope JS220** or **Nordic PPK2** analyzer at hand, understanding typical use of `emscope grab` sets the stage for other modes of the `emscope` command illustrated later.
+
+---
+
 ```console
 $ emscope grab -J
     wrote 'capture.yaml'
@@ -94,7 +100,7 @@ $ emscope grab -J -d 12
 > [!NOTE]
 > Capture raw data using an attached **Joulescope JS220** power analyzer, wired to your target system; the `-d, --duration` option specifies the capture duration in seconds (default: 3).&thinsp; We'll explain more about the generated output shortly.
 
-<br> 
+---
 
 ```console
 $ emscope grab -PA
@@ -103,7 +109,7 @@ $ emscope grab -PA
     found 3 event(s)
     wrote 'analysis.yaml'
 
-$ emscope grab -PSV 1.8
+$ emscope grab -PSv 1.8
     wrote 'capture.yaml'
     analyzing captured data...
     found 12 event(s)
@@ -111,26 +117,30 @@ $ emscope grab -PSV 1.8
 ```
 
 > [!NOTE]
-> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target will likely differ in each case.
+> Capture raw data, but now using an attached **Nordic PPK2** analyzer.&thinsp; This analyzer has two alternative operating modes selected by an additional `emscope grab` option (`-A, --ampere-mode` or `-S, --source-mode`); wiring to your target HW will likely differ in each case.
 >
-> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-V, --voltage` option (default: 3.3) informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
+> Unlike the **JS220**, the **PPK2** does _not_ record the **V** (voltage) signal &ndash; only the **I** (current) signal.&thinsp; The `-v, --voltage` option (default: 3.3) informs `emscope` of this value &ndash; but also specifies the voltage _supplied_ by the **PPK2** itself when `-S, source-mode` applies.
 
 ---
 
 > [!TIP]
-> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`bleadv-captures`](https://github.com/em-foundation/bleadv-captures) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
-> $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/bleadv-captures.git
-> $ cd bleadv-captures
+> $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
+> $ cd BlueJoule
 > $ git lfs install --local --skip-smudge
 > $ cd ti-23-lp-slsdk-J
 > $ emscope pack --unpack
 >```
 >
-> Alternatively, execute `emscope pack -u -C` from the root of the `bleadv-captures` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
+> Alternatively, execute `emscope pack -u -C` from the root of the `BlueJoule` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
+
+<br>
 
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
 
 ```console
 $ emscope view -s
@@ -140,7 +150,7 @@ $ emscope view -s
 > [!NOTE]
 > The `-s, --sleep` option reports average power consumption during periods of inactivity within the target system &ndash; values that should align with a vendor data sheet.&thinsp; The standard deviation reflects  _recharge pulses_ which often occur during deep-sleep.
 
-<br> 
+---
 
 <a id="view-e"></a>
 ```console
@@ -162,7 +172,7 @@ $ emscope view -e
 > [!NOTE]
 > The `-e, --events` option lists information about each period of _activity_ detected in the raw signal data.&thinsp; When benchmarking different HW/SW target configurations, a set of 10 one-second event cycles provides a reasonable sample.  
 
-<br> 
+---
 
 ```console
 $ emscope view -j
@@ -180,7 +190,7 @@ $ emscope view -j
 > [!TIP]
 > Somewhat daunting at first, take some time to familiarize yourself with the **Joulescope File Viewer**.&thinsp; As you start zooming in on portions of the capture &ndash; and perhaps find yourself a little lost &ndash; simply exit the program and re-run the `emscope view -j` command.
 
-<br> 
+--- 
 
 ```console
 $ emscope view -jB
@@ -195,36 +205,40 @@ $ emscope view -jB
 >    <img src="docs/images/event.png" alt="EM•Scope Event Image" width="850">
 ></p>
 
+<br>
+
 ### 🟠&ensp;refining event detection &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
 
 ```console
 $ emscope scan
     analyzing captured data...
-    found 3 event(s)
+    found 12 event(s)
     wrote 'analysis.yaml'
 ```
 
 > [!NOTE]
 > This command performs a baseline analysis of the raw signal data, discriminating event activity from periods of deep-sleep.&thinsp; Saving results to `analysis.yaml`, the `emscope grab` command seen [earlier](#grab) in fact performs an initial `emscope scan` after recording the data.
 
-<br> 
+---
 
 ```console
-$ emscope scan -t
+$ emscope scan -t 10
     analyzing captured data...
-    found 1 event(s)
+    found 10 event(s)
     wrote 'analysis.yaml'
 ```
 
 > [!NOTE]
-> The `-t, --trim` option will typically drop the first and last events of its analysis, ensuring that at least 500&thinsp;ms of inactivity occur on either end of the newly scanned data.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 seconds should yield a clean set of _d_ 1Hz events. 
+> The `-t, --trim` option updates `analysis.yaml` to contain a specific number of events bounded by &ge;&thinsp;500&thinsp;ms of inactivity on either end.&thinsp; If all goes well, a capture of duration _d&thinsp;_+&thinsp;2 (or more) seconds should yield a clean set of _d_ 1Hz events. 
 
-<br> 
+--- 
 
 ```console
-$ emscope scan -tg 5
+$ emscope scan -t 10 -g 5
     analyzing captured data...
-    found 1 event(s)
+    found 10 event(s)
     wrote 'analysis.yaml'
 ```
 
@@ -237,25 +251,40 @@ $ emscope scan -tg 5
 > The `emscope scan` command will _always_ (re-)write the `analysis.yaml` file in the capture directory.&thinsp; Along with the `capture.yaml` file written [earlier](#grab) by `emscope grab`, this pair of special files source much of the information presented by `emscope view` &ndash; with the latter command often used in tandem with `emscope scan` to refine event analysis _before_ publishing the capture itself.
 
 > [!TIP]
-> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `bleadv-captures` **Git** repository &ndash; implicitly modifying some `analysis.yaml` file.&thinsp; To revert `ble-captures` to its original state, run the following command from anywhere inside the repo:
+> Feel free, however, to use the `emscope scan` command within any of the capture directories published in the `BlueJoule` benchmark repository &ndash; implicitly modifying its `analysis.yaml` file.&thinsp; To revert `BlueJoule` to its original state, run the following command from anywhere inside the repo:
 > ```
 > git -C "$(git rev-parse --show-toplevel)" reset --hard
 > ```
 
+<br>
+
 ### 🟠&ensp;publishing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
+---
+
 ```
-emscope pack
-... prepare other capture directory artifacts
+emscope pack -a                                    # generate ABOUT.md
+    ... add other information to the ABOUT file
+emscope pack -z                                    # generate emscope-capture.zip
+    ... prepare other capture directory artifacts
 git commit ...   
 ```
 
 > [!NOTE]
 > You'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit the `capture.yaml` and `analysis.yaml` files described earlier as well as the (large) `emscope-capture.zip` generated here.
 >
-> Repo owners will often prescribe other required artifacts (such as `ABOUT.md`) as well as naming conventions for the capture directory itself.&thinsp; The repo will _not_ retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+> Repo owners will often prescribe other required artifacts (such as `ABOUT.md`) as well as naming conventions for the capture directory itself.&thinsp; The repo should _not_ retain generated `.jls` files &ndash; which clients can always reproduce with `emscope view` after cloning.
+
+> [!TIP]
+> In practice, you'll regularly run `emscope pack -a` as you refine `analysis.yaml`.&thinsp; Partially populated with results from `emscope view`, the `emscope pack -a` command in fact preserves _all_ edits you've already made to the generated `ABOUT.md` file.&thinsp;
+>
+> The `BlueJoule` capture directories abound with examples illustrating this juxtaposition of generated data with edited information.
+
+<br>
 
 ### 🟠&ensp;scoring energy efficiency &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
 
 ```console
 $ emscope view -w
@@ -274,7 +303,7 @@ $ emscope view -w
 >
 > As you might imagine, the overwhelming percentage of energy consumed per 1&thinsp;s event-cycle happens in under 1% of real-time &ndash; an inherent and enduring trait of most "sleepy" applications for embedded systems.
 
-<br>
+---
 
 ```console
 $ emscope-dev view -w 5
@@ -306,7 +335,7 @@ $ emscope view -w 2:00
 > [!IMPORTANT]
 > The energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnititude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
 
-<br>
+---
 
 ```console
 $ emscope view --score
@@ -329,10 +358,10 @@ $ emscope view -w 2:00 --score
 >
 > More **EM•eralds**, more efficiency....&nbsp; And while our embedded system may use other sources of energy than a CR2032 battery, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
 
-<br>
+---
 
 ```console
-$ cd .../bleadv-captures
+$ cd .../BlueJoule
 $ emscope view --score -C '*-J'
 
 adi-m17-evk-msdk-J:
@@ -359,6 +388,8 @@ ti-23-lp-slsdk-J:
 >
 > Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
 
+---
+
 ### Enjoy the ride&thinsp;!!! **🎢**
 
 <br>
@@ -369,7 +400,7 @@ At this early stage of development, the **EM&bull;Scope** team has four requests
 
 🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
 🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.md) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.md) issues when needed<br>
-🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/bleadv-captures)🍴&thinsp;`bleadv-captures` to get going<br>
+🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/BlueJoule)🍴&thinsp;`BlueJoule` to get going<br>
 🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star**](https://github.com/em-foundation/emscope)⭐&thinsp; **&bull;** &thinsp;[**Watch**](https://github.com/em-foundation/emscope)👀 this repo<br>
 
 
