@@ -224,7 +224,7 @@ $ emscope scan
 ---
 
 ```console
-$ emscope scan -t 10
+$ emscope scan -t10
     analyzing captured data...
     found 10 event(s)
     wrote 'analysis.yaml'
@@ -236,14 +236,19 @@ $ emscope scan -t 10
 --- 
 
 ```console
-$ emscope scan -t 10 -g 5
+$ emscope scan -t10 -g5 -d1 -e10
     analyzing captured data...
     found 10 event(s)
     wrote 'analysis.yaml'
 ```
 
 > [!NOTE]
-> Adding in the `-g, --gap <milliseconds>` option coalesces adjacent events whose separation falls under a given threshold.&thinsp; Benign in most cases, this filter nevertheless has proven useful when working with certain target systems.
+> While usually sufficient, `-t, --trim` sometimes requires other `emscope scan` options to first "clean-up" the raw captured data as part of the event detection process:
+> * `-g, --gap <milliseconds>` &ndash; coalesces adjacent events whose separation falls under a given threshold
+> * `-d, --min-duration <milliseconds>` &ndash; removes events whose duration falls under a given threshold
+> * `-e, --min-energy <microJoules>` &ndash; removes events whose energy consumption falls under a given threshold
+ 
+For later reference, the `analysis.yaml` file written by `emscope scan` records the command options used to refine the event set.
 
 ---
 
