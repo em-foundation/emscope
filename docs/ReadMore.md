@@ -61,9 +61,9 @@ Once provisioned locally, you would use the `emscope scan` and `emscope view` co
 Only the original supplier of the raw data, however, would use `emscope pack` to create `emscope-capture.zip` files.&thinsp; The supplier would then commit this file (and other **EM&bull;Scope** artifacts) into the capture repository &ndash; ready for downstream consumption by others.
 
 > [!NOTE]
-> All `BlueJoule` captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; in this case, transmitting a [prescribed BLE packet](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#application) on all three advertising channels once per-second.
+> All `BlueJoule` captures record the energy consumed by different embedded HW/SW configurations otherwise performing the _same_ application task &ndash; in this case, transmitting a [prescribed BLE packet](https://github.com/em-foundation/BlueJoule/blob/main/docs/ReadMore.md#application) on all three advertising channels once per-second.
 >
-> We hope our embryonic `BlueJoule` repository will encourage others to [contribute captures](https://github.com/em-foundation/BlueJoule/blob/dev-25.0.2/README.md#contributing) for a wide range of embedded BLE systems &ndash; enabling more robust comparative benchmarks between different HW/SW providers who all claim _"ultra-low-power"_.
+> We hope our embryonic `BlueJoule` repository will encourage others to [contribute captures](https://github.com/em-foundation/BlueJoule/blob/main/docs/ReadMore.md#contributing) for a wide range of embedded BLE systems &ndash; enabling more robust comparative benchmarks between different HW/SW providers who all claim _"ultra-low-power"_.
 
 ## Examples
 
@@ -116,13 +116,13 @@ $ emscope grab -PSv 1.8
 ---
 
 > [!TIP]
-> We'll run the remaining series of examples within the `ti-23-lp-slsdk-J` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `js220/ti-23-lp/simplelink` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
 > $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
 > $ cd BlueJoule
 > $ git lfs install --local --skip-smudge
-> $ cd ti-23-lp-slsdk-J
+> $ cd captures/js220/ti-23-lp/simplelink
 > $ emscope pack --unpack
 >```
 >
