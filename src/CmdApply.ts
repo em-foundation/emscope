@@ -24,7 +24,7 @@ function visit(dir: string, glob: string, cmd: CmdDesc) {
         if (!de.isDirectory()) continue
         const dpath = Path.join(de.parentPath, de.name)
         if (Fs.existsSync(Path.join(dpath, 'capture.yaml')) && Pico.isMatch(de.name, glob)) {
-            console.log(`\n${de.name}:`)
+            console.log(`\n${dpath}:`)
             cmd.fxn({ ...cmd.opts, capture: dpath })
         } else {
             visit(Path.join(dpath), glob, cmd)
