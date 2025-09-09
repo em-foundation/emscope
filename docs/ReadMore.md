@@ -359,7 +359,7 @@ $ emscope view -w 2:00 --score
 
 ```console
 $ cd .../BlueJoule/captures
-$ emscope view --score -C '*/nrf*/*'
+$ emscope view --score -C 'js220/nrf*/*'
 
 js220/nrf-52-dk/zephyr:
     27.72 EM•eralds
@@ -369,21 +369,12 @@ js220/nrf-54-dk/baremetal:
 
 js220/nrf-54-dk/zephyr:
     31.07 EM•eralds
-
-ppk2/nrf-52-dk/zephyr:
-    27.30 EM•eralds
-
-ppk2/nrf-54-dk/baremetal:
-    27.35 EM•eralds
-
-ppk2/nrf-54-dk/baremetal-1V8:
-    35.09 EM•eralds
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'**'`).
+> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose path name matches a given pattern (default: `'**'`).
 >
-> Typically run inside the repo's `capture` folder to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in path to each capture &ndash; in this case, all captures grabbed with a **JS220**.
+> Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of capture's relative path &ndash; here, listing scores for all **Nordic** target HW captures grabbed with a **JS220** or **PPK2**.
 
 ---
 
