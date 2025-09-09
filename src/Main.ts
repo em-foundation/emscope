@@ -15,7 +15,7 @@ const CAP = ['-c --capture <directory path>', 'working capture directory', '.']
 const VERS = Core.version()
 
 const CMD = new Commander.Command('emscope')
-    .option('-C, --capture-glob [name pattern]', `apply this command to each matching child capture directory (default "*")`)
+    .option('-C, --capture-glob [name pattern]', `apply this command to each matching child capture directory (default "**")`)
     .version(VERS)
 
 CMD.command('grab')
