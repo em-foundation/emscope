@@ -358,32 +358,32 @@ $ emscope view -w 2:00 --score
 ---
 
 ```console
-$ cd .../BlueJoule
-$ emscope view --score -C '*-J'
+$ cd .../BlueJoule/captures
+$ emscope view --score -C '*/nrf*/*'
 
-adi-m17-evk-msdk-J:
-    14.75 EM•eralds
-
-in-100-dk-none-J:
-    41.92 EM•eralds
-
-nrf-52-dk-zephyr-J:
+js220/nrf-52-dk/zephyr:
     27.72 EM•eralds
 
-nrf-54-dk-zephyr-J:
-    41.93 EM•eralds
+js220/nrf-54-dk/baremetal:
+    27.09 EM•eralds
 
-ti-23-lp-emsdk-J:
-    48.62 EM•eralds
+js220/nrf-54-dk/zephyr:
+    31.07 EM•eralds
 
-ti-23-lp-slsdk-J:
-    28.13 EM•eralds
+ppk2/nrf-52-dk/zephyr:
+    27.30 EM•eralds
+
+ppk2/nrf-54-dk/baremetal:
+    27.35 EM•eralds
+
+ppk2/nrf-54-dk/baremetal-1V8:
+    35.09 EM•eralds
 ```
 
 >[!NOTE]
-> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'*'`).
+> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose name matches a given pattern (default: `'**'`).
 >
-> Typically run from the root of the capture repo to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in each capture directory name &ndash; in this case, all captures grabbed with a **JS220**.
+> Typically run inside the repo's `capture` folder to report multiple scores, the glob pattern allows you to further filter this list using metadata encoded (by convention) in path to each capture &ndash; in this case, all captures grabbed with a **JS220**.
 
 ---
 
