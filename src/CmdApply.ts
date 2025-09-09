@@ -15,7 +15,7 @@ export function execCmd(fxn: CmdFxn, opts: any, popts: any) {
         return
     }
     const glob = (glob_opt === true) ? '*' : (glob_opt as string)
-    visit(process.cwd(), glob, { fxn: fxn, opts: opts })
+    visit('.', glob, { fxn: fxn, opts: opts })
 
 }
 
@@ -24,7 +24,7 @@ function visit(dir: string, glob: string, cmd: CmdDesc) {
         if (!de.isDirectory()) continue
         const dpath = Path.join(de.parentPath, de.name)
         if (Fs.existsSync(Path.join(dpath, 'capture.yaml')) && Pico.isMatch(de.name, glob)) {
-            console.log(`\n${dpath}:`)
+            console.log(`\n${dpath.replaceAll('\\', '/')}:`)
             cmd.fxn({ ...cmd.opts, capture: dpath })
         } else {
             visit(Path.join(dpath), glob, cmd)
