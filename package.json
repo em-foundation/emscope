@@ -1,6 +1,6 @@
 {
     "name": "emscope",
-    "version": "25.0.2",
+    "version": "25.0.3",
     "description": "",
     "main": "index.js",
     "bin": {
