@@ -1,0 +1,39 @@
+name: Publish npm package pre-release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout emscope
+        uses: actions/checkout@v5
+        with:
+          path: emscope
+          token: ${{ secrets.token }}
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Build emscope package
+        run: |
+          pushd emscope
+          npm ci
+          npm run build
+          popd
+
+      - name: Test emscope executable
+        run: |
+          ./emscope/dist/emscope --version
+
+      - name: Publish emscope package
+        run: |
+          cp ./emscope/docs/README-npm.md ./emscope/README.md
+          npm publish --access public --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
