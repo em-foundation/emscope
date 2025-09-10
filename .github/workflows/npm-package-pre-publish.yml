@@ -33,7 +33,7 @@ jobs:
 
       - name: Publish emscope package
         run: |
-          cp ./emscope/docs/README-npm.md ./emscope/README.md
+          # cp ./emscope/docs/README-npm.md ./emscope/README.md
           npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
