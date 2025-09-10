@@ -1,4 +1,4 @@
-name: Publish npm package 
+name: Publish npm package pre-release
 
 on:
   workflow_dispatch:
@@ -34,6 +34,6 @@ jobs:
       - name: Publish emscope package
         run: |
           cp ./emscope/docs/README-npm.md ./emscope/README.md
-          npm publish --access public
+          npm publish --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
