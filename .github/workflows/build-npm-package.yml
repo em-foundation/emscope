@@ -41,7 +41,7 @@ jobs:
       - name: Upload emscope package to npm-packages/resources
         uses: softprops/action-gh-release@v1
         with:
-          files: emscope/emscope-*.tgz
+          files: emscope/em-foundation-emscope-${{ steps.date.outputs.version }}.tgz
           repository: em-foundation/npm-packages
           token: ${{ secrets.token }}
           tag_name: resources
