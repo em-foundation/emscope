@@ -1,11 +1,15 @@
 {
-    "name": "emscope",
-    "version": "25.0.3",
-    "description": "",
-    "main": "index.js",
+    "name": "@em-foundation/emscope",
+    "version": "25.1.0",
+    "description": "benchmark energy efficiency in resource-constrained embedded systems",
     "bin": {
         "emscope": "dist/emscope"
     },
+    "files": [
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
     "scripts": {
         "build": "esbuild ./src/Main --bundle --external:vscode --external:joulescope_driver --external:jls-writer --external:@serialport/bindings-cpp --outfile=dist/emscope --platform=node --format=cjs",
         "watch": "npm run build -- --sourcemap --watch"
@@ -14,13 +18,21 @@
         "type": "git",
         "url": "git+https://github.com/em-foundation/emscope.git"
     },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "keywords": [
+        "openem",
+        "em-foundation",
+        "emscope",
+        "em",
+        "emfoundation",
+        "embedded"
+    ],
+    "author": "The EM Foundation",
+    "license": "MIT",
+    "preferGlobal": true,
     "bugs": {
         "url": "https://github.com/em-foundation/emscope/issues"
     },
-    "homepage": "https://github.com/em-foundation/emscope#readme",
+    "homepage": "https://github.com/em-foundation/emscope/blob/main/docs/ReadMore.md",
     "dependencies": {
         "@serialport/bindings-cpp": "^13.0.1",
         "@types/adm-zip": "^0.5.7",

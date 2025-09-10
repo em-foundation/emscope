@@ -27,8 +27,8 @@ The **EM&bull;Scope** tool streamlines the capture, analysis, display, and deliv
 npm install -g @em-foundation/emscope
 ```
 
-> [!IMPORTANT]
-> Until the 25.1.0 release of **EM&bull;Scope**, we will _not_ upload its package to the public `npm` registry.&thinsp; Instead, you'll find versions of this package named `emscope-<version>.tar.gz` archived on our **GitHub** [releases](http://github.com/em-foundation/emscope/releases) page.&thinsp; Copy the link of your choice (likely the latest) and then execute the following command:
+> [!TIP]
+> You'll also find versions of this `npm` package named `emscope-<version>.tar.gz` archived on our **GitHub** [releases](http://github.com/em-foundation/emscope/releases) page.&thinsp; Copy the link of your choice (likely the latest) and then execute the following command:
 > ```
 > npm install -g <package URL> 
 > ```
