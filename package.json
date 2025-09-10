@@ -18,8 +18,15 @@
         "type": "git",
         "url": "git+https://github.com/em-foundation/emscope.git"
     },
-    "keywords": [],
-    "author": "",
+    "keywords": [
+        "openem",
+        "em-foundation",
+        "emscope",
+        "em",
+        "emfoundation",
+        "embedded"
+    ],
+    "author": "The EM Foundation",
     "license": "MIT",
     "preferGlobal": true,
     "bugs": {
