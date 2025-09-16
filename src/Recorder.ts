@@ -6,6 +6,10 @@ import * as Driver_PPK2 from './Driver_PPK2'
 export async function exec(opts: any) {
     let c: Core.Capture
     if (opts.js220) {
+        if (opts.ppk2Supply) {
+            const voltage = opts.ppk2Supply === true ? 3.3 : Number(opts.ppk2Supply)
+            await Driver_PPK2.powerOn(voltage)
+        }
         c = await Driver_JS220.execCapture(opts)
     } else if (opts.ppk2) {
         c = await Driver_PPK2.execCapture(opts)
