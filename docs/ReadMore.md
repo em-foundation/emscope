@@ -346,7 +346,7 @@ $ emscope view -w 2:00 --score
 >[!NOTE]
 > Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
 >
-> <p align="center"><b>EM•eralds = 2400 / (<i>Joules per day</i> * 30) = 800 / <i>Joules per day</i></b></p>
+> <p align="center"><b>EM•eralds = 2400 / (<i>Joules per day</i> × 30) = 80 / <i>Joules per day</i></b></p>
 >
 > Why 2400?&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 225&thinsp;mAH and nominally delivering 3V.
 >
