@@ -33,7 +33,7 @@ npm install -g @em-foundation/emscope
 > npm install -g <package URL> 
 > ```
 
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.8 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
+Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.9 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
 
 > [!TIP]
 > Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
