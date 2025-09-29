@@ -71,10 +71,6 @@ const getMaskedValue = (value: number, { mask, pos }: Mask): number =>
 
 export async function execCapture(opts: any): Promise<Core.Capture> {
     const path_list = await findDevices()
-    if (path_list.length == 0) {
-        console.error("*** no PPK2 analyzer")
-        process.exit(1)
-    }
     const progress = new Core.Progress('capturing: ')
     const port = new SerialPort({ path: path_list[0], baudRate: 9600, autoOpen: false })
     await new Promise<void>((resolve, reject) => {
@@ -83,7 +79,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     await progress.spin(2500)
     port.on('data', () => { })
     const cap = Core.Capture.create(opts.capture, opts.duration, 'PPK2', opts.voltage)
-    const ppk = new PPK2(port, cap)
+    const ppk = new PPK2(port)
     await ppk.getModifiers()
     if (opts.ampereMode) {
         ppk.setMode('ampere')
@@ -92,10 +88,26 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
         ppk.setSourceVoltage(cap.voltage * 1000)
     }
     ppk.togglePower('on')
-    await ppk.capture(progress)
+    await ppk.record(cap, progress)
     ppk.togglePower('off')
     ppk.close()
     return cap
+}
+
+export async function powerOn(voltage: number): Promise<void> {
+    const path_list = await findDevices()
+    const progress = new Core.Progress('powering: ')
+    const port = new SerialPort({ path: path_list[0], baudRate: 9600, autoOpen: false })
+    await new Promise<void>((resolve, reject) => {
+        port.open(err => (err ? reject(err) : resolve()))
+    })
+    await progress.spin(2500)
+    const ppk = new PPK2(port)
+    await ppk.getModifiers()
+    ppk.setMode('source')
+    ppk.setSourceVoltage(voltage * 1000)
+    ppk.togglePower('on')
+    progress.done()
 }
 
 async function findDevices(): Promise<Array<string>> {
@@ -107,6 +119,7 @@ async function findDevices(): Promise<Array<string>> {
             res.push(port.path)
         }
     }
+    Core.fail('no PPK2 analyzer found', res.length == 0)
     return res
 }
 
@@ -130,7 +143,6 @@ function parseMods(mods: string) {
 
 class PPK2 {
 
-    #cap: Core.Capture
     #port: SerialPort
 
     #modifiers: modifiers = {
@@ -162,16 +174,15 @@ class PPK2 {
 
     #currentVdd = 0
 
-    constructor(port: SerialPort, cap: Core.Capture) {
-        this.#cap = cap
+    constructor(port: SerialPort) {
         this.#port = port
     }
 
-    async capture(progress: Core.Progress): Promise<void> {
+    async record(cap: Core.Capture, progress: Core.Progress): Promise<void> {
         await progress.spin(2000)
         this.startMeasurement()
         return await new Promise<void>(resolve => {
-            const raw = Buffer.allocUnsafe(this.#cap.duration * 100_000 * 4)
+            const raw = Buffer.allocUnsafe(cap.duration * 100_000 * 4)
             let offset = 0
             this.#port.on('data', buf => {
                 progress.update(`${(offset / 100_000 / 4).toFixed(3)} s`)
@@ -183,7 +194,7 @@ class PPK2 {
                     this.#port.on('data', () => { })
                     this.stopMeasurement()
                     for (const adcVal of new Uint32Array(raw.buffer, raw.byteOffset, raw.length / 4)) {
-                        this.#cap.current_ds.add(this.#handleRawDataSet(adcVal) / 1_000_000)
+                        cap.current_ds.add(this.#handleRawDataSet(adcVal) / 1_000_000)
                     }
                     resolve()
                 }

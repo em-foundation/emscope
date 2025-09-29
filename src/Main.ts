@@ -26,6 +26,7 @@ CMD.command('grab')
     .option('-P --ppk2', 'use a Nordic PPK2 device')
     .addOption(new Commander.Option('-A --ampere-mode', 'enable PPK ampere mode').conflicts(['sourceMode', 'js220']))
     .addOption(new Commander.Option('-S --source-mode', 'enable PPK source mode').default(true).conflicts(['ampereMode', 'js220']))
+    .addOption(new Commander.Option('-p, --ppk2-supply [voltage]', 'supply JS220 voltage from a PPK').argParser(parseFloat).default(3.3).conflicts('ppk2'))
     .addOption(new Commander.Option('-v, --voltage [value]', 'source voltage').argParser(parseFloat).default(3.3).conflicts('js220'))
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Recorder.exec, opts, cmd.parent!.opts()))
 
