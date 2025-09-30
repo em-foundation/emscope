@@ -54,7 +54,7 @@ export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?
         options.push(`--trim ${trim}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
-    return { span: span, events: markers, sleep: si, options: options }
+    return { span: span, events: markers, sleep: si, options: options, version: Core.version() }
 }
 
 function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): Core.Marker[] {
