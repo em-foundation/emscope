@@ -38,6 +38,22 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 > [!TIP]
 > Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
 
+> [!WARNING]
+> If you've already installed the `emscope` package, use the following pair of commands to determine whether you should update:
+>
+> ```
+> npm view @em-foundation/emscope version    ## the latest available version
+> emscope -V                                 ## the currently installed version
+> ```
+>
+> Alternatively, you can always "(re-)install" the `emscope` package in the usual way to ensure you have the latest version:
+>
+> ```
+> npm install -g <package URL> 
+> ```
+
+
+
 ## Usage
 
 **EM&bull;Scope** has four main modes of operation, corresponding to these `emscope` sub-commands:
