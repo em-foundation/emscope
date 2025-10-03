@@ -1,12 +1,37 @@
 import * as Core from './Core'
 
+type Params = {
+    gap?: number
+    min_dur?: number
+    min_egy?: number
+    trim?: number
+}
+
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = analyze(cap, opts.trim, opts.gap, opts.minDuration, opts.minEnergy)
+    let params: Params = {}
+    if (opts.refresh) {
+        if (cap.analysis) {
+            for (const opt of cap.analysis?.options) {
+                const a = opt.split(' ')
+                const [pname, pval] = [a[0].slice(2), Number(a[1])];
+                (params as any)[pname] = Number(pval)
+            }
+            if (Number.isNaN(params.trim)) {
+                params.trim = cap.analysis.events.length
+            }
+        }
+    } else {
+        params.gap = opts.gap
+        params.min_dur = opts.minDuration
+        params.min_egy = opts.minEnergy
+        params.trim = opts.trim
+    }
+    const aobj = analyze(cap, params)
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?: number, min_egy?: number): Core.Analysis {
+export function analyze(cap: Core.Capture, params: Params): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
@@ -34,24 +59,25 @@ export function analyze(cap: Core.Capture, trim?: number, gap?: number, min_dur?
         }
     }
     let options = new Array<string>()
-    if (gap !== undefined) {
-        markers = combineMarkers(rsig, markers, rsig.secsToOff(gap / 1000))
-        options.push(`--gap ${gap}`)
+    if (params.gap !== undefined) {
+        markers = combineMarkers(rsig, markers, rsig.secsToOff(params.gap! / 1000))
+        options.push(`--gap ${params.gap}`)
+
     }
-    if (min_dur != undefined) {
-        const min_wid = rsig.secsToOff(min_dur / 1000)
+    if (params.min_dur != undefined) {
+        const min_wid = rsig.secsToOff(params.min_dur / 1000)
         markers = markers.filter(m => m.width >= min_wid)
-        options.push(`--min-duration ${min_dur}`)
+        options.push(`--min-duration ${params.min_dur}`)
     }
-    if (min_egy != undefined) {
-        markers = markers.filter(m => cap.energyWithin(m) >= min_egy / 1_000_000)
-        options.push(`--min-energy ${min_egy}`)
+    if (params.min_egy != undefined) {
+        markers = markers.filter(m => cap.energyWithin(m) >= params.min_egy! / 1_000_000)
+        options.push(`--min-energy ${params.min_egy}`)
     }
 
     let span = rsig.window(rsig.data.length).toMarker()
-    if (trim) {
-        [span, markers] = trimEvents(cap, markers, trim)
-        options.push(`--trim ${trim}`)
+    if (params.trim) {
+        [span, markers] = trimEvents(cap, markers, params.trim!)
+        options.push(`--trim ${params.trim}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, sleep: si, options: options, version: Core.version() }

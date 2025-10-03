@@ -1,6 +1,7 @@
 ## VERSION-25-2.0
 
 * new `emscope grab -p, --ppk-supply` option
+* new `emscope scan --refresh` option
 * adds capture_time to generated .jls file
 * minor bug fixes
 * works with Joulescope UI 1.3.9
