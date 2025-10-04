@@ -51,6 +51,8 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 > ```
 > npm install -g <package URL> 
 > ```
+>
+> See [Updating ...&thinsp;](Updates.md) for additional steps required when installing a new version of `emscope`.
 
 
 
