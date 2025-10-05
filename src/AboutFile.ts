@@ -44,7 +44,8 @@ ${END}
 }
 
 export function mkGen(cap: Core.Capture): string {
-    const aobj = cap.analysis ?? Detecter.analyze(cap)
+    Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
+    const aobj = cap.analysis!
     const si = aobj.sleep
     const sl_v = cap.avg_voltage
     const sl_avg = aobj.sleep.avg
