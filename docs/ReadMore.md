@@ -387,9 +387,9 @@ ppk2/nrf-54-dk/baremetal-1V8:
 >
 > Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of the capture's relative path &ndash; here, listing scores for all **Nordic** target HW captures grabbed with a **JS220** or **PPK2**.
 
-<a id="updating"></a>
 <br>
 
+<a id="updating"></a>
 ### 🟠&ensp;updating the `emscope` package &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
 
 ---
