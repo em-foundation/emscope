@@ -404,7 +404,7 @@ emscope -V                                 ## the currently installed version
 Alternatively, you can always "(re-)install" the `emscope` package in the usual way to ensure you have the latest version:
 
 ```
-npm install -g <package URL> 
+npm install -g @em-foundation/emscope 
 ```
 
 ---
