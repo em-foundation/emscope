@@ -31,7 +31,7 @@ export function exec(opts: any) {
     cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, params: Params): Core.Analysis {
+export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
