@@ -26,16 +26,12 @@ The **EM&bull;Scope** tool streamlines the capture, analysis, display, and deliv
 ```
 npm install -g @em-foundation/emscope
 ```
+Enter `emscope -V` from the command-line to verify that installation has succeeded.
+
 > [!IMPORTANT]
 > See [below](#updating) for important information about updating the `emscope` package when necessary.
 
-> [!TIP]
-> You'll also find versions of this `npm` package named `emscope-<version>.tar.gz` archived on our **GitHub** [releases](http://github.com/em-foundation/emscope/releases) page.&thinsp; Copy the link of your choice (likely the latest) and then execute the following command:
-> ```
-> npm install -g <package URL> 
-> ```
-
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.9 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
+Also install version 1.3.9 or later of **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
 
 > [!TIP]
 > Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
