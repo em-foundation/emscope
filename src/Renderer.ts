@@ -8,7 +8,8 @@ import Path from 'path'
 
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
-    const aobj = cap.analysis ?? Detecter.analyze(cap)
+    Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
+    const aobj = cap.analysis!
     if (opts.eventInfo) {
         printEventInfo(cap, aobj.events)
         return

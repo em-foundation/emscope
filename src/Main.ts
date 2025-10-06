@@ -37,6 +37,7 @@ CMD.command('scan')
     .option('-e, --min-energy <microJoules>', 'remove events whose energy is under a threshold', parseFloat)
     .option('-g, --gap <milliseconds>', 'combine adjacent events whose gap is under a threshold', parseFloat)
     .option('-t --trim <event count>', 'remove extra events', parseFloat)
+    .option('--refresh', '(re-)scan using the last set of options')
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Detecter.exec, opts, cmd.parent!.opts()))
 
 CMD.command('view')

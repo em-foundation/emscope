@@ -2,7 +2,7 @@ import Fs from 'fs'
 import Path from 'path'
 import Yaml from 'js-yaml'
 
-export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[] }
+export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[], version: string }
 export type CaptureDevice = 'JS220' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
@@ -27,6 +27,7 @@ export class Capture {
         'duration',
         'sampling_rate',
         'sample_count',
+        'version',
         'voltage',
     ]
 
@@ -42,6 +43,7 @@ export class Capture {
     private _rootdir?: string
     private _sample_count?: number
     private _sampling_rate?: number
+    private _version?: string
     private _voltage?: number
     private _voltage_ds?: SampleSet
 
@@ -52,6 +54,7 @@ export class Capture {
         cap._rootdir = rootdir
         cap._duration = duration
         cap._device = device
+        cap._version = version()
         cap._voltage = voltage
         cap._creation_date = new Date()
         cap._sampling_rate = Capture.#SAMPLING_RATE.get(device) ?? 0
