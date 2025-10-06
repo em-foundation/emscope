@@ -31,7 +31,7 @@ Enter `emscope -V` from the command-line to verify that installation has succeed
 > [!IMPORTANT]
 > See [below](#updating) for important information about updating the `emscope` package when necessary.
 
-Also install version 1.3.9 or later of **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
+You should then install **Joulescope Application Software** [version 1.3.9](https://download.joulescope.com/joulescope_install/index.html) onto your host computer.
 
 > [!TIP]
 > Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
