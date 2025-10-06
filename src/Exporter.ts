@@ -33,6 +33,16 @@ function deflateLfs(repo: string, gpath: string) {
     ChildProc.execFileSync('git', ['lfs', 'checkout', gpath], { cwd: repo, stdio: 'inherit' })
 }
 
+function fetchOid(repo: string, gpath: string): string {
+    let res = ''
+    try {
+        const out = ChildProc.execFileSync('git', ['show', gpath], { cwd: repo, stdio: ['ignore','pipe','ignore'] }).toString()
+        const m = out.match(/^\s*oid sha256:([0-9a-f]{64})/m)
+        if (m) res = m[1]
+    } catch {}
+    return res
+}
+
 function findRepoDir(capdir: string): string {
     let repo = ''
     let dir = capdir
@@ -77,6 +87,12 @@ function toggleLfs(capdir: string, opts: any) {
         return
     }
     // opts.unpack == true
+    const oid = fetchOid(repo, `:${gpath}`)
+    Core.fail(`'emscope-capture.zip' not yet committed`, !oid)
+    const oid_head = fetchOid(repo, `HEAD:${gpath}`)
+    if (oid_head && oid_head != oid) {
+        restoreLfs(repo, gpath)
+    }
     if (desc_flag) {
         deflateLfs(repo, gpath)
     }
