@@ -1,6 +1,6 @@
 {
     "name": "@em-foundation/emscope",
-    "version": "25.1.1",
+    "version": "25.2.0",
     "description": "benchmark energy efficiency in resource-constrained embedded systems",
     "bin": {
         "emscope": "dist/emscope"
@@ -32,7 +32,7 @@
     "bugs": {
         "url": "https://github.com/em-foundation/emscope/issues"
     },
-    "homepage": "https://github.com/em-foundation/emscope/blob/main/docs/ReadMore.md",
+    "homepage": "https://github.com/em-foundation/emscope/blob/docs-stable/docs/ReadMore.md",
     "dependencies": {
         "@serialport/bindings-cpp": "^13.0.1",
         "@types/adm-zip": "^0.5.7",

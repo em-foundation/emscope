@@ -16,7 +16,6 @@ export function execCmd(fxn: CmdFxn, opts: any, popts: any) {
     }
     const glob = (glob_opt === true) ? '**' : (glob_opt as string)
     visit('.', glob, { fxn: fxn, opts: opts })
-
 }
 
 function visit(dir: string, glob: string, cmd: CmdDesc) {
