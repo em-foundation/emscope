@@ -12,25 +12,10 @@ const RE = /<!--\s*@emscope-pack:start\s*-->[\s\S]*?<!--\s*@emscope-pack:end\s*-
 
 export function update(capdir: string) {
     const cap = Core.Capture.load(capdir)
-    const TXT = `
-<h1 align="center">Hardware Platform · Software Environment</h1>
-
-## HW/SW configuration
-
-## EM&bull;Scope results
+    const TXT = `<h1 align="center">Hardware Platform · Software Environment · xVx</h1>
 
 ${START}
-
 ${END}
-
-## Typical event
-
-<p align="center">
-    <img src="event-ID.png" alt="Event" width="900">
-</p>
-
-## Observations
-
 `
     const file = Path.join(cap.rootdir, 'ABOUT.md')
     if (!Fs.existsSync(file)) {
@@ -43,8 +28,20 @@ ${END}
     Fs.writeFileSync(file, out)
 }
 
-export function mkGen(cap: Core.Capture): string {
+function getEvtId(cap: Core.Capture): string {
+    for (const fn of Fs.readdirSync(cap.rootdir)) {
+        const m = fn.match(/^event\-([A-Z])\.png$/)
+        if (m) return m[1]
+    }
+    Core.fail(`no 'event-ID.png' file found`)
+    return ''
+}
+
+function mkGen(cap: Core.Capture): string {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
+    const brd_txt = readBrdTxt(cap)
+    console.log(brd_txt)
+    const eid = getEvtId(cap)
     const aobj = cap.analysis!
     const si = aobj.sleep
     const sl_v = cap.avg_voltage
@@ -58,14 +55,12 @@ export function mkGen(cap: Core.Capture): string {
     const egy10_s = (sl_pwr * 10) + egy1_e
     const egy10_d = egy10_s * 86400 / 10
     const ems10 = 80 / egy10_d
-
-
-
-    // | 30.980&thinsp;&mu;J | 32.971&thinsp;&mu;J | 2.844&thinsp;J | 28.13 |
-
-
     const date = new Date().toISOString();
     const GEN = `
+## HW/SW Configuration
+
+## EM&bull;Scope results · JS220
+
 ### 🟠&ensp;sleep
 
 | supply voltage | &emsp;current (avg)&emsp; | &emsp;current (std)&emsp; | &emsp;average power&emsp;
@@ -86,6 +81,27 @@ export function mkGen(cap: Core.Capture): string {
 
 <br>
 <p align="right"><sub>generated at ${date}</sub></p>
-    `
+
+## Typical Event
+
+<p align="center"><img src="event-${eid}.png" alt="Event" width="900"></p>
+
+## Notes
+`
     return GEN
+}
+
+async function readBrdTxt(cap: Core.Capture): Promise<string> {
+    const brd = Path.basename(Path.dirname(cap.rootdir))
+    const url = `https://raw.githubusercontent.com/em-foundation/emscope/docs-stable/docs/boards/${brd}.md`
+    return await readUrl(url)
+}
+
+async function readUrl(url: string): Promise<string> {
+    const ac = new AbortController()
+    const t = setTimeout(() => ac.abort(), 10_000)
+    const r = await fetch(url, { signal: ac.signal, headers: { accept: 'text/plain' } })
+    clearTimeout(t)
+    Core.fail(`HTTP ${r.status} ${r.statusText}`, !r.ok)
+    return r.text()
 }
