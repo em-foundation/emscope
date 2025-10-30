@@ -1,6 +1,7 @@
 import * as Core from './Core'
 import * as Detecter from './Detecter'
 
+import * as ChildProc from 'child_process'
 import * as Fs from 'fs'
 import * as Path from 'path'
 
@@ -28,6 +29,11 @@ ${END}
     Fs.writeFileSync(file, out)
 }
 
+function getBuildDir(cap: Core.Capture): string {
+    const bn = Path.basename(cap.rootdir).split('-')[0]
+    return Path.join(Path.dirname(cap.rootdir), bn)
+}
+
 function getEvtId(cap: Core.Capture): string {
     for (const fn of Fs.readdirSync(cap.rootdir)) {
         const m = fn.match(/^event\-([A-Z])\.png$/)
@@ -39,8 +45,10 @@ function getEvtId(cap: Core.Capture): string {
 
 function mkGen(cap: Core.Capture): string {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
-    const brd_txt = readBrdTxt(cap)
-    console.log(brd_txt)
+    const brd = Path.basename(Path.dirname(cap.rootdir))
+    const brd_txt = readBrdTxt(brd)
+    const bld_dir = getBuildDir(cap)
+    const bld_txt = readBldTxt(bld_dir)
     const eid = getEvtId(cap)
     const aobj = cap.analysis!
     const si = aobj.sleep
@@ -58,6 +66,12 @@ function mkGen(cap: Core.Capture): string {
     const date = new Date().toISOString();
     const GEN = `
 ## HW/SW Configuration
+
+${brd_txt}
+* [BOARD PINOUT](https://github.com/em-foundation/emscope/blob/docs-stable/docs/boards/${brd}.png) &thinsp;⚙️
+${bld_txt}
+* [BUILD ARTIFACTS](../${Path.basename(bld_dir)}) &thinsp;⚙️
+
 
 ## EM&bull;Scope results · JS220
 
@@ -91,17 +105,26 @@ function mkGen(cap: Core.Capture): string {
     return GEN
 }
 
-async function readBrdTxt(cap: Core.Capture): Promise<string> {
-    const brd = Path.basename(Path.dirname(cap.rootdir))
-    const url = `https://raw.githubusercontent.com/em-foundation/emscope/docs-stable/docs/boards/${brd}.md`
-    return await readUrl(url)
+function readBldTxt(bld_dir: string): string {
+    try {
+        return Fs.readFileSync(Path.join(bld_dir, 'BUILD.md'), { encoding: 'utf-8' })
+    } catch (e: any) {
+        console.log(e)
+        Core.fail(`can't read 'BUILD.md'`)
+    }
+    return ''
 }
 
-async function readUrl(url: string): Promise<string> {
-    const ac = new AbortController()
-    const t = setTimeout(() => ac.abort(), 10_000)
-    const r = await fetch(url, { signal: ac.signal, headers: { accept: 'text/plain' } })
-    clearTimeout(t)
-    Core.fail(`HTTP ${r.status} ${r.statusText}`, !r.ok)
-    return r.text()
+function readBrdTxt(brd: string): string {
+    const url = `https://raw.githubusercontent.com/em-foundation/emscope/docs-stable/docs/boards/${brd}.md`
+    const is_win = process.platform === 'win32'
+    const cmd = is_win ? 'curl.exe' : 'cur'
+    const args = is_win ? ['-fsSL', '--tlsv1.2', '--ssl-no-revoke', url] : ['-fsSL', url]
+    try {
+        return ChildProc.execFileSync(cmd, args, { encoding: 'utf8' })
+    } catch (e: any) {
+        const msg = e?.stderr?.toString() || e?.stdout?.toString() || e?.message || String(e)
+        Core.fail(msg)
+    }
+    return ''
 }
