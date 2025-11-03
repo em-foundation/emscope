@@ -114,13 +114,13 @@ $ emscope grab -PSv 1.8
 ---
 
 > [!TIP]
-> We'll run the remaining series of examples within the `js220/ti-23-lp/simplelink` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `captures/js220/ti-23-lp/simplelink-3V0` directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
 > GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
 > cd BlueJoule
 > git lfs install --local --skip-smudge
-> cd captures/js220/ti-23-lp/simplelink
+> cd captures/js220/ti-23-lp/simplelink-3V0
 > emscope pack --unpack
 >```
 >
@@ -134,7 +134,7 @@ $ emscope grab -PSv 1.8
 
 ```console
 $ emscope view -s
-    sleep current = 589.092 nA @ 3.29 V, standard deviation =  14.548 µA
+    sleep current = 517.383 nA @ 3.11 V, standard deviation =  12.670 µA
 ```
 
 > [!NOTE]
@@ -145,18 +145,18 @@ $ emscope view -s
 <a id="view-e"></a>
 ```console
 $ emscope view -e
-    A :: time =  1.06 s, energy =  30.840 µJ, duration =   3.250 ms
-    B :: time =  2.07 s, energy =  30.910 µJ, duration =   3.250 ms
-    C :: time =  3.07 s, energy =  30.913 µJ, duration =   3.250 ms
-    D :: time =  4.07 s, energy =  30.962 µJ, duration =   3.000 ms
-    E :: time =  5.08 s, energy =  30.945 µJ, duration =   3.000 ms
-    F :: time =  6.08 s, energy =  31.166 µJ, duration =   3.250 ms
-    G :: time =  7.09 s, energy =  30.863 µJ, duration =   3.000 ms
-    H :: time =  8.10 s, energy =  30.745 µJ, duration =   3.000 ms
-    I :: time =  9.10 s, energy =  31.252 µJ, duration =   3.000 ms
-    J :: time = 10.10 s, energy =  30.931 µJ, duration =   3.000 ms
+    A :: time =  1.06 s, energy =  29.872 µJ, duration =   4.250 ms
+    B :: time =  2.07 s, energy =  29.361 µJ, duration =   4.500 ms
+    C :: time =  3.07 s, energy =  29.521 µJ, duration =   4.500 ms
+    D :: time =  4.07 s, energy =  29.670 µJ, duration =   4.500 ms
+    E :: time =  5.08 s, energy =  29.453 µJ, duration =   4.250 ms
+    F :: time =  6.09 s, energy =  29.400 µJ, duration =   4.250 ms
+    G :: time =  7.09 s, energy =  29.535 µJ, duration =   4.250 ms
+    H :: time =  8.10 s, energy =  29.572 µJ, duration =   4.250 ms
+    I :: time =  9.10 s, energy =  29.561 µJ, duration =   4.250 ms
+    J :: time = 10.10 s, energy =  29.559 µJ, duration =   4.250 ms
     ----
-    average energy over 10 event(s):  30.953 µJ
+    average energy over 10 event(s):  29.550 µJ
 ```
 
 > [!NOTE]
@@ -166,7 +166,7 @@ $ emscope view -e
 
 ```console
 $ emscope view -j
-    wrote 'ti-23-lp-slsdk-J-events.jls'
+    wrote 'events.jls'
     launching the Joulescope File Viewer...
 ```
 
@@ -183,10 +183,10 @@ $ emscope view -j
 --- 
 
 ```console
-$ emscope view -jB
-    wrote 'ti-23-lp-slsdk-J-event-B.jls'
+$ emscope view -jA
+    wrote 'event-A.jls'
     launching the Joulescope File Viewer...
-    generated 'ti-23-lp-slsdk-J-event-B.png'
+    generated 'event-A.png'
 ```
 > [!NOTE]
 > This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen [earlier](#view-e) in the output of the `emscope view -e` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
@@ -283,14 +283,14 @@ git commit ...
 
 ```console
 $ emscope view -w
-    event cycle duration: 00:00:01
-    average sleep power:   1.941 µW
+    event period: 00:00:01
+    average sleep power:   1.607 µW
     ----
-    representative event:  30.980 µJ
-    energy per cycle:  32.921 µJ
-    energy per day:   2.844 J
+    representative event:  30.637 µJ
+    energy per period:  32.245 µJ
+    energy per day:   2.786 J
     ----
-    28.13 EM•eralds
+    28.72 EM•eralds
 ```
 
 > [!NOTE]
@@ -302,24 +302,24 @@ $ emscope view -w
 
 ```console
 $ emscope-dev view -w 5
-    event cycle duration: 00:00:05
-    average sleep power:   1.941 µW
+    event period: 00:00:05
+    average sleep power:   1.607 µW
     ----
-    representative event:  30.980 µJ
-    energy per cycle:  40.684 µJ
-    energy per day: 703.019 mJ
+    representative event:  30.637 µJ
+    energy per period:  38.674 µJ
+    energy per day: 668.288 mJ
     ----
-    113.79 EM•eralds
+    119.71 EM•eralds
 
 $ emscope view -w 2:00
-    event cycle duration: 00:02:00
-    average sleep power:   1.941 µW
+    event period: 00:02:00
+    average sleep power:   1.607 µW
     ----
-    representative event:  30.980 µJ
-    energy per cycle: 263.880 µJ
-    energy per day: 189.994 mJ
+    representative event:  30.637 µJ
+    energy per period: 223.519 µJ
+    energy per day: 160.934 mJ
     ----
-    421.07 EM•eralds
+    497.10 EM•eralds
 ```
 
 > [!NOTE]
@@ -334,17 +334,17 @@ $ emscope view -w 2:00
 
 ```console
 $ emscope view --score
-    28.13 EM•eralds
+    28.72 EM•eralds
 $ emscope view -w 5 --score
-    113.79 EM•eralds
+    119.71 EM•eralds
 $ emscope view -w 2:00 --score
-    421.07 EM•eralds
+    497.10 EM•eralds
 ```
 
 >[!NOTE]
 > Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
 >
-> <p align="center"><b>EM•eralds = 2400 / (<i>Joules per day</i> × 30) = 80 / <i>Joules per day</i></b></p>
+> <p align="center"><b>EM•eralds = 2400 ÷ (<i>Joules per day</i> × 30) = 80 ÷ <i>Joules per day</i></b></p>
 >
 > Why 2400?&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 225&thinsp;mAH and nominally delivering 3V.
 >
@@ -357,25 +357,31 @@ $ emscope view -w 2:00 --score
 
 ```console
 $ cd .../BlueJoule/captures
-$ emscope view --score -C '*/nrf*/*'
+$ emscope view --score -C '*/nrf*/zephyr-*'
 
-js220/nrf-52-dk/zephyr:
+js220/nrf-52-dk/zephyr-2V7:
+    30.39 EM•eralds
+
+js220/nrf-52-dk/zephyr-3V3:
     27.72 EM•eralds
 
-js220/nrf-54-dk/baremetal:
-    27.09 EM•eralds
+js220/nrf-54-dk/zephyr-1V8:
+    39.61 EM•eralds
 
-js220/nrf-54-dk/zephyr:
-    31.07 EM•eralds
+js220/nrf-54-dk/zephyr-3V0:
+    37.76 EM•eralds
 
-ppk2/nrf-52-dk/zephyr:
+js220/nrf-54-dk/zephyr-3V3:
+    30.96 EM•eralds
+
+ppk2/nrf-52-dk/zephyr-3V3:
     27.30 EM•eralds
 
-ppk2/nrf-54-dk/baremetal:
-    27.35 EM•eralds
+ppk2/nrf-54-dk/zephyr-1V8:
+    57.21 EM•eralds
 
-ppk2/nrf-54-dk/baremetal-1V8:
-    35.09 EM•eralds
+ppk2/nrf-54-dk/zephyr-3V3:
+    31.94 EM•eralds
 ```
 
 >[!NOTE]
