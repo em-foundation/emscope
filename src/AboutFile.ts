@@ -79,19 +79,19 @@ ${bld_txt}
 
 | supply voltage | &emsp;current (avg)&emsp; | &emsp;current (std)&emsp; | &emsp;average power&emsp;
 |:---:|:---:|:---:|:---:|
-| ${sl_v.toFixed(1)} V | ${Core.amps(sl_avg)} | ${Core.amps(sl_std)} | ${Core.toEng(sl_pwr, 'W')} |
+| ${sl_v.toFixed(1)} V | ${Core.uAmps(sl_avg)} | ${Core.uAmps(sl_std)} | ${Core.toEng(sl_pwr, 'W')} |
 
 ### 🟠&ensp;1&thinsp;s event period
 
 | &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|
-| ${Core.joules(egy1_e)} | ${Core.joules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
+| ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
 
 ### 🟠&ensp;10&thinsp;s event period
 
 | &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|
-| ${Core.joules(egy1_e)} | ${Core.joules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |
+| ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |
 
 <br>
 <p align="right"><sub>generated at ${date}</sub></p>
