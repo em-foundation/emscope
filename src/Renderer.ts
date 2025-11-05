@@ -76,7 +76,7 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     for (const m of markers) {
         const egy = cap.energyWithin(m)
         avg += egy * scale
-        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(3).padStart(7, ' ')
+        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(2).padStart(5, ' ')
         const dur_s = cap.current_sig.offToSecs(m.width)
         const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
         Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.joules(egy)}, duration = ${Core.toEng(dur_s, 's')}`)
@@ -88,16 +88,16 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    score_only || Core.infoMsg(`event period: ${Core.secsToHms(ev_rate)}`)
-    score_only || Core.infoMsg(`average sleep power: ${Core.toEng(sleep_pwr, 'W')}`)
+    score_only || Core.infoMsg(`event period:        ${Core.secsToHms(ev_rate)}`)
+    score_only || Core.infoMsg(`average sleep power:  ${Core.toEng(sleep_pwr, 'W')}`)
     score_only || Core.infoMsg('----')
     const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
     const egy_1e = egy_1s - sleep_pwr * 1
     const egy_1c = (sleep_pwr * ev_rate) + egy_1e
     score_only || Core.infoMsg(`representative event: ${Core.joules(egy_1e)}`)
-    score_only || Core.infoMsg(`energy per period: ${Core.joules(egy_1c)}`)
+    score_only || Core.infoMsg(`energy per period:    ${Core.joules(egy_1c)}`)
     const egy_1d = egy_1c * 86400 / ev_rate
-    score_only || Core.infoMsg(`energy per day: ${Core.joules(egy_1d)}`)
+    score_only || Core.infoMsg(`energy per day:       ${Core.joules(egy_1d)}`)
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
     score_only || Core.infoMsg('----')
@@ -105,5 +105,5 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
-    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(2)} V, standard deviation = ${Core.amps(si.std)}`)
+    Core.infoMsg(`sleep current = ${Core.amps(si.avg)} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.amps(si.std)}`)
 }

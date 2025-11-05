@@ -79,7 +79,7 @@ ${bld_txt}
 
 | supply voltage | &emsp;current (avg)&emsp; | &emsp;current (std)&emsp; | &emsp;average power&emsp;
 |:---:|:---:|:---:|:---:|
-| ${sl_v.toFixed(2)} V | ${Core.amps(sl_avg)} | ${Core.amps(sl_std)} | ${Core.toEng(sl_pwr, 'W')} |
+| ${sl_v.toFixed(1)} V | ${Core.amps(sl_avg)} | ${Core.amps(sl_std)} | ${Core.toEng(sl_pwr, 'W')} |
 
 ### 🟠&ensp;1&thinsp;s event period
 
