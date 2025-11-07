@@ -73,7 +73,7 @@ ${bld_txt}
 * [BUILD ARTIFACTS](../${Path.basename(bld_dir)}) &thinsp;⚙️
 
 
-## EM&bull;Scope results · JS220
+## EM&bull;Scope results · ${cap.device}
 
 ### 🟠&ensp;sleep
 
