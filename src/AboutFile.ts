@@ -63,14 +63,16 @@ function mkGen(cap: Core.Capture): string {
     const egy10_s = (sl_pwr * 10) + egy1_e
     const egy10_d = egy10_s * 86400 / 10
     const ems10 = 80 / egy10_d
-    const date = new Date().toISOString();
+    const cap_date = mkTimestamp(cap.creation_date)
+    const gen_date = mkTimestamp(new Date())
     const GEN = `
+
+<p align="right"><sub>captured on ${cap_date}<br>generated on ${gen_date}</sub></p>
+
 ## HW/SW Configuration
 
 ${brd_txt}
-* [BOARD PINOUT](https://github.com/em-foundation/emscope/blob/docs-stable/docs/boards/${brd}.png) &thinsp;⚙️
 ${bld_txt}
-* [BUILD ARTIFACTS](../${Path.basename(bld_dir)}) &thinsp;⚙️
 
 
 ## EM&bull;Scope results · ${cap.device}
@@ -93,9 +95,6 @@ ${bld_txt}
 |:---:|:---:|:---:|:---:|
 | ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |
 
-<br>
-<p align="right"><sub>generated at ${date}</sub></p>
-
 ## Typical Event
 
 <p align="center"><img src="event-${eid}.png" alt="Event" width="900"></p>
@@ -105,12 +104,24 @@ ${bld_txt}
     return GEN
 }
 
+function mkTimestamp(d: Date): string {
+    const ds = d.toISOString().split('T')[0]
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const HH = pad(d.getUTCHours())
+    const MM = pad(d.getUTCMinutes())
+    const SS = pad(d.getUTCSeconds())
+    const ts = `${HH}:${MM}:${SS}`
+    return `${ds} @ ${ts}`
+}
+
 function readBldTxt(bld_dir: string): string {
     try {
-        return Fs.readFileSync(Path.join(bld_dir, 'BUILD.md'), { encoding: 'utf-8' })
+        const txt = Fs.readFileSync(Path.join(bld_dir, 'BUILD.md'), { encoding: 'utf-8' })
+        return `${txt}
+* [BUILD ARTIFACTS](../${Path.basename(bld_dir)}) &thinsp;⚙️
+`
     } catch (e: any) {
-        console.log(e)
-        Core.fail(`can't read 'BUILD.md'`)
+        console.log(`... skipping 'BUILD.md' inclusion`)
     }
     return ''
 }
@@ -118,13 +129,15 @@ function readBldTxt(bld_dir: string): string {
 function readBrdTxt(brd: string): string {
     const url = `https://raw.githubusercontent.com/em-foundation/emscope/docs-stable/docs/boards/${brd}.md`
     const is_win = process.platform === 'win32'
-    const cmd = is_win ? 'curl.exe' : 'cur'
+    const cmd = is_win ? 'curl.exe' : 'curl'
     const args = is_win ? ['-fsSL', '--tlsv1.2', '--ssl-no-revoke', url] : ['-fsSL', url]
     try {
-        return ChildProc.execFileSync(cmd, args, { encoding: 'utf8' })
+        const txt = ChildProc.execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+        return `${txt}
+* [BOARD PINOUT](https://github.com/em-foundation/emscope/blob/docs-stable/docs/boards/${brd}.png) &thinsp;⚙️
+`
     } catch (e: any) {
-        const msg = e?.stderr?.toString() || e?.stdout?.toString() || e?.message || String(e)
-        Core.fail(msg)
+        console.log(`... skipping 'BOARD.md' inclusion`)
     }
     return ''
 }
