@@ -24,7 +24,7 @@ ${END}
     }
     const src = Fs.readFileSync(file, 'utf-8')
     const gen = mkGen(cap)
-    const block = `${START}\n\n${gen}\n\n${END}`
+    const block = `${START}${gen}\n${END}`
     const out = RE.test(src) ? src.replace(RE, block) : `${src.replace(/\s*$/, '')}\n\n${block}\n`
     Fs.writeFileSync(file, out)
 }
@@ -66,6 +66,8 @@ function mkGen(cap: Core.Capture): string {
     const cap_date = mkTimestamp(cap.creation_date)
     const gen_date = mkTimestamp(new Date())
     const GEN = `
+
+<!-- *** AUTOMATICALLY GENERATED CONTENT – DO NOT EDIT *** -->  
 
 <p align="right"><sub>captured on ${cap_date}<br>generated on ${gen_date}</sub></p>
 
