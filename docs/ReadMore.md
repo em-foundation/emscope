@@ -134,7 +134,7 @@ $ emscope grab -PSv 1.8
 
 ```console
 $ emscope view -s
-    sleep current = 517.383 nA @ 3.11 V, standard deviation =  12.670 µA
+    sleep current = 0.5 µA @ 3.1 V, standard deviation = 12.7 µA
 ```
 
 > [!NOTE]
@@ -145,18 +145,18 @@ $ emscope view -s
 <a id="view-e"></a>
 ```console
 $ emscope view -e
-    A :: time =  1.06 s, energy =  29.872 µJ, duration =   4.250 ms
-    B :: time =  2.07 s, energy =  29.361 µJ, duration =   4.500 ms
-    C :: time =  3.07 s, energy =  29.521 µJ, duration =   4.500 ms
-    D :: time =  4.07 s, energy =  29.670 µJ, duration =   4.500 ms
-    E :: time =  5.08 s, energy =  29.453 µJ, duration =   4.250 ms
-    F :: time =  6.09 s, energy =  29.400 µJ, duration =   4.250 ms
-    G :: time =  7.09 s, energy =  29.535 µJ, duration =   4.250 ms
-    H :: time =  8.10 s, energy =  29.572 µJ, duration =   4.250 ms
-    I :: time =  9.10 s, energy =  29.561 µJ, duration =   4.250 ms
-    J :: time = 10.10 s, energy =  29.559 µJ, duration =   4.250 ms
+    A :: time =  1.18 s, energy = 30.5 µJ, duration =  3.00 s
+    B :: time =  2.18 s, energy = 30.5 µJ, duration =  3.25 s
+    C :: time =  3.18 s, energy = 30.8 µJ, duration =  3.00 s
+    D :: time =  4.19 s, energy = 30.4 µJ, duration =  3.00 s
+    E :: time =  5.20 s, energy = 30.5 µJ, duration =  3.00 s
+    F :: time =  6.20 s, energy = 30.4 µJ, duration =  3.00 s
+    G :: time =  7.21 s, energy = 30.4 µJ, duration =  3.25 s
+    H :: time =  8.21 s, energy = 30.4 µJ, duration =  3.25 s
+    I :: time =  9.21 s, energy = 30.5 µJ, duration =  3.25 s
+    J :: time = 10.21 s, energy = 30.5 µJ, duration =  3.25 s
     ----
-    average energy over 10 event(s):  29.550 µJ
+    average energy over 10 event(s): 30.5 µJ
 ```
 
 > [!NOTE]
@@ -283,12 +283,12 @@ git commit ...
 
 ```console
 $ emscope view -w
-    event period: 00:00:01
-    average sleep power:   1.607 µW
+    event period:        00:00:01
+    average sleep power:   1.6 µW
     ----
-    representative event:  30.637 µJ
-    energy per period:  32.245 µJ
-    energy per day:   2.786 J
+    representative event: 30.6 µJ
+    energy per period:    32.2 µJ
+    energy per day:        2.8 J
     ----
     28.72 EM•eralds
 ```
@@ -302,22 +302,22 @@ $ emscope view -w
 
 ```console
 $ emscope-dev view -w 5
-    event period: 00:00:05
-    average sleep power:   1.607 µW
+    event period:        00:00:05
+    average sleep power:   1.6 µW
     ----
-    representative event:  30.637 µJ
-    energy per period:  38.674 µJ
-    energy per day: 668.288 mJ
+    representative event: 30.6 µJ
+    energy per period:    38.7 µJ
+    energy per day:        0.7 J
     ----
     119.71 EM•eralds
 
 $ emscope view -w 2:00
-    event period: 00:02:00
-    average sleep power:   1.607 µW
+    event period:        00:02:00
+    average sleep power:   1.6 µW
     ----
-    representative event:  30.637 µJ
-    energy per period: 223.519 µJ
-    energy per day: 160.934 mJ
+    representative event: 30.6 µJ
+    energy per period:    223.5 µJ
+    energy per day:        0.2 J
     ----
     497.10 EM•eralds
 ```
