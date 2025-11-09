@@ -302,22 +302,22 @@ $ emscope view -w
 
 ```console
 $ emscope-dev view -w 5
-    event period:        00:00:05
-    average sleep power:   1.6 µW
+    event period:         00:00:05
+    average sleep power:    1.6 µW
     ----
-    representative event: 30.6 µJ
-    energy per period:    38.7 µJ
-    energy per day:        0.7 J
+    representative event:  30.6 µJ
+    energy per period:     38.7 µJ
+    energy per day:         0.7 J
     ----
     119.71 EM•eralds
 
 $ emscope view -w 2:00
-    event period:        00:02:00
-    average sleep power:   1.6 µW
+    event period:         00:02:00
+    average sleep power:    1.6 µW
     ----
-    representative event: 30.6 µJ
+    representative event:  30.6 µJ
     energy per period:    223.5 µJ
-    energy per day:        0.2 J
+    energy per day:         0.2 J
     ----
     497.10 EM•eralds
 ```
@@ -357,37 +357,28 @@ $ emscope view -w 2:00 --score
 
 ```console
 $ cd .../BlueJoule/captures
-$ emscope view --score -C '*/nrf*/zephyr-*'
+$ emscope view --score -C 'nrf*/zephyr-*-J'
 
-js220/nrf-52-dk/zephyr-2V7:
+nrf-52-dk/zephyr-2V7-J:
     30.39 EM•eralds
 
-js220/nrf-52-dk/zephyr-3V3:
+nrf-52-dk/zephyr-3V3-J:
     27.72 EM•eralds
 
-js220/nrf-54-dk/zephyr-1V8:
+nrf-54-dk/zephyr-1V8-J:
     39.61 EM•eralds
 
-js220/nrf-54-dk/zephyr-3V0:
+nrf-54-dk/zephyr-3V0-J:
     37.76 EM•eralds
 
-js220/nrf-54-dk/zephyr-3V3:
+nrf-54-dk/zephyr-3V3-J:
     30.96 EM•eralds
-
-ppk2/nrf-52-dk/zephyr-3V3:
-    27.30 EM•eralds
-
-ppk2/nrf-54-dk/zephyr-1V8:
-    57.21 EM•eralds
-
-ppk2/nrf-54-dk/zephyr-3V3:
-    31.94 EM•eralds
 ```
 
 >[!NOTE]
 > The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose path name matches a given pattern (default: `'**'`).
 >
-> Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of the capture's relative path &ndash; here, listing scores for all **Nordic** target HW captures grabbed with a **JS220** or **PPK2**.
+> Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of the capture's relative path &ndash; here, listing scores for all **Nordic** captures executing a **Zephyr** stack and grabbed with a **JS220**.
 
 <br>
 
