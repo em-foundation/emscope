@@ -1,3 +1,9 @@
+## VERSION-25-3.0
+
+* aligned with new `BlueJoule/capture` directory structure
+* streamlined generation of `ABOUT.md` with automatic HW/SW inclusion
+* one digit of precision after the decimal point in most results
+
 ## VERSION-25-2.0
 
 * new `emscope grab -p, --ppk-supply` option
