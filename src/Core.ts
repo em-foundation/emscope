@@ -321,10 +321,6 @@ class Window {
     }
 }
 
-export function amps(val: number): string {
-    return toEng(val, 'A')
-}
-
 export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
@@ -341,7 +337,7 @@ export function infoMsg(msg: string) {
 }
 
 export function joules(j: number): string {
-    return toEng(j, 'J')
+    return toEng(j, 'J', 0)
 }
 
 export function parseHms(s: string): number {
@@ -362,12 +358,20 @@ export function secsToHms(total: number): string {
     return `${pad(h)}:${pad(m)}:${pad(s)}`
 }
 
-export function toEng(x: number, u: string): string {
+export function toEng(x: number, u: string, e?: number): string {
     if (x == 0) return `0 ${u}`
-    const exp = Math.floor(Math.log10(Math.abs(x)) / 3) * 3
+    const exp = e ?? Math.floor(Math.log10(Math.abs(x)) / 3) * 3
     const mantissa = x / 10 ** exp
     const unit = { [-9]: ` n${u}`, [-6]: ` µ${u}`, [-3]: ` m${u}`, [0]: ` ${u}`, [3]: ` k${u}` }[exp] || `e${exp} ${u}`
-    return `${mantissa.toFixed(3).padStart(7, ' ')}${unit}`
+    return `${mantissa.toFixed(1).padStart(4, ' ')}${unit}`
+}
+
+export function uAmps(val: number): string {
+    return toEng(val, 'A', -6)
+}
+
+export function uJoules(j: number): string {
+    return toEng(j, 'J', -6)
 }
 
 export function version(): string {
