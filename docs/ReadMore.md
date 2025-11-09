@@ -114,13 +114,13 @@ $ emscope grab -PSv 1.8
 ---
 
 > [!TIP]
-> We'll run the remaining series of examples within the `captures/js220/ti-23-lp/simplelink-3V0` directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
+> We'll run the remaining series of examples within the `captures/ti-23-lp/simplelink-3V0-J` directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
 > GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
 > cd BlueJoule
 > git lfs install --local --skip-smudge
-> cd captures/js220/ti-23-lp/simplelink-3V0
+> cd captures/ti-23-lp/simplelink-3V0-J
 > emscope pack --unpack
 >```
 >
