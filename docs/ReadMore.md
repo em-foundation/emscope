@@ -26,14 +26,12 @@ The **EM&bull;Scope** tool streamlines the capture, analysis, display, and deliv
 ```
 npm install -g @em-foundation/emscope
 ```
+Enter `emscope -V` from the command-line to verify that installation has succeeded.
 
-> [!TIP]
-> You'll also find versions of this `npm` package named `emscope-<version>.tar.gz` archived on our **GitHub** [releases](http://github.com/em-foundation/emscope/releases) page.&thinsp; Copy the link of your choice (likely the latest) and then execute the following command:
-> ```
-> npm install -g <package URL> 
-> ```
+> [!IMPORTANT]
+> See [below](#updating) for important information about updating the `emscope` package when necessary.
 
-Enter `emscope -V` from the command-line to verify that installation has succeeded.&thinsp; You should also install version 1.3.9 or later of the **Joulescope Application Software** for your host computer from the [Joulescope downloads](https://download.joulescope.com/joulescope_install/index.html) page.
+You should then install **Joulescope Application Software** [version 1.3.9](https://download.joulescope.com/joulescope_install/index.html) onto your host computer.
 
 > [!TIP]
 > Stock installers for **Windows** and **macOS** will place this software in known locations.&thinsp; **Ubuntu** users must first unpack a `.tar.gz` file and then ensure the shell can find the `joulescope_launcher` executable along its `PATH`.
@@ -119,11 +117,11 @@ $ emscope grab -PSv 1.8
 > We'll run the remaining series of examples within the `js220/ti-23-lp/simplelink` capture directory found in the [`BlueJoule`](https://github.com/em-foundation/BlueJoule) **Git** repository.&thinsp; If you want to play along at home, clone this repo and provision this capture directory as follows:
 >
 >```
-> $ GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
-> $ cd BlueJoule
-> $ git lfs install --local --skip-smudge
-> $ cd captures/js220/ti-23-lp/simplelink
-> $ emscope pack --unpack
+> GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/BlueJoule.git
+> cd BlueJoule
+> git lfs install --local --skip-smudge
+> cd captures/js220/ti-23-lp/simplelink
+> emscope pack --unpack
 >```
 >
 > Alternatively, execute `emscope pack -u -C` from the root of the `BlueJoule` repo to apply this command to _all_ capture directories found therein.&thinsp; We'll have more to say about the `-C` option later on.
@@ -384,6 +382,26 @@ ppk2/nrf-54-dk/baremetal-1V8:
 > The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose path name matches a given pattern (default: `'**'`).
 >
 > Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of the capture's relative path &ndash; here, listing scores for all **Nordic** target HW captures grabbed with a **JS220** or **PPK2**.
+
+<br>
+
+<a id="updating"></a>
+### 🟠&ensp;updating the `emscope` package &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+---
+
+If you've already installed the `emscope` package, use the following pair of commands to determine whether you should update:
+
+```
+npm view @em-foundation/emscope version    ## the latest available version
+emscope -V                                 ## the currently installed version
+```
+
+Alternatively, you can always "(re-)install" the `emscope` package in the usual way to ensure you have the latest version:
+
+```
+npm install -g @em-foundation/emscope 
+```
 
 ---
 

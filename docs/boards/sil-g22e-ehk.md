@@ -1,0 +1,2 @@
+* [xG22-EK8200A](https://www.silabs.com/development-tools/wireless/efr32xg22e-energy-harvesting-explorer-kit?tab=overview) &thinsp;&ratio;&thinsp; **Silicon Labs ERF32xSG22E Energy Harvesting Explorer Kit**
+* [EFR32xG22E SoC](https://www.silabs.com/wireless/bluetooth/efr32bg22-series-2-socs) &thinsp;&ratio;&thinsp; 76.8 MHz ARM Cortex-M33 &thinsp;·&thinsp; 512 KB flash &thinsp;·&thinsp; 32 KB SRAM
