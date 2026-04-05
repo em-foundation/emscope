@@ -1,6 +1,6 @@
 {
     "name": "@em-foundation/emscope",
-    "version": "25.3.0",
+    "version": "25.4.0",
     "description": "benchmark energy efficiency in resource-constrained embedded systems",
     "bin": {
         "emscope": "dist/emscope"
@@ -29,6 +29,9 @@
     "author": "The EM Foundation",
     "license": "MIT",
     "preferGlobal": true,
+    "publishConfig": {
+        "access": "public"
+    },
     "bugs": {
         "url": "https://github.com/em-foundation/emscope/issues"
     },

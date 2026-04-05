@@ -1,3 +1,8 @@
+## VERSION-25-4.0
+
+* added `--json` option
+* port enumeration fix for PPK
+
 ## VERSION-25-3.0
 
 * aligned with new `BlueJoule/capture` directory structure
