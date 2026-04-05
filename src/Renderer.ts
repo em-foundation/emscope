@@ -1,5 +1,5 @@
 import * as Core from './Core'
-import * as Detecter from './Detecter'
+
 import * as Writer from './Writer'
 
 import ChildProc from 'child_process'
@@ -10,8 +10,9 @@ export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
+    const json = !!opts.json
     if (opts.eventInfo) {
-        printEventInfo(cap, aobj.events)
+        json ? printEventInfoJson(cap, aobj.events) : printEventInfo(cap, aobj.events)
         return
     }
     if (opts.jlsFile) {
@@ -19,16 +20,16 @@ export function exec(opts: any) {
         return
     }
     if (opts.sleepInfo) {
-        printSleepInfo(cap, aobj.sleep)
+        json ? printSleepInfoJson(cap, aobj.sleep) : printSleepInfo(cap, aobj.sleep)
         return
     }
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        printResults(cap, aobj, ev_rate, opts.score)
+        json ? printResultsJson(cap, aobj, ev_rate) : printResults(cap, aobj, ev_rate, opts.score)
         return
     }
     if (opts.score) {
-        printResults(cap, aobj, 1, true)
+        json ? printResultsJson(cap, aobj, 1) : printResults(cap, aobj, 1, true)
         return
     }
     Core.fail(`no options found: run 'emscope view -h'`)
@@ -85,6 +86,28 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.uJoules(avg)}`)
 }
 
+function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
+    const events = markers.map((m, i) => {
+        const energy = cap.energyWithin(m)
+        const duration = cap.current_sig.offToSecs(m.width)
+        const time = cap.current_sig.offToSecs(m.offset)
+        return {
+            id: String.fromCharCode('A'.charCodeAt(0) + i),
+            time,
+            energy,
+            duration,
+        }
+    })
+    const totalEnergy = events.reduce((sum, e) => sum + e.energy, 0)
+    const avgEnergy = events.length > 0 ? totalEnergy / events.length : 0
+    console.log(JSON.stringify({
+        type: 'event_info',
+        eventCount: events.length,
+        averageEnergy: avgEnergy,
+        events,
+    }))
+}
+
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
     score_only || Core.infoMsg(`event period:        ${Core.secsToHms(ev_rate)}`)
@@ -103,6 +126,38 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
     Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
 }
 
+function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
+    const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
+    const egy_1e = egy_1s - sleep_pwr * 1
+    const egy_1c = (sleep_pwr * ev_rate) + egy_1e
+    const egy_1d = egy_1c * 86400 / ev_rate
+    const egy_1m = egy_1d * 30
+    const ems = 2400 / egy_1m
+    console.log(JSON.stringify({
+        type: 'score',
+        emeralds: parseFloat(ems.toFixed(2)),
+        cycleRate: ev_rate,
+        sleepCurrent: aobj.sleep.avg,
+        sleepPower: sleep_pwr,
+        voltage: cap.avg_voltage,
+        eventEnergy: egy_1e,
+        energyPerCycle: egy_1c,
+        energyPerDay: egy_1d,
+        energyPerMonth: egy_1m,
+    }))
+}
+
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
     Core.infoMsg(`sleep current = ${Core.uAmps(si.avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(si.std).trim()}`)
+}
+
+function printSleepInfoJson(cap: Core.Capture, si: Core.SleepInfo) {
+    console.log(JSON.stringify({
+        type: 'sleep_info',
+        sleepCurrent: si.avg,
+        standardDeviation: si.std,
+        voltage: cap.avg_voltage,
+        sleepPower: si.avg * cap.avg_voltage,
+    }))
 }

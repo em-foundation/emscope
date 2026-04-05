@@ -48,6 +48,7 @@ CMD.command('view')
     .option('-s --sleep-info', 'characterize power consumption when inactive')
     .option('-w --what-if [event period]', `extrapolate results for a given event period (default: '00:00:01')`, Core.parseHms)
     .option('--score', 'only print the EM•eralds benchmark score')
+    .option('--json', 'output results as JSON (machine-readable)')
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Renderer.exec, opts, cmd.parent!.opts()))
 
 CMD.command('pack')
