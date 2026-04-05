@@ -120,6 +120,9 @@ async function findDevices(): Promise<Array<string>> {
         }
     }
     Core.fail('no PPK2 analyzer found', res.length == 0)
+    // PPK2 exposes two serial ports (vcom 0 = data, vcom 1 = control).
+    // Sort ascending so the data port (lower path number) comes first.
+    res.sort()
     return res
 }
 
