@@ -1,3 +1,7 @@
+## VERSION-25-4.1
+
+* more robust port enumeration fix for PPK
+
 ## VERSION-25-4.0
 
 * added `--json` option
