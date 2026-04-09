@@ -111,19 +111,65 @@ export async function powerOn(voltage: number): Promise<void> {
 }
 
 async function findDevices(): Promise<Array<string>> {
-    let res = new Array<string>()
+    let candidates = new Array<string>()
     for (const port of await SerialPort.list()) {
         const vid: string = (port as any).vendorId
         const pid: string = (port as any).productId
         if (vid == '1915' && pid.toLowerCase() == 'c00a') {
-            res.push(port.path)
+            candidates.push(port.path)
         }
     }
-    Core.fail('no PPK2 analyzer found', res.length == 0)
-    // PPK2 exposes two serial ports (vcom 0 = data, vcom 1 = control).
-    // Sort ascending so the data port (lower path number) comes first.
-    res.sort()
+    Core.fail('no PPK2 analyzer found', candidates.length == 0)
+    // PPK2 exposes two serial ports sharing the same VID/PID. Only one of
+    // them (the data port) responds to GET_META_DATA. Port enumeration order
+    // varies by OS, so we probe each candidate to identify the data port.
+    if (candidates.length == 1) return candidates
+    const res = new Array<string>()
+    for (const path of candidates) {
+        if (await probeDataPort(path)) {
+            res.push(path)
+        }
+    }
+    Core.fail('no PPK2 data port found (tried probing all candidates)', res.length == 0)
     return res
+}
+
+/**
+ * Probe a PPK2 candidate port by sending GET_META_DATA and waiting briefly
+ * for any data response. The data port responds with calibration metadata;
+ * the control port does not respond.
+ */
+async function probeDataPort(path: string, timeoutMs: number = 500): Promise<boolean> {
+    let port: SerialPort | undefined
+    try {
+        port = new SerialPort({ path, baudRate: 9600, autoOpen: false })
+        await new Promise<void>((resolve, reject) => {
+            port!.open(err => (err ? reject(err) : resolve()))
+        })
+        return await new Promise<boolean>(resolve => {
+            let responded = false
+            const onData = () => {
+                if (!responded) {
+                    responded = true
+                    resolve(true)
+                }
+            }
+            port!.on('data', onData)
+            port!.write([Cmd.GET_META_DATA])
+            setTimeout(() => {
+                if (!responded) {
+                    responded = true
+                    resolve(false)
+                }
+            }, timeoutMs)
+        })
+    } catch {
+        return false
+    } finally {
+        if (port?.isOpen) {
+            await new Promise<void>(resolve => port!.close(() => resolve()))
+        }
+    }
 }
 
 function parseMods(mods: string) {
