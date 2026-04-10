@@ -3,7 +3,7 @@ import Path from 'path'
 import Yaml from 'js-yaml'
 
 export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[], version: string }
-export type CaptureDevice = 'JS220' | 'PPK2'
+export type CaptureDevice = 'JS220' | 'Otii3' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
@@ -18,6 +18,7 @@ export class Capture {
 
     static #SAMPLING_RATE = new Map<CaptureDevice, number>([
         ['JS220', 1_000_000],
+        ['Otii3', 50_000],
         ['PPK2', 100_000],
     ])
 

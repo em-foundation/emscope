@@ -1,6 +1,7 @@
 import * as Core from './Core'
 import * as Detecter from './Detecter'
 import * as Driver_JS220 from './Driver_JS220'
+import * as Driver_Otii3 from './Driver_Otti3'
 import * as Driver_PPK2 from './Driver_PPK2'
 
 export async function exec(opts: any) {
@@ -13,6 +14,8 @@ export async function exec(opts: any) {
         c = await Driver_JS220.execCapture(opts)
     } else if (opts.ppk2) {
         c = await Driver_PPK2.execCapture(opts)
+    } else if (opts.otii3) {
+        c = await Driver_Otii3.execCapture(opts)
     } else {
         Core.fail('you must specify an analyzer device')
     }
