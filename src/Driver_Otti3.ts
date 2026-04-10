@@ -55,7 +55,7 @@ async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string):
     Core.fail("no corresponding profile found", bprof === undefined)
     await otii.setSupplyBatteryEmulator(deviceId, {
         batteryProfileId: bprof!.battery_profile_id,
-        soc: 50
+        soc: 10
     })
 }
 
@@ -95,20 +95,6 @@ async function record(
     for (const sample of voltage.values) {
         cap.voltage_ds.add(sample)
     }
-
-    //    let index = 0
-    //    const chunkSize = 100000
-    //
-    //    while (index < total) {
-    //        const count = Math.min(chunkSize, total - index)
-    //        const data = await otii.getChannelData(recordingId, deviceId, 'mc', index, count)
-    //
-    //        for (const sample of data.values) {
-    //            cap.current_ds.add(sample)
-    //        }
-    //
-    //        index += data.values.length
-    //    }
 
     otii.deleteRecording(recordingId)
     progress.clear()
