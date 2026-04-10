@@ -4,7 +4,7 @@
         "**/.svn": true,
         "**/.hg": true,
         "**/.DS_Store": false,
-        "**/Thumbs.db": true,
+        "**/Thumbs.db": false,
         ".vscode": false,
         ".history": true
     },

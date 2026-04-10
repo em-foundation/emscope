@@ -1,5 +1,7 @@
 import * as Core from './Core'
+import Fs from 'fs'
 import Net from 'net'
+import Path from 'path'
 
 export async function execCapture(opts: any): Promise<Core.Capture> {
 
@@ -11,17 +13,50 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     const dev = await otii.requireDevice()
     const projectId = await otii.getOrCreateProject()
     await otii.addToProject(dev.device_id)
-    await otii.setMainVoltage(dev.device_id, 3.0)
+    await otii.setMainVoltage(dev.device_id, opts.voltage)
     await otii.setMaxCurrent(dev.device_id, 0.5)
     await otii.enableChannel(dev.device_id, 'mc', true)
+    await otii.enableChannel(dev.device_id, 'mv', true)
+
+    const bp = opts.batteryProfile
+    Core.fail("missing battery profile index", bp !== undefined && typeof (bp) != 'number')
+    if (bp) {
+        await batteryConfig(otii, bp as number, dev.device_id)
+    } else {
+        await otii.setSupplyPowerBox(dev.device_id)
+    }
+
     await otii.setMain(dev.device_id, true)
-
     await progress.spin(2500)
-
     await record(otii, cap, progress, projectId, dev.device_id)
-
     await otii.close()
     return cap
+}
+
+async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string): Promise<void> {
+    let dir = process.cwd()
+    let fpath = ""
+    while (true) {
+        const full = Path.join(dir, 'emscope-local.json')
+        if (Fs.existsSync(full)) {
+            fpath = full
+            break
+        }
+        const parent = Path.dirname(dir)
+        if (parent === dir) break
+        dir = parent
+    }
+    Core.fail("can't find 'emscope-local.json'", fpath === "")
+    const jobj = JSON.parse(Fs.readFileSync(fpath, 'utf-8'))
+    const bname = jobj?.batteries[bidx]
+    Core.fail("invalid battery index", typeof (bname) != 'string')
+    const profiles = await otii.getBatteryProfiles()
+    let bprof = profiles.find(p => p.name === bname)
+    Core.fail("no corresponding profile found", bprof === undefined)
+    await otii.setSupplyBatteryEmulator(deviceId, {
+        batteryProfileId: bprof!.battery_profile_id,
+        soc: 50
+    })
 }
 
 async function record(
@@ -51,26 +86,31 @@ async function record(
         await otii.stopRecording(projectId)
     }
 
-    progress.update('downloading')
-
     const recordingId = await otii.getLastRecording(projectId)
-    const total = await otii.getChannelDataCount(recordingId, deviceId, 'mc')
-
-    let index = 0
-    const chunkSize = 100000
-
-    while (index < total) {
-        const count = Math.min(chunkSize, total - index)
-        const data = await otii.getChannelData(recordingId, deviceId, 'mc', index, count)
-
-        for (const sample of data.values) {
-            cap.current_ds.add(sample)
-        }
-
-        index += data.values.length
-        progress.update(`downloading ${(100 * index / total).toFixed(0)}%`)
+    const current = await otii.getAllChannelData(recordingId, deviceId, 'mc')
+    for (const sample of current.values) {
+        cap.current_ds.add(sample)
+    }
+    const voltage = await otii.getAllChannelData(recordingId, deviceId, 'mv')
+    for (const sample of voltage.values) {
+        cap.voltage_ds.add(sample)
     }
 
+    //    let index = 0
+    //    const chunkSize = 100000
+    //
+    //    while (index < total) {
+    //        const count = Math.min(chunkSize, total - index)
+    //        const data = await otii.getChannelData(recordingId, deviceId, 'mc', index, count)
+    //
+    //        for (const sample of data.values) {
+    //            cap.current_ds.add(sample)
+    //        }
+    //
+    //        index += data.values.length
+    //    }
+
+    otii.deleteRecording(recordingId)
     progress.clear()
 }
 
@@ -93,6 +133,13 @@ type OtiiDeviceInfo = {
 type OtiiChannelData = {
     interval: number
     values: number[]
+}
+
+type OtiiBatteryInfo = {
+    battery_profile_id: string,
+    name: string,
+    manufacturer: string,
+    model: string
 }
 
 class OtiiSession {
@@ -243,6 +290,12 @@ class OtiiSession {
         return recordingId
     }
 
+    async deleteRecording(recordingId: number): Promise<void> {
+        await this.cmd('recording_delete', {
+            recording_id: recordingId
+        })
+    }
+
     async getChannelDataCount(
         recordingId: number,
         deviceId: string,
@@ -315,6 +368,38 @@ class OtiiSession {
         return { interval, values }
     }
 
+    async getBatteryProfiles(): Promise<OtiiBatteryInfo[]> {
+        const data = await this.cmd('otii_get_battery_profiles')
+        return data?.battery_profiles ?? []
+    }
+
+    async setSupplyBatteryEmulator(
+        deviceId: string,
+        opts: {
+            batteryProfileId: string
+            series?: number
+            parallel?: number
+            soc?: number
+            usedCapacity?: number
+            socTracking?: boolean
+        }
+    ): Promise<void> {
+        await this.cmd('arc_set_supply_battery_emulator', {
+            device_id: deviceId,
+            battery_profile_id: opts.batteryProfileId,
+            ...(opts.series !== undefined ? { series: opts.series } : {}),
+            ...(opts.parallel !== undefined ? { parallel: opts.parallel } : {}),
+            ...(opts.soc !== undefined ? { soc: opts.soc } : {}),
+            ...(opts.usedCapacity !== undefined ? { used_capacity: opts.usedCapacity } : {}),
+            ...(opts.socTracking !== undefined ? { soc_tracking: opts.socTracking } : {})
+        }, 10000)
+    }
+
+    async setSupplyPowerBox(deviceId: string): Promise<void> {
+        await this.cmd('arc_set_supply_power_box', {
+            device_id: deviceId
+        }, 10000)
+    }
     private async cmd(cmd: string, data?: any, timeoutMs = 3000): Promise<any> {
         const rsp = await this.request(cmd, data, timeoutMs)
         return rsp.data

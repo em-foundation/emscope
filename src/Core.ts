@@ -61,7 +61,7 @@ export class Capture {
         cap._sampling_rate = Capture.#SAMPLING_RATE.get(device) ?? 0
         cap._sample_count = duration * cap.sampling_rate
         cap._current_ds = new SampleSet(cap.sample_count)
-        cap._voltage_ds = new SampleSet((device == 'JS220') ? cap.sample_count : 0)
+        cap._voltage_ds = new SampleSet((device == 'PPK2') ? 0 : cap.sample_count)
         const wd = cap.#workdir
         if (Fs.existsSync(wd)) {
             Fs.rmSync(wd, { recursive: true })
@@ -83,6 +83,7 @@ export class Capture {
         cap.current_ds.load(cap.#workdir, 'current')
         switch (cap.device) {
             case 'JS220':
+            case 'Otii3':
                 cap._voltage_ds = new SampleSet(cap.sample_count)
                 cap.voltage_ds.load(cap.#workdir, 'voltage')
                 break
