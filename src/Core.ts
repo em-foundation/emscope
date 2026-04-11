@@ -334,6 +334,22 @@ export function fail(msg: string, cond: boolean = true) {
     }
 }
 
+export function findConfig(): any {
+    let dir = process.cwd()
+    let fpath = ""
+    while (true) {
+        const full = Path.join(dir, 'emscope-local.json')
+        if (Fs.existsSync(full)) {
+            fpath = full
+            break
+        }
+        const parent = Path.dirname(dir)
+        if (parent === dir) break
+        dir = parent
+    }
+    return fpath === "" ? undefined : JSON.parse(Fs.readFileSync(fpath, 'utf-8'))
+}
+
 export function infoMsg(msg: string) {
     console.log(`${TAB}${msg}`)
 }

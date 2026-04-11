@@ -5,11 +5,24 @@ import Path from 'path'
 
 export async function execCapture(opts: any): Promise<Core.Capture> {
 
+    const jobj = Core.findConfig()
+    Core.fail("can't find 'emscope-local.json'", jobj === undefined)
+    const config = jobj.otii3 as OtiiConfig
+
     const cap = Core.Capture.create(opts.capture, opts.duration, 'Otii3')
     const progress = new Core.Progress('capturing: ')
 
     const otii = new OtiiSession('127.0.0.1', 1905)
     await otii.connect()
+
+    if (!await otii.isLoggedIn()) {
+        await otii.login(config.username, config.password)
+    }
+
+    for (const license of await otii.getLicenses()) {
+        await otii.reserveLicense(license.id)
+    }
+
     const dev = await otii.requireDevice()
     const projectId = await otii.getOrCreateProject()
     await otii.addToProject(dev.device_id)
@@ -21,7 +34,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     const bp = opts.batteryProfile
     Core.fail("missing battery profile index", bp !== undefined && typeof (bp) != 'number')
     if (bp) {
-        await batteryConfig(otii, bp as number, dev.device_id)
+        await batteryConfig(otii, bp as number, dev.device_id, config)
     } else {
         await otii.setSupplyPowerBox(dev.device_id)
     }
@@ -34,22 +47,8 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     return cap
 }
 
-async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string): Promise<void> {
-    let dir = process.cwd()
-    let fpath = ""
-    while (true) {
-        const full = Path.join(dir, 'emscope-local.json')
-        if (Fs.existsSync(full)) {
-            fpath = full
-            break
-        }
-        const parent = Path.dirname(dir)
-        if (parent === dir) break
-        dir = parent
-    }
-    Core.fail("can't find 'emscope-local.json'", fpath === "")
-    const jobj = JSON.parse(Fs.readFileSync(fpath, 'utf-8'))
-    const bname = jobj?.batteries[bidx]
+async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string, config: OtiiConfig): Promise<void> {
+    const bname = config.batteries[bidx]
     Core.fail("invalid battery index", typeof (bname) != 'string')
     const profiles = await otii.getBatteryProfiles()
     let bprof = profiles.find(p => p.name === bname)
@@ -102,6 +101,12 @@ async function record(
     progress.clear()
 }
 
+type OtiiConfig = {
+    username: string
+    password: string
+    batteries: string[]
+}
+
 type OtiiMsg = {
     type: string
     cmd?: string
@@ -128,6 +133,14 @@ type OtiiBatteryInfo = {
     name: string,
     manufacturer: string,
     model: string
+}
+
+type OttiLicenseInfo = {
+    id: number,
+    type: string,
+    reserved_to: string,
+    hostname: string,
+    available: boolean,
 }
 
 class OtiiSession {
@@ -388,6 +401,38 @@ class OtiiSession {
             device_id: deviceId
         }, 10000)
     }
+
+    async isLoggedIn(): Promise<boolean> {
+        const data = await this.cmd('otii_is_logged_in')
+        return data.logged_in
+    }
+
+    async login(username: string, password: string): Promise<void> {
+        await this.cmd('otii_login', { username, password }, 10000)
+    }
+
+    async getLicenses(): Promise<OttiLicenseInfo[]> {
+        const data = await this.cmd('otii_get_licenses')
+        return data?.licenses ?? []
+    }
+
+    async hasLicense(licenseType: 'Automation' | 'Battery'): Promise<boolean> {
+        const data = await this.cmd('otii_has_license', { license_type: licenseType })
+        return data.has_license
+    }
+
+    async reserveLicense(licenseId: number): Promise<void> {
+        await this.cmd('otii_reserve_license', { license_id: licenseId }, 10000)
+    }
+
+    async returnLicense(licenseId: number): Promise<void> {
+        await this.cmd('otii_return_license', { license_id: licenseId }, 10000)
+    }
+
+    async logout(): Promise<void> {
+        await this.cmd('otii_logout', undefined, 10000)
+    }
+
     private async cmd(cmd: string, data?: any, timeoutMs = 3000): Promise<any> {
         const rsp = await this.request(cmd, data, timeoutMs)
         return rsp.data
