@@ -29,6 +29,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     await otii.setMain(dev.device_id, true)
     await progress.spin(2500)
     await record(otii, cap, progress, projectId, dev.device_id)
+    await otii.setSupplyPowerBox(dev.device_id)
     await otii.close()
     return cap
 }
@@ -55,7 +56,7 @@ async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string):
     Core.fail("no corresponding profile found", bprof === undefined)
     await otii.setSupplyBatteryEmulator(deviceId, {
         batteryProfileId: bprof!.battery_profile_id,
-        soc: 10
+        soc: 2
     })
 }
 
@@ -96,7 +97,8 @@ async function record(
         cap.voltage_ds.add(sample)
     }
 
-    otii.deleteRecording(recordingId)
+    await otii.deleteRecording(recordingId)
+
     progress.clear()
 }
 
