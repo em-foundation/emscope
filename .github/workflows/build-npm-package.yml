@@ -36,12 +36,13 @@ jobs:
           npm run build
           rm -rf node_modules
           npm pack
+          mv em-foundation-emscope-${{ steps.date.outputs.version }}.tgz em-foundation-emscope-$VERSION_WITH_TIMESTAMP.tgz
           popd
 
       - name: Upload emscope package to npm-packages/resources
         uses: softprops/action-gh-release@v1
         with:
-          files: emscope/em-foundation-emscope-${{ steps.date.outputs.version }}.tgz
+          files: emscope/em-foundation-emscope-${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}.tgz
           repository: em-foundation/npm-packages
           token: ${{ secrets.token }}
           tag_name: resources
