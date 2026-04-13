@@ -415,6 +415,11 @@ At this early stage of development, the **EM&bull;Scope** team has four requests
 🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/BlueJoule)🍴&thinsp;`BlueJoule` to get going<br>
 🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star**](https://github.com/em-foundation/emscope)⭐&thinsp; **&bull;** &thinsp;[**Watch**](https://github.com/em-foundation/emscope)👀 this repo<br>
 
+To contribute code to **EM&bull;Scope**, fork the main branch of this repository and submit a PR entitled something like `v25.4.1-RC1`.&nbsp; The `package.json` should match the base version (`25.4.1` in this example) and `CHANGELOG.md` should summarize the changes.
+
+If accepted, you'll find an **npm** installable package named something like `em-foundation-emscope-25.4.1.202604131448.tgz` at [this](https://github.com/em-foundation/npm-packages/releases/tag/resources) site.  Once you've verified this particular release candidate, message the owners of this repository to publish the package at the **npm** registry.
+
+
 
 
 
