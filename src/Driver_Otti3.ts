@@ -32,9 +32,10 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     await otii.enableChannel(dev.device_id, 'mv', true)
 
     const bp = opts.batteryProfile
+    const soc = opts.soc ?? 100
     Core.fail("missing battery profile index", bp !== undefined && typeof (bp) != 'number')
     if (bp) {
-        await batteryConfig(otii, bp as number, dev.device_id, config)
+        await batteryConfig(otii, bp as number, soc, dev.device_id, config)
     } else {
         await otii.setSupplyPowerBox(dev.device_id)
     }
@@ -47,7 +48,7 @@ export async function execCapture(opts: any): Promise<Core.Capture> {
     return cap
 }
 
-async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string, config: OtiiConfig): Promise<void> {
+async function batteryConfig(otii: OtiiSession, bidx: number, soc: number, deviceId: string, config: OtiiConfig): Promise<void> {
     const bname = config.batteries[bidx]
     Core.fail("invalid battery index", typeof (bname) != 'string')
     const profiles = await otii.getBatteryProfiles()
@@ -55,7 +56,7 @@ async function batteryConfig(otii: OtiiSession, bidx: number, deviceId: string, 
     Core.fail("no corresponding profile found", bprof === undefined)
     await otii.setSupplyBatteryEmulator(deviceId, {
         batteryProfileId: bprof!.battery_profile_id,
-        soc: 2
+        soc: soc
     })
 }
 
