@@ -79,7 +79,7 @@ function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
         avg += egy * scale
         const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(2).padStart(5, ' ')
         const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
-        Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.uJoules(egy)}, duration = ${dur} s`)
+        Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.uJoules(egy)}, duration = ${dur} ms`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
