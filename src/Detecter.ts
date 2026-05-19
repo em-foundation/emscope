@@ -7,6 +7,8 @@ type Params = {
     trim?: number
 }
 
+const NO_CURRENT = 0
+
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     let params: Params = {}
@@ -109,6 +111,7 @@ function measureSleep(osig: Core.Signal): Core.SleepInfo {
         const wsig = win.toSignal()
         const cur = wsig.avg()
         const m = win.toMarker()
+        if (cur < NO_CURRENT) continue
         if (cur < min_cur) {
             min_cur = cur
             std = wsig.std()
