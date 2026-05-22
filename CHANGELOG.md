@@ -1,3 +1,10 @@
+## VERSION-25.5.0
+
+* support for Otii-3 analyzer and battery emulator
+* new `emscope grab -O, --otii3` option
+* new `emscope grab -B, --battery-profile <index>` option
+* new `emscope --soc <percent>` option
+
 ## VERSION-25-4.1
 
 * more robust port enumeration fix for PPK
