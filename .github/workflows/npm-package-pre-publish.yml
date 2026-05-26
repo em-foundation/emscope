@@ -35,7 +35,8 @@ jobs:
         run: |
           pushd emscope
           cp docs/README-npm.md README.md
+          npm config ls -l
           npm publish --access public --tag next
           popd
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          _authToken: ${{ secrets.NPM_TOKEN }}
