@@ -9,13 +9,13 @@ jobs:
 
     steps:
       - name: Checkout emscope
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: emscope
           token: ${{ secrets.token }}
 
       - name: Set up Node.js version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
@@ -57,7 +57,7 @@ jobs:
           done
 
       - name: Upload emscope package tag release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: emscope/em-foundation-emscope-${{ steps.date.outputs.version }}.tgz
           token: ${{ secrets.token }}
