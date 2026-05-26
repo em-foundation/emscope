@@ -31,6 +31,8 @@ jobs:
         run: |
           ./emscope/dist/emscope --version
 
+          
+
       - name: Publish emscope package
         run: |
           pushd emscope
@@ -39,4 +41,4 @@ jobs:
           npm publish --access public
           popd        
         env:
-          _authToken: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
