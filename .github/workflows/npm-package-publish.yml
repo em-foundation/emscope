@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout emscope
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: emscope
           token: ${{ secrets.token }}
@@ -35,7 +35,8 @@ jobs:
         run: |
           pushd emscope
           cp docs/README-npm.md README.md
+          npm config list
           npm publish --access public
           popd        
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          _authToken: ${{ secrets.NPM_TOKEN }}
