@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout emscope
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: emscope
           token: ${{ secrets.token }}
