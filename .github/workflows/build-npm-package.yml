@@ -40,7 +40,7 @@ jobs:
           popd
 
       - name: Upload emscope package to npm-packages/resources
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: emscope/em-foundation-emscope-${{ steps.date.outputs.version }}.${{ steps.date.outputs.date }}.tgz
           repository: em-foundation/npm-packages
