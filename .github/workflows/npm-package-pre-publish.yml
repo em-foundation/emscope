@@ -39,4 +39,4 @@ jobs:
           npm publish --access public --tag next
           popd
         env:
-          _authToken: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
