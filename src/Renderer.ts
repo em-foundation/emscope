@@ -11,6 +11,15 @@ export function exec(opts: any) {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const json = !!opts.json
+    if (opts.whatIf !== undefined) {
+        const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
+        json ? printResultsJson(cap, aobj, ev_rate, opts.eventInfo) : printResults(cap, aobj, ev_rate, opts.score, opts.eventInfo)
+        return
+    }
+    if (opts.score) {
+        json ? printResultsJson(cap, aobj, 1, opts.eventInfo) : printResults(cap, aobj, 1, true, opts.eventInfo)
+        return
+    }
     if (opts.eventInfo) {
         json ? printEventInfoJson(cap, aobj.events) : printEventInfo(cap, aobj.events)
         return
@@ -21,15 +30,6 @@ export function exec(opts: any) {
     }
     if (opts.sleepInfo) {
         json ? printSleepInfoJson(cap, aobj.sleep) : printSleepInfo(cap, aobj.sleep)
-        return
-    }
-    if (opts.whatIf !== undefined) {
-        const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        json ? printResultsJson(cap, aobj, ev_rate) : printResults(cap, aobj, ev_rate, opts.score)
-        return
-    }
-    if (opts.score) {
-        json ? printResultsJson(cap, aobj, 1) : printResults(cap, aobj, 1, true)
         return
     }
     Core.fail(`no options found: run 'emscope view -h'`)
@@ -108,13 +108,12 @@ function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
     }))
 }
 
-function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
+function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean, event_based = false) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
     score_only || Core.infoMsg(`event period:        ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power:  ${Core.toEng(sleep_pwr, 'W')}`)
     score_only || Core.infoMsg('----')
-    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
-    const egy_1e = egy_1s - sleep_pwr * 1
+    const egy_1e = event_based ? averageEventEnergy(cap, aobj.events) : representativeSpanEnergy(cap, aobj, sleep_pwr)
     const egy_1c = (sleep_pwr * ev_rate) + egy_1e
     score_only || Core.infoMsg(`representative event: ${Core.uJoules(egy_1e)}`)
     score_only || Core.infoMsg(`energy per period:    ${Core.uJoules(egy_1c)}`)
@@ -126,16 +125,16 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
     Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
 }
 
-function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
+function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, event_based = false) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
-    const egy_1e = egy_1s - sleep_pwr * 1
+    const egy_1e = event_based ? averageEventEnergy(cap, aobj.events) : representativeSpanEnergy(cap, aobj, sleep_pwr)
     const egy_1c = (sleep_pwr * ev_rate) + egy_1e
     const egy_1d = egy_1c * 86400 / ev_rate
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
     console.log(JSON.stringify({
         type: 'score',
+        basis: event_based ? 'events' : 'span',
         emeralds: parseFloat(ems.toFixed(2)),
         cycleRate: ev_rate,
         sleepCurrent: aobj.sleep.avg,
@@ -146,6 +145,20 @@ function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: numbe
         energyPerDay: egy_1d,
         energyPerMonth: egy_1m,
     }))
+}
+
+function representativeSpanEnergy(cap: Core.Capture, aobj: Core.Analysis, sleep_pwr: number) {
+    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
+    return egy_1s - sleep_pwr
+}
+
+function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]) {
+    Core.fail('no events found', markers.length == 0)
+    let total = 0
+    for (const m of markers) {
+        total += cap.energyWithin(m)
+    }
+    return total / markers.length
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {
