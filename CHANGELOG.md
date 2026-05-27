@@ -1,3 +1,9 @@
+## VERSION-25.6.0
+
+* improved processing of more complex captures
+* new `emscope scan -s, --sleep-window <milleseconds>` option
+* new `emscope view -w -e` combination to only use scanned events for scoring
+
 ## VERSION-25.5.0
 
 * support for Otii-3 analyzer and battery emulator
