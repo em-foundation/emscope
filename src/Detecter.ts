@@ -4,6 +4,7 @@ type Params = {
     gap?: number
     min_dur?: number
     min_egy?: number
+    sleep_win?: number
     trim?: number
 }
 
@@ -15,9 +16,7 @@ export function exec(opts: any) {
     if (opts.refresh) {
         if (cap.analysis) {
             for (const opt of cap.analysis?.options) {
-                const a = opt.split(' ')
-                const [pname, pval] = [a[0].slice(2), Number(a[1])];
-                (params as any)[pname] = Number(pval)
+                applyOption(params, opt)
             }
             if (Number.isNaN(params.trim)) {
                 params.trim = cap.analysis.events.length
@@ -27,6 +26,7 @@ export function exec(opts: any) {
         params.gap = opts.gap
         params.min_dur = opts.minDuration
         params.min_egy = opts.minEnergy
+        params.sleep_win = opts.sleepWindow
         params.trim = opts.trim
     }
     const aobj = analyze(cap, params)
@@ -38,7 +38,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
-    const si = measureSleep(asig)
+    const si = measureSleep(asig, params.sleep_win)
     const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
     let active = false
@@ -75,7 +75,9 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         markers = markers.filter(m => cap.energyWithin(m) >= params.min_egy! / 1_000_000)
         options.push(`--min-energy ${params.min_egy}`)
     }
-
+    if (params.sleep_win !== undefined) {
+        options.push(`--sleep-window ${params.sleep_win}`)
+    }
     let span = rsig.window(rsig.data.length).toMarker()
     if (params.trim) {
         [span, markers] = trimEvents(cap, markers, params.trim!)
@@ -83,6 +85,28 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, sleep: si, options: options, version: Core.version() }
+}
+
+function applyOption(params: Params, opt: string) {
+    const a = opt.split(' ')
+    const val = Number(a[1])
+    switch (a[0]) {
+        case '--gap':
+            params.gap = val
+            break
+        case '--min-duration':
+            params.min_dur = val
+            break
+        case '--min-energy':
+            params.min_egy = val
+            break
+        case '--sleep-window':
+            params.sleep_win = val
+            break
+        case '--trim':
+            params.trim = val
+            break
+    }
 }
 
 function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): Core.Marker[] {
@@ -97,16 +121,19 @@ function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): 
             res.push(m)
             continue
         }
-        last.width += gap + m.width
+        last.width = (m.offset + m.width) - last.offset
     }
     return res
 }
-function measureSleep(osig: Core.Signal): Core.SleepInfo {
+function measureSleep(osig: Core.Signal, sleep_win_ms: number = 500): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
     let off = 0
-    const win = osig.window(osig.secsToOff(.5))
+    const win_wid = osig.secsToOff(sleep_win_ms / 1000)
+    Core.fail('sleep window too small', win_wid < 2)
+    Core.fail('sleep window exceeds capture duration', win_wid > osig.data.length)
+    const win = osig.window(win_wid)
     while (win.valid()) {
         const wsig = win.toSignal()
         const cur = wsig.avg()
