@@ -1,3 +1,7 @@
+## VERSION-25.6.1
+
+* `emscope pack -a` fix
+
 ## VERSION-25.6.0
 
 * improved processing of more complex captures
