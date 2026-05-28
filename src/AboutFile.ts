@@ -56,8 +56,8 @@ function mkGen(cap: Core.Capture): string {
     const sl_avg = aobj.sleep.avg
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
-    const egy1_s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
-    const egy1_e = egy1_s - cap.avg_voltage * si.avg
+    const egy1_e = averageEventEnergy(cap, aobj.events)
+    const egy1_s = sl_pwr + egy1_e
     const egy1_d = egy1_s * 86400
     const ems1 = 80 / egy1_d
     const egy10_s = (sl_pwr * 10) + egy1_e
@@ -104,6 +104,16 @@ ${bld_txt}
 ## Notes
 `
     return GEN
+}
+
+
+function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]): number {
+    Core.fail('no events found', markers.length == 0)
+    let total = 0
+    for (const m of markers) {
+        total += cap.energyWithin(m)
+    }
+    return total / markers.length
 }
 
 function mkTimestamp(d: Date): string {
