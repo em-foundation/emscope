@@ -8,11 +8,10 @@ import * as Path from 'path'
 export function update(capdir: string) {
     const cap = Core.Capture.load(capdir)
     const plt = readPlatform(cap)
-    const title = plt.title
     const subtitle = mkSubtitle(cap)
     const out = `<!-- GENERATED FILE — DO NOT EDIT -->
 
-<h1 align="center">${title}</h1>
+<h1 align="center">${plt.title}</h1>
 <h3 align="center">${subtitle}</h3>
 ${mkGen(cap, plt)}
 `
@@ -24,16 +23,73 @@ interface Platform {
     url: string
     title: string
     factoids: string[]
-    references: string[]
+    references: Reference[]
+}
+
+interface Reference {
+    title: string
+    url: string
+}
+
+interface Declaration {
+    title: string
+    inherits: string[]
+    factoids: string[]
+    references: Reference[]
 }
 
 function readPlatform(cap: Core.Capture): Platform {
     const file = findPlatformFile(cap.rootdir)
     const lines = Fs.readFileSync(file, 'utf-8').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
     Core.fail(`invalid '.platform' file: expected one URL`, lines.length != 1)
+
     const url = lines[0]
+    const top = readDeclaration(url)
+    const factoids: string[] = []
+    const references: Reference[] = []
+    const visited = new Set<string>()
+    const seen_refs = new Set<string>()
+
+    explodeDeclaration(url, factoids, references, visited, seen_refs)
+
+    return {
+        url,
+        title: top.title,
+        factoids,
+        references,
+    }
+}
+
+function explodeDeclaration(
+    url: string,
+    factoids: string[],
+    references: Reference[],
+    visited: Set<string>,
+    seen_refs: Set<string>,
+) {
+    const key = canonicalUrl(url)
+    if (visited.has(key)) return
+    visited.add(key)
+
+    const decl = readDeclaration(url)
+
+    for (const inh of decl.inherits) {
+        explodeDeclaration(inh, factoids, references, visited, seen_refs)
+    }
+
+    factoids.push(...decl.factoids)
+
+    for (const ref of decl.references) {
+        const key = `${ref.title}\n${ref.url}`
+        if (seen_refs.has(key)) continue
+        seen_refs.add(key)
+        references.push(ref)
+    }
+}
+
+function readDeclaration(url: string): Declaration {
     const txt = readUrl(url)
-    return parsePlatform(url, txt)
+    return parseDeclaration(url, txt)
 }
 
 function findPlatformFile(capdir: string): string {
@@ -55,7 +111,7 @@ function readUrl(url: string): string {
     try {
         return ChildProc.execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
     } catch (e: any) {
-        Core.fail(`unable to read platform declaration: ${url}`)
+        Core.fail(`unable to read declaration: ${url}`)
         return ''
     }
 }
@@ -66,36 +122,66 @@ function githubRawUrl(url: string): string {
     return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}/${m[4]}`
 }
 
-function parsePlatform(url: string, txt: string): Platform {
+function canonicalUrl(url: string): string {
+    try {
+        const u = new URL(url)
+        u.hash = ''
+        return u.toString()
+    } catch {
+        return url
+    }
+}
+
+function resolveUrl(base: string, ref: string): string {
+    try {
+        return new URL(ref, base).toString()
+    } catch {
+        Core.fail(`invalid declaration URL '${ref}' in ${base}`)
+        return ''
+    }
+}
+
+function parseDeclaration(url: string, txt: string): Declaration {
     const lines = txt.split(/\r?\n/)
     const title_line = lines.find(s => /^#\s+/.test(s.trim()))
-    Core.fail(`platform declaration has no title: ${url}`, title_line === undefined)
+    Core.fail(`declaration has no title: ${url}`, title_line === undefined)
+
     const title = title_line!.trim().replace(/^#\s+/, '')
+    const inherits: string[] = []
     const factoids: string[] = []
-    const references: string[] = []
-    const seen = new Set<string>()
+    const references: Reference[] = []
 
     for (const raw of lines) {
         const line = raw.trim()
         if (!/^[-*]\s+/.test(line)) continue
         const body = line.replace(/^[-*]\s+/, '')
-        Core.fail(`INHERITS is not supported yet: ${url}`, /^INHERITS\b/.test(body))
+
+        const inh = body.match(/^INHERITS\s+\[([^\]]+)\]\(([^)]+)\)\s*$/)
+        if (inh) {
+            inherits.push(resolveUrl(url, inh[2]))
+            continue
+        }
 
         const links = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)]
         for (const m of links) {
-            const ref = `- [${m[1]}](${m[2]})`
-            if (!seen.has(ref)) {
-                seen.add(ref)
-                references.push(ref)
-            }
+            references.push({
+                title: m[1],
+                url: resolveUrl(url, m[2]),
+            })
         }
 
         if (/^\[[^\]]+\]\([^)]+\)\s*$/.test(body)) continue
+
         const plain = body.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
         factoids.push(`- ${plain}`)
     }
 
-    return { url, title, factoids, references }
+    return {
+        title,
+        inherits,
+        factoids,
+        references,
+    }
 }
 
 function getBuildDir(cap: Core.Capture): string {
@@ -133,11 +219,17 @@ function mkPlatformTxt(cap: Core.Capture, plt: Platform): string {
 
     const refs = [...plt.references]
     if (Fs.existsSync(getBuildDir(cap))) {
-        refs.push(`- [BUILD ARTIFACTS](../build) &thinsp;⚙️`)
+        refs.push({
+            title: 'BUILD ARTIFACTS',
+            url: '../build',
+        })
     }
 
     if (refs.length) {
-        out.push('', '### References', '', ...refs)
+        out.push('', '### References', '')
+        for (const ref of refs) {
+            out.push(`- [${ref.title}](${ref.url})`)
+        }
     }
     return out.join('\n')
 }
@@ -223,10 +315,7 @@ function writeJson(cap: Core.Capture, plt: Platform, subtitle: string) {
             url: plt.url,
             title: plt.title,
             factoids: plt.factoids.map(s => s.replace(/^-\s+/, '')),
-            references: plt.references.map(s => {
-                const m = s.match(/^- \[([^\]]+)\]\(([^)]+)\)$/)
-                return m ? { title: m[1], url: m[2] } : { title: s, url: '' }
-            }),
+            references: plt.references,
         },
         capture: {
             name: Path.basename(cap.rootdir),
