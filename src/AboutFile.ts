@@ -7,19 +7,20 @@ import * as Path from 'path'
 
 export function update(capdir: string) {
     const cap = Core.Capture.load(capdir)
-    const plt = readPlatform(cap)
+    const plt = readDeclarationFile(cap, '.platform', true)!
+    const pwr = readDeclarationFile(cap, '.power', false)
     const subtitle = mkSubtitle(cap)
     const out = `<!-- GENERATED FILE — DO NOT EDIT -->
 
 <h1 align="center">${plt.title}</h1>
 <h3 align="center">${subtitle}</h3>
-${mkGen(cap, plt)}
+${mkGen(cap, plt, pwr)}
 `
     Fs.writeFileSync(Path.join(cap.rootdir, 'ABOUT.md'), out)
-    writeJson(cap, plt, subtitle)
+    writeJson(cap, plt, pwr, subtitle)
 }
 
-interface Platform {
+interface ResolvedDeclaration {
     url: string
     title: string
     factoids: string[]
@@ -38,10 +39,24 @@ interface Declaration {
     references: Reference[]
 }
 
-function readPlatform(cap: Core.Capture): Platform {
-    const file = findPlatformFile(cap.rootdir)
+interface VoltageStats {
+    avg: number
+    min: number
+    max: number
+    std: number
+}
+
+function readDeclarationFile(
+    cap: Core.Capture,
+    name: '.platform' | '.power',
+    required: boolean,
+): ResolvedDeclaration | undefined {
+    const file = findDeclarationFile(cap.rootdir, name)
+    Core.fail(`no '${name}' file found`, required && file === undefined)
+    if (!file) return undefined
+
     const lines = Fs.readFileSync(file, 'utf-8').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
-    Core.fail(`invalid '.platform' file: expected one URL`, lines.length != 1)
+    Core.fail(`invalid '${name}' file: expected one URL`, lines.length != 1)
 
     const url = lines[0]
     const top = readDeclaration(url)
@@ -92,13 +107,13 @@ function readDeclaration(url: string): Declaration {
     return parseDeclaration(url, txt)
 }
 
-function findPlatformFile(capdir: string): string {
+function findDeclarationFile(capdir: string, name: '.platform' | '.power'): string | undefined {
     let dir = capdir
     while (true) {
-        const file = Path.join(dir, '.platform')
+        const file = Path.join(dir, name)
         if (Fs.existsSync(file)) return file
         const parent = Path.dirname(dir)
-        Core.fail(`no '.platform' file found`, parent == dir)
+        if (parent == dir) return undefined
         dir = parent
     }
 }
@@ -213,10 +228,7 @@ function mkSubtitle(cap: Core.Capture): string {
     return name.replace(/\-[JPO]$/i, '')
 }
 
-function mkPlatformTxt(cap: Core.Capture, plt: Platform): string {
-    const out: string[] = []
-    out.push(...plt.factoids)
-
+function mkPlatformTxt(cap: Core.Capture, plt: ResolvedDeclaration): string {
     const refs = [...plt.references]
     if (Fs.existsSync(getBuildDir(cap))) {
         refs.push({
@@ -224,7 +236,22 @@ function mkPlatformTxt(cap: Core.Capture, plt: Platform): string {
             url: '../build',
         })
     }
+    return mkDeclarationTxt(plt, refs)
+}
 
+function mkPowerTxt(pwr: ResolvedDeclaration | undefined): string {
+    if (!pwr) return ''
+    return `
+
+## Power Source
+
+${mkDeclarationTxt(pwr, pwr.references)}
+`
+}
+
+function mkDeclarationTxt(decl: ResolvedDeclaration, refs: Reference[]): string {
+    const out: string[] = []
+    out.push(...decl.factoids)
     if (refs.length) {
         out.push('', '### References', '')
         for (const ref of refs) {
@@ -234,10 +261,11 @@ function mkPlatformTxt(cap: Core.Capture, plt: Platform): string {
     return out.join('\n')
 }
 
-function mkGen(cap: Core.Capture, plt: Platform): string {
+function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined): string {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
+    const vstats = getVoltageStats(cap)
     const sl_avg = aobj.sleep.avg
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
@@ -272,11 +300,11 @@ ${notes}
 
 ## Platform
 
-${plt_txt}
+${plt_txt}${mkPowerTxt(pwr)}
 
 
 ## EM&bull;Scope results · ${cap.device}
-
+${mkVoltageTxt(vstats)}
 ### 🟠&ensp;sleep
 
 | supply voltage | &emsp;current (avg)&emsp; | &emsp;current (std)&emsp; | &emsp;average power&emsp;
@@ -296,10 +324,20 @@ ${plt_txt}
 | ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |${evt_txt}${notes_txt}`
 }
 
-function writeJson(cap: Core.Capture, plt: Platform, subtitle: string) {
+function jsonDeclaration(decl: ResolvedDeclaration) {
+    return {
+        url: decl.url,
+        title: decl.title,
+        factoids: decl.factoids.map(s => s.replace(/^-\s+/, '')),
+        references: decl.references,
+    }
+}
+
+function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined, subtitle: string) {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
+    const vstats = getVoltageStats(cap)
     const sl_avg = aobj.sleep.avg
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
@@ -311,12 +349,8 @@ function writeJson(cap: Core.Capture, plt: Platform, subtitle: string) {
     const evt_file = getEvtFile(cap)
     const bld_dir = getBuildDir(cap)
     const obj = {
-        platform: {
-            url: plt.url,
-            title: plt.title,
-            factoids: plt.factoids.map(s => s.replace(/^-\s+/, '')),
-            references: plt.references,
-        },
+        platform: jsonDeclaration(plt),
+        power: pwr ? jsonDeclaration(pwr) : undefined,
         capture: {
             name: Path.basename(cap.rootdir),
             subtitle,
@@ -324,6 +358,13 @@ function writeJson(cap: Core.Capture, plt: Platform, subtitle: string) {
             created: cap.creation_date.toISOString(),
             generated: new Date().toISOString(),
             avg_voltage: sl_v,
+            voltage: vstats ? {
+                source: 'measured',
+                ...vstats,
+            } : {
+                source: 'declared',
+                value: sl_v,
+            },
             event_image: evt_file || undefined,
             build_artifacts: Fs.existsSync(bld_dir) ? '../build' : undefined,
         },
@@ -349,6 +390,49 @@ function writeJson(cap: Core.Capture, plt: Platform, subtitle: string) {
     }
     const file = Path.join(cap.rootdir, 'about.json')
     Fs.writeFileSync(file, `${JSON.stringify(obj, null, 4)}\n`)
+}
+
+function getVoltageStats(cap: Core.Capture): VoltageStats | undefined {
+    if (cap.voltage != -1) return undefined
+
+    let count = 0
+    let sum = 0
+    let sum_sq = 0
+    let min = Number.POSITIVE_INFINITY
+    let max = Number.NEGATIVE_INFINITY
+
+    for (const v of cap.voltage_sig.data) {
+        if (!Number.isFinite(v) || v <= 0) continue
+        count += 1
+        sum += v
+        sum_sq += v * v
+        min = Math.min(min, v)
+        max = Math.max(max, v)
+    }
+
+    Core.fail('no valid voltage samples found', count == 0)
+
+    const avg = sum / count
+    const variance = Math.max(0, (sum_sq / count) - (avg * avg))
+
+    return {
+        avg,
+        min,
+        max,
+        std: Math.sqrt(variance),
+    }
+}
+
+function mkVoltageTxt(stats: VoltageStats | undefined): string {
+    if (!stats) return '\n'
+    return `
+### 🟠&ensp;measured voltage
+
+| &emsp;average&emsp; | &emsp;minimum&emsp; | &emsp;maximum&emsp; | &emsp;standard deviation&emsp;
+|:---:|:---:|:---:|:---:|
+| ${stats.avg.toFixed(3)} V | ${stats.min.toFixed(3)} V | ${stats.max.toFixed(3)} V | ${stats.std.toFixed(3)} V |
+
+`
 }
 
 function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]): number {
