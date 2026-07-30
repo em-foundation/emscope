@@ -40,7 +40,7 @@
         "@serialport/bindings-cpp": "^13.0.1",
         "@types/adm-zip": "^0.5.7",
         "@types/js-yaml": "^4.0.9",
-        "adm-zip": "^0.5.16",
+        "adm-zip": "^0.6.0",
         "commander": "^14.0.0",
         "jls-writer": "https://github.com/em-foundation/npm-packages/releases/download/resources/jls-writer-0.0.3.tgz",
         "joulescope_driver": "^1.10.0",
