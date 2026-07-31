@@ -36,10 +36,10 @@ function deflateLfs(repo: string, gpath: string) {
 function fetchOid(repo: string, gpath: string): string {
     let res = ''
     try {
-        const out = ChildProc.execFileSync('git', ['show', gpath], { cwd: repo, stdio: ['ignore','pipe','ignore'] }).toString()
+        const out = ChildProc.execFileSync('git', ['show', gpath], { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] }).toString()
         const m = out.match(/^\s*oid sha256:([0-9a-f]{64})/m)
         if (m) res = m[1]
-    } catch {}
+    } catch { }
     return res
 }
 
@@ -64,9 +64,14 @@ function isLfsDesc(path: string): boolean {
     return buf.subarray(0, n).toString('utf-8').startsWith(LFS_MAGIC)
 }
 
-function restoreLfs(repo: string, gpath: string) {
-    ChildProc.execFileSync('git', ['rm', '--cached', gpath], { cwd: repo, stdio: 'inherit' })
-    ChildProc.execFileSync('git', ['checkout', 'HEAD', '--', gpath], { cwd: repo, stdio: 'inherit' })
+function restoreLfs(repo: string, gpath: string, zpath: string) {
+    const pointer = ChildProc.execFileSync(
+        'git',
+        ['show', `HEAD:${gpath}`],
+        { cwd: repo }
+    )
+    Core.fail(`'${gpath}' is not an LFS pointer`, !pointer.toString().startsWith(LFS_MAGIC))
+    Fs.writeFileSync(zpath, pointer)
 }
 
 function toggleLfs(capdir: string, opts: any) {
@@ -82,8 +87,8 @@ function toggleLfs(capdir: string, opts: any) {
         return
     }
     if (opts.restore) {
-        restoreLfs(repo, gpath)
-        Fs.rmSync(Core.Capture.workdir(capdir), { recursive: true })
+        restoreLfs(repo, gpath, zpath)
+        Fs.rmSync(Core.Capture.workdir(capdir), { recursive: true, force: true })
         return
     }
     // opts.unpack == true
@@ -91,7 +96,7 @@ function toggleLfs(capdir: string, opts: any) {
     Core.fail(`'emscope-capture.zip' not yet committed`, !oid)
     const oid_head = fetchOid(repo, `HEAD:${gpath}`)
     if (oid_head && oid_head != oid) {
-        restoreLfs(repo, gpath)
+        restoreLfs(repo, gpath, zpath)
     }
     if (desc_flag) {
         deflateLfs(repo, gpath)
