@@ -274,10 +274,12 @@ function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclara
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
     const egy1_e = averageEventEnergy(cap, aobj.events)
-    const egy1_s = sl_pwr + egy1_e
+    const evt_dur = averageEventDuration(cap, aobj.events)
+    Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
+    const egy1_s = (sl_pwr * (1 - evt_dur)) + egy1_e
     const egy1_d = egy1_s * 86400
     const ems1 = 80 / egy1_d
-    const egy10_s = (sl_pwr * 10) + egy1_e
+    const egy10_s = (sl_pwr * (10 - evt_dur)) + egy1_e
     const egy10_d = egy10_s * 86400 / 10
     const ems10 = 80 / egy10_d
     const cap_date = mkTimestamp(cap.creation_date)
@@ -354,9 +356,10 @@ function mkJson(
     const sl_pwr = sl_v * sl_avg
     const egy1_e = averageEventEnergy(cap, aobj.events)
     const evt_dur = averageEventDuration(cap, aobj.events)
-    const egy1_s = sl_pwr + egy1_e
+    Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
+    const egy1_s = (sl_pwr * (1 - evt_dur)) + egy1_e
     const egy1_d = egy1_s * 86400
-    const egy10_s = (sl_pwr * 10) + egy1_e
+    const egy10_s = (sl_pwr * (10 - evt_dur)) + egy1_e
     const egy10_d = egy10_s * 86400 / 10
     const evt_files = getEvtFiles(cap)
     const bld_dir = getBuildDir(cap)
@@ -372,7 +375,6 @@ function mkJson(
             duration: cap.duration,
             sampling_rate: cap.sampling_rate,
             sample_count: cap.sample_count,
-            avg_voltage: sl_v,
             voltage: vstats ? {
                 source: 'measured',
                 ...vstats,
