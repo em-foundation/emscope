@@ -10,14 +10,20 @@ export function update(capdir: string) {
     const plt = readDeclarationFile(cap, '.platform', true)!
     const pwr = readDeclarationFile(cap, '.power', false)
     const subtitle = mkSubtitle(cap)
+    const generated = new Date()
+    const obj = mkJson(cap, plt, pwr, subtitle, generated)
+    const md_file = Path.join(cap.rootdir, 'ABOUT.md')
+    const json_file = Path.join(cap.rootdir, 'about.json')
+    if (Fs.existsSync(md_file) && Fs.existsSync(json_file) && sameJson(json_file, obj)) return
+
     const out = `<!-- GENERATED FILE — DO NOT EDIT -->
 
 <h1 align="center">${plt.title}</h1>
 <h3 align="center">${subtitle}</h3>
-${mkGen(cap, plt, pwr)}
+${mkGen(cap, plt, pwr, generated)}
 `
-    Fs.writeFileSync(Path.join(cap.rootdir, 'ABOUT.md'), out)
-    writeJson(cap, plt, pwr, subtitle)
+    Fs.writeFileSync(md_file, out)
+    Fs.writeFileSync(json_file, `${JSON.stringify(obj, null, 4)}\n`)
 }
 
 interface ResolvedDeclaration {
@@ -203,11 +209,8 @@ function getBuildDir(cap: Core.Capture): string {
     return Path.join(Path.dirname(cap.rootdir), 'build')
 }
 
-function getEvtFile(cap: Core.Capture): string {
-    for (const fn of Fs.readdirSync(cap.rootdir)) {
-        if (/^event\-[A-Z]\.png$/.test(fn)) return fn
-    }
-    return ''
+function getEvtFiles(cap: Core.Capture): string[] {
+    return Fs.readdirSync(cap.rootdir).filter(fn => /^event\-[A-Z]\.png$/.test(fn)).sort()
 }
 
 function readCaptureNotes(cap: Core.Capture): string {
@@ -261,7 +264,7 @@ function mkDeclarationTxt(decl: ResolvedDeclaration, refs: Reference[]): string 
     return out.join('\n')
 }
 
-function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined): string {
+function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined, generated: Date): string {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
@@ -277,9 +280,10 @@ function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclara
     const egy10_d = egy10_s * 86400 / 10
     const ems10 = 80 / egy10_d
     const cap_date = mkTimestamp(cap.creation_date)
-    const gen_date = mkTimestamp(new Date())
+    const gen_date = mkTimestamp(generated)
     const plt_txt = mkPlatformTxt(cap, plt)
-    const evt_file = getEvtFile(cap)
+    const evt_files = getEvtFiles(cap)
+    const evt_file = evt_files[0] ?? ''
     const evt_txt = evt_file ? `
 
 ## Typical Event
@@ -333,7 +337,13 @@ function jsonDeclaration(decl: ResolvedDeclaration) {
     }
 }
 
-function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined, subtitle: string) {
+function mkJson(
+    cap: Core.Capture,
+    plt: ResolvedDeclaration,
+    pwr: ResolvedDeclaration | undefined,
+    subtitle: string,
+    generated: Date,
+) {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
@@ -346,9 +356,9 @@ function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDec
     const egy1_d = egy1_s * 86400
     const egy10_s = (sl_pwr * 10) + egy1_e
     const egy10_d = egy10_s * 86400 / 10
-    const evt_file = getEvtFile(cap)
+    const evt_files = getEvtFiles(cap)
     const bld_dir = getBuildDir(cap)
-    const obj = {
+    return {
         platform: jsonDeclaration(plt),
         power: pwr ? jsonDeclaration(pwr) : undefined,
         capture: {
@@ -356,7 +366,7 @@ function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDec
             subtitle,
             device: cap.device,
             created: cap.creation_date.toISOString(),
-            generated: new Date().toISOString(),
+            generated: generated.toISOString(),
             avg_voltage: sl_v,
             voltage: vstats ? {
                 source: 'measured',
@@ -365,7 +375,7 @@ function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDec
                 source: 'declared',
                 value: sl_v,
             },
-            event_image: evt_file || undefined,
+            images: evt_files,
             build_artifacts: Fs.existsSync(bld_dir) ? '../build' : undefined,
         },
         sleep: {
@@ -388,8 +398,18 @@ function writeJson(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDec
             },
         },
     }
-    const file = Path.join(cap.rootdir, 'about.json')
-    Fs.writeFileSync(file, `${JSON.stringify(obj, null, 4)}\n`)
+}
+
+function sameJson(file: string, obj: any): boolean {
+    try {
+        const old_obj = JSON.parse(Fs.readFileSync(file, 'utf-8'))
+        const new_obj = JSON.parse(JSON.stringify(obj))
+        delete old_obj.capture?.generated
+        delete new_obj.capture?.generated
+        return JSON.stringify(old_obj) == JSON.stringify(new_obj)
+    } catch {
+        return false
+    }
 }
 
 function getVoltageStats(cap: Core.Capture): VoltageStats | undefined {
