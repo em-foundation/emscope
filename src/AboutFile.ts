@@ -305,12 +305,11 @@ function mkGen(cap: Core.Capture, act: ResolvedDeclaration, plt: ResolvedDeclara
     const gen_date = mkTimestamp(generated)
     const plt_txt = mkPlatformTxt(cap, plt)
     const evt_files = getEvtFiles(cap)
-    const evt_file = evt_files[0] ?? ''
-    const evt_txt = evt_file ? `
+    const evt_txt = evt_files.length ? `
 
 ## Typical Event
 
-<p align="center"><img src="${evt_file}" alt="Event" width="900"></p>
+${evt_files.map(fn => `<p align="center"><img src="${fn}" alt="Event" width="900"></p>`).join('\n')}
 ` : ''
     const notes = readCaptureNotes(cap)
     const notes_txt = notes ? `
@@ -385,6 +384,7 @@ function mkJson(
     const evt_files = getEvtFiles(cap)
     const bld_dir = getBuildDir(cap)
     return {
+        id: `${act.moniker}:${plt.moniker}:${Path.basename(cap.rootdir)}`,
         schema_version: '1',
         generator: {
             name: 'EM•Scope',
