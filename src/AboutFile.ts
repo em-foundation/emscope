@@ -292,8 +292,9 @@ function mkGen(cap: Core.Capture, act: ResolvedDeclaration, plt: ResolvedDeclara
     const sl_avg = aobj.sleep.avg
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
-    const egy1_e = averageEventEnergy(cap, aobj.events)
-    const evt_dur = averageEventDuration(cap, aobj.events)
+    const evt_stats = cap.eventStats(aobj.events)
+    const egy1_e = evt_stats.energy_avg
+    const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
     const egy1_s = (sl_pwr * (1 - evt_dur)) + egy1_e
     const egy1_d = egy1_s * 86400
@@ -338,15 +339,15 @@ ${mkVoltageTxt(vstats)}
 
 ### 🟠&ensp;1&thinsp;s event period
 
-| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
-|:---:|:---:|:---:|:---:|
-| ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
+| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;event energy (std)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
+|:---:|:---:|:---:|:---:|:---:|
+| ${Core.uJoules(egy1_e)} | ${Core.uJoules(evt_stats.energy_std)} | ${Core.uJoules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
 
 ### 🟠&ensp;10&thinsp;s event period
 
-| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
-|:---:|:---:|:---:|:---:|
-| ${Core.uJoules(egy1_e)} | ${Core.uJoules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |${evt_txt}${notes_txt}`
+| &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;event energy (std)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
+|:---:|:---:|:---:|:---:|:---:|
+| ${Core.uJoules(egy1_e)} | ${Core.uJoules(evt_stats.energy_std)} | ${Core.uJoules(egy10_s)} | ${Core.joules(egy10_d)} | ${ems10.toFixed(2)} |${evt_txt}${notes_txt}`
 }
 
 function jsonDeclaration(decl: ResolvedDeclaration) {
@@ -374,8 +375,9 @@ function mkJson(
     const sl_avg = aobj.sleep.avg
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
-    const egy1_e = averageEventEnergy(cap, aobj.events)
-    const evt_dur = averageEventDuration(cap, aobj.events)
+    const evt_stats = cap.eventStats(aobj.events)
+    const egy1_e = evt_stats.energy_avg
+    const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
     const egy1_s = (sl_pwr * (1 - evt_dur)) + egy1_e
     const egy1_d = egy1_s * 86400
@@ -420,9 +422,11 @@ function mkJson(
             build_artifacts: Fs.existsSync(bld_dir) ? '../build' : undefined,
         },
         events: {
-            count: aobj.events.length,
-            duration_avg: evt_dur,
-            energy_avg: egy1_e,
+            count: evt_stats.count,
+            duration_avg: evt_stats.duration_avg,
+            duration_std: evt_stats.duration_std,
+            energy_avg: evt_stats.energy_avg,
+            energy_std: evt_stats.energy_std,
         },
         sleep: {
             current_avg: sl_avg,
@@ -500,24 +504,6 @@ function mkVoltageTxt(stats: VoltageStats | undefined): string {
 | ${stats.avg.toFixed(3)} V | ${stats.min.toFixed(3)} V | ${stats.max.toFixed(3)} V | ${stats.std.toFixed(3)} V |
 
 `
-}
-
-function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]): number {
-    Core.fail('no events found', markers.length == 0)
-    let total = 0
-    for (const m of markers) {
-        total += cap.energyWithin(m)
-    }
-    return total / markers.length
-}
-
-function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]): number {
-    Core.fail('no events found', markers.length == 0)
-    let total = 0
-    for (const m of markers) {
-        total += m.width / cap.sampling_rate
-    }
-    return total / markers.length
 }
 
 function mkTimestamp(d: Date): string {
