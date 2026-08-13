@@ -107,7 +107,18 @@ export class Capture {
     get #workdir() { return Path.join(this.rootdir, '.emscope') }
 
     get analysis() { return this._aobj }
-    get avg_voltage() { return this.voltage == -1 ? this.voltage_sig.avg() : this.voltage }
+    get avg_voltage() {
+        if (this.voltage != -1) return this.voltage
+        let count = 0
+        let sum = 0
+        for (const v of this.voltage_sig.data) {
+            if (!Number.isFinite(v) || v <= 0) continue
+            count += 1
+            sum += v
+        }
+        fail('no valid voltage samples found', count == 0)
+        return sum / count
+    }
     get basename() { return Path.basename(Path.resolve(this.rootdir)) }
     get creation_date() { return this._creation_date! }
     get current_ds() { return this._current_ds! }
