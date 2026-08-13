@@ -385,6 +385,18 @@ function mkJson(
     const evt_files = getEvtFiles(cap)
     const bld_dir = getBuildDir(cap)
     return {
+        schema_version: '1',
+        generator: {
+            name: 'EM•Scope',
+            version: Core.version(),
+        },
+        units: {
+            time: 's',
+            current: 'A',
+            voltage: 'V',
+            power: 'W',
+            energy: 'J',
+        },
         activity: jsonDeclaration(act),
         platform: jsonDeclaration(plt),
         power: jsonDeclaration(pwr),
