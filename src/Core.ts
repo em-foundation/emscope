@@ -7,7 +7,7 @@ export type CaptureDevice = 'JS220' | 'Otii3' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
 export type MinMaxMeanBin = [number, number, number]
-export type SleepInfo = { avg: number, std: number, p95: number, off: number }
+export type SleepInfo = { avg: number, std: number, off: number }
 
 const TAB = '    '
 
@@ -281,15 +281,6 @@ export class Signal {
             sum_sq += d * d
         }
         return Math.sqrt(sum_sq / this.data.length)
-    }
-    slope_p95(): number {
-        const slope = new Array<number>()
-        for (let i = 1; i < this.data.length; i++) {
-            slope.push(Math.abs(this.data[i] - this.data[i - 1]))
-        }
-        const sorted = [...slope].sort((a, b) => a - b)
-        const p95 = sorted[Math.floor(0.95 * sorted.length)]
-        return p95
     }
     window(width: number, offset: number = 0): Window {
         return new Window(this, offset, width)

@@ -142,22 +142,11 @@ function measureSleep(osig: Core.Signal, sleep_win_ms: number = 500): Core.Sleep
         if (cur < min_cur) {
             min_cur = cur
             std = wsig.std()
-            p95 = slopeP95(wsig.data)
             off = m.offset
         }
         win.slide(m.width / 2)
     }
-    return { avg: min_cur, std: std, p95: p95, off: off }
-}
-
-function slopeP95(data: Float32Array): number {
-    const slope = new Array<number>()
-    for (let i = 1; i < data.length; i++) {
-        slope.push(Math.abs(data[i] - data[i - 1]))
-    }
-    const sorted = [...slope].sort((a, b) => a - b)
-    const p95 = sorted[Math.floor(0.95 * sorted.length)]
-    return p95
+    return { avg: min_cur, std: std, off: off }
 }
 
 function trimEvents(cap: Core.Capture, markers: Core.Marker[], count: number): [Core.Marker, Core.Marker[]] {
