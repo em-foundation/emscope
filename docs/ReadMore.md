@@ -66,7 +66,7 @@ Capture suppliers use `emscope pack` to generate distributable capture artifacts
 <a id="grab"></a>
 
 > [!IMPORTANT]
-> Even if you don't have a **Joulescope JS220** or **Nordic PPK2** analyzer at hand, understanding typical use of `emscope grab` sets the stage for other modes of the `emscope` command illustrated later.
+> Even if you don't have a **Joulescope JS220**, **Nordic PPK2**, or **Qoitech Otii** analyzer at hand, understanding typical use of `emscope grab` sets the stage for other modes of the `emscope` command illustrated later.&thinsp; Use `-J`, `-P`, or `-O` to select the analyzer.
 
 ---
 
@@ -111,13 +111,14 @@ $ emscope grab -PSv 1.8
 ---
 
 > [!TIP]
-> We'll run the remaining examples within a capture directory found in the [`bluejoule-adv`](https://github.com/em-foundation/bluejoule-adv) **Git** repository.&thinsp; To play along, clone the repo and restore its capture data:
+> We'll run the remaining examples within `captures/nrf-52832-emscript/3V3-J` in the [`bluejoule-adv`](https://github.com/em-foundation/bluejoule-adv) **Git** repository.&thinsp; To play along, clone the repo and restore its capture data:
 >
 > ```
 > GIT_LFS_SKIP_SMUDGE=1 git clone --filter=blob:none https://github.com/em-foundation/bluejoule-adv.git
 > cd bluejoule-adv
 > git lfs install --local --skip-smudge
 > emscope pack -u -C
+> cd captures/nrf-52832-emscript/3V3-J
 > ```
 
 <br>
@@ -128,7 +129,7 @@ $ emscope grab -PSv 1.8
 
 ```console
 $ emscope view -s
-    sleep current = 589.092 nA @ 3.29 V, standard deviation =  14.548 µA
+    sleep current = 2.5 µA @ 3.3 V, standard deviation = 14.0 µA
 ```
 
 > [!NOTE]
@@ -140,19 +141,19 @@ $ emscope view -s
 
 ```console
 $ emscope view -e
-    A :: time =  1.06 s, energy =  30.840 µJ, duration =   3.250 ms
-    B :: time =  2.07 s, energy =  30.910 µJ, duration =   3.250 ms
-    C :: time =  3.07 s, energy =  30.913 µJ, duration =   3.250 ms
-    D :: time =  4.07 s, energy =  30.962 µJ, duration =   3.000 ms
-    E :: time =  5.08 s, energy =  30.945 µJ, duration =   3.000 ms
-    F :: time =  6.08 s, energy =  31.166 µJ, duration =   3.250 ms
-    G :: time =  7.09 s, energy =  30.863 µJ, duration =   3.000 ms
-    H :: time =  8.10 s, energy =  30.745 µJ, duration =   3.000 ms
-    I :: time =  9.10 s, energy =  31.252 µJ, duration =   3.000 ms
-    J :: time = 10.10 s, energy =  30.931 µJ, duration =   3.000 ms
+    A :: time =  0.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    B :: time =  1.99 s, energy = 24.0 µJ, duration =  2.00 ms
+    C :: time =  2.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    D :: time =  3.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    E :: time =  4.99 s, energy = 24.0 µJ, duration =  2.00 ms
+    F :: time =  5.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    G :: time =  6.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    H :: time =  7.99 s, energy = 24.1 µJ, duration =  2.00 ms
+    I :: time =  8.99 s, energy = 24.0 µJ, duration =  2.00 ms
+    J :: time =  9.99 s, energy = 24.1 µJ, duration =  2.00 ms
     ----
-    energy over 10 event(s):  30.953 µJ avg,   0.143 µJ std
-    duration over 10 event(s):   3.1 ms avg, 100.0 µs std
+    energy over 10 event(s): 24.1 µJ avg,  0.0 µJ std
+    duration over 10 event(s):  2.0 ms avg,  0.0 ms std
 ```
 
 > [!NOTE]
@@ -265,7 +266,7 @@ git commit ...
 > [!NOTE]
 > You'll publish new captures created with `emscope grab` and refined with `emscope scan` within a **Git** repo.&thinsp; At a minimum, you'll commit `capture.yaml`, `analysis.yaml`, and the (large) `emscope-capture.zip` generated here.
 >
-> `emscope pack -a` fully generates both `ABOUT.md` and `about.json`.&thinsp; Do not edit these files by hand.
+> `emscope pack -a` fully generates both `ABOUT.md` and `about.json`, resolving activity, platform, and power declarations through **PEDS**.&thinsp; Do not edit these files by hand.
 >
 > Repo owners may prescribe additional artifacts and capture-directory naming conventions.&thinsp; Repositories should _not_ retain generated `.jls` files, which clients can reproduce with `emscope view` after cloning.
 
@@ -280,52 +281,29 @@ git commit ...
 
 ```console
 $ emscope view -w
-    event cycle duration: 00:00:01
-    average sleep power:   1.941 µW
+    event period:        00:00:01
+    average sleep power:   8.1 µW
+    average event energy: 24.1 µJ
+    average event duration:  2.0 ms
     ----
-    representative event:  30.980 µJ
-    energy per cycle:  32.921 µJ
-    energy per day:   2.844 J
+    energy per period:    32.2 µJ
+    energy per day:        2.8 J
     ----
-    28.13 EM•eralds
+    28.78 EM•eralds
 ```
 
 > [!NOTE]
-> The `-w, --what-if` option summarizes the energy efficiency of previously captured power signals.&thinsp; Like all forms of `emscope view`, the underlying `analysis.yaml` file provides a source for this information but otherwise remains unmodified by this command.
->
-> As you might imagine, the overwhelming percentage of energy consumed per 1&thinsp;s event-cycle happens in under 1% of real-time &ndash; an inherent and enduring trait of most "sleepy" applications for embedded systems.
+> The `-w, --what-if` option summarizes energy consumption for a selected event period.&thinsp; The calculation combines average event energy and duration with measured sleep power.
 
 ---
 
 ```console
-$ emscope-dev view -w 5
-    event cycle duration: 00:00:05
-    average sleep power:   1.941 µW
-    ----
-    representative event:  30.980 µJ
-    energy per cycle:  40.684 µJ
-    energy per day: 703.019 mJ
-    ----
-    113.79 EM•eralds
-
+$ emscope view -w 5
 $ emscope view -w 2:00
-    event cycle duration: 00:02:00
-    average sleep power:   1.941 µW
-    ----
-    representative event:  30.980 µJ
-    energy per cycle: 263.880 µJ
-    energy per day: 189.994 mJ
-    ----
-    421.07 EM•eralds
 ```
 
 > [!NOTE]
-> The `-w, --what-if` accepts an optional `[[hh:]mm:]ss` value defining the event cycle duration &ndash; allowing us to extrapolate energy consumption in longer, more realistic periods.&thinsp; As expected, increasing cycle duration will _decrease_ energy consumption per day.
-
----
-
-> [!IMPORTANT]
-> The energy consumed per day will plateau as cycle duration continues to lengthen &ndash; with sleep power dominating.&thinsp; Having said that, the magnitude of target sleep power coupled with its wakeup overhead can lead to some interesting energy consumption curves.
+> The `-w, --what-if` option accepts an optional `[[hh:]mm:]ss` value defining the event period.
 
 ---
 
@@ -339,46 +317,36 @@ $ emscope view -w 2:00 --score
 ```
 
 > [!NOTE]
-> Using the `--score` option by itself (or in conjunction with `-w`) reduces output to a single metric &ndash; the **EM•erald**.&thinsp; Starting with _energy per day_ (as reported previously), we compute _energy per month_ and then divide this value into 2400 &ndash; yielding our final score.
+> The `--score` option reduces output to the **EM&bull;erald** score.
 >
-> <p align="center"><b>EM•eralds = 2400 / (<i>Joules per day</i> × 30) = 80 / <i>Joules per day</i></b></p>
+> <p align="center"><b>EM&bull;eralds = 80 / <i>Joules per day</i></b></p>
 >
-> Why 2400?&thinsp; Because this number approximates the amount of energy available in the ever-popular CR2032 coin-cell battery &ndash; rated at 225&thinsp;mAH and nominally delivering 3V.
->
-> <p align="center"><b>CR2032 energy:&nbsp; 225 mAh × 3.6 × 3.0 V ≈ 2.43 kJ</b></p>
-> <p align="center"><b>1 EM•erald ≈ 1 CR2032-month</b></p>
->
-> More **EM•eralds**, more efficiency....&nbsp; And while our embedded system may use other sources of energy than a CR2032 battery, the industry has always touted _"five years on a coin-cell"_ as a laudable goal &ndash; which we'll now term a <i>60 <b>EM•erald</b> application</i>.
+> Benchmark interpretation and comparisons will move to [bluejoule.org](https://bluejoule.org).
 
 ---
 
 ```console
-$ cd .../BlueJoule/captures
-$ emscope view --score -C '*/nrf*/*'
+$ cd .../bluejoule-adv/captures
+$ emscope view -w --score -C 'nrf-52*'
 
-js220/nrf-52-dk/zephyr:
-    27.72 EM•eralds
+nrf-52832-emscript/2V7-J:
+    32.64 EM•eralds
 
-js220/nrf-54-dk/baremetal:
-    27.09 EM•eralds
+nrf-52832-emscript/3V3-J:
+    28.78 EM•eralds
 
-js220/nrf-54-dk/zephyr:
-    31.07 EM•eralds
+nrf-52832-zephyr/2V7-J:
+    30.56 EM•eralds
 
-ppk2/nrf-52-dk/zephyr:
-    27.30 EM•eralds
+nrf-52832-zephyr/3V3-J:
+    27.99 EM•eralds
 
-ppk2/nrf-54-dk/baremetal:
-    27.35 EM•eralds
-
-ppk2/nrf-54-dk/baremetal-1V8:
-    35.09 EM•eralds
+nrf-52832-zephyr/3V3-P:
+    27.33 EM•eralds
 ```
 
 > [!NOTE]
-> The `-C, --capture-glob` option illustrated here will in general enable execution of some `emscope` command within _any_ child capture directory whose path name matches a given pattern (default: `'**'`).
->
-> Often run within the repo's `capture` folder to list results, the glob pattern allows further filtering using metadata encoded in each segment of the capture's relative path &ndash; here, listing scores for all **Nordic** target HW captures grabbed with a **JS220** or **PPK2**.
+> The `-C, --capture-glob` option executes an `emscope` command within each child capture directory whose relative path matches a pattern (default: `'**'`).&thinsp; Here, the pattern selects all nRF52 platform folders beneath `captures/`.
 
 <br>
 
@@ -413,5 +381,5 @@ At this early stage of development, the **EM&bull;Scope** team has four requests
 
 🟢 &ensp; re-read this introduction &ndash; and start a Q/A thread on our [Discussion](https://github.com/em-foundation/emscope/discussions/new?category=q-a) page<br>
 🟢 &ensp; play with the `emscope` command &ndash; and file [Bug](https://github.com/em-foundation/emscope/issues/new?template=bug_report.md) or [Feature](https://github.com/em-foundation/emscope/issues/new?template=feature_request.md) issues when needed<br>
-🟢 &ensp; consider publishing your own capture &ndash; and [**Fork**](https://github.com/em-foundation/bluejoule-adv)🍴&thinsp;`bluejoule-adv` to get going<br>
+🟢 &ensp; study or [**Fork**](https://github.com/em-foundation/bluejoule-adv)🍴&thinsp;`bluejoule-adv` as an example capture repository<br>
 🟢 &ensp; encourage others to engage with **EM&bull;Scope** &ndash; and then [**Star**](https://github.com/em-foundation/emscope)⭐&thinsp; **&bull;** &thinsp;[**Watch**](https://github.com/em-foundation/emscope)👀 this repo<br>
