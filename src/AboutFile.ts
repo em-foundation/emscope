@@ -7,11 +7,13 @@ import * as Path from 'path'
 
 export function update(capdir: string) {
     const cap = Core.Capture.load(capdir)
-    const plt = readDeclarationFile(cap, '.platform', true)!
-    const pwr = readDeclarationFile(cap, '.power', false)
+    const ids = getDeclarationIds(cap)
+    const act = readPedsDeclaration('activities', ids.activity)
+    const plt = readPedsDeclaration('platforms', ids.platform)
+    const pwr = readPedsDeclaration('power', ids.power)
     const subtitle = mkSubtitle(cap)
     const generated = new Date()
-    const obj = mkJson(cap, plt, pwr, subtitle, generated)
+    const obj = mkJson(cap, act, plt, pwr, subtitle, generated)
     const md_file = Path.join(cap.rootdir, 'ABOUT.md')
     const json_file = Path.join(cap.rootdir, 'about.json')
     if (Fs.existsSync(md_file) && Fs.existsSync(json_file) && sameJson(json_file, obj)) return
@@ -20,13 +22,14 @@ export function update(capdir: string) {
 
 <h1 align="center">${plt.title}</h1>
 <h3 align="center">${subtitle}</h3>
-${mkGen(cap, plt, pwr, generated)}
+${mkGen(cap, act, plt, pwr, generated)}
 `
     Fs.writeFileSync(md_file, out)
     Fs.writeFileSync(json_file, `${JSON.stringify(obj, null, 4)}\n`)
 }
 
 interface ResolvedDeclaration {
+    moniker: string
     url: string
     title: string
     factoids: string[]
@@ -53,19 +56,37 @@ interface VoltageStats {
     droop: number
 }
 
-function readDeclarationFile(
-    cap: Core.Capture,
-    name: '.platform' | '.power',
-    required: boolean,
-): ResolvedDeclaration | undefined {
-    const file = findDeclarationFile(cap.rootdir, name)
-    Core.fail(`no '${name}' file found`, required && file === undefined)
-    if (!file) return undefined
+type DeclarationKind = 'activities' | 'platforms' | 'power'
 
-    const lines = Fs.readFileSync(file, 'utf-8').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
-    Core.fail(`invalid '${name}' file: expected one URL`, lines.length != 1)
+interface DeclarationIds {
+    activity: string
+    platform: string
+    power: string
+}
 
-    const url = lines[0]
+const PEDS_ROOT = 'https://github.com/em-foundation/PEDS/blob/main'
+
+function getDeclarationIds(cap: Core.Capture): DeclarationIds {
+    let dir = cap.rootdir
+    while (Path.basename(dir) != 'captures') {
+        const parent = Path.dirname(dir)
+        Core.fail(`capture is not below a 'captures' directory: ${cap.rootdir}`, parent == dir)
+        dir = parent
+    }
+
+    const repo = Path.dirname(dir)
+    const parts = Path.relative(dir, cap.rootdir).split(Path.sep).filter(Boolean)
+    Core.fail(`unable to resolve platform moniker from capture path: ${cap.rootdir}`, parts.length < 2)
+
+    return {
+        activity: Path.basename(repo),
+        platform: parts[0],
+        power: parts.length > 2 ? parts[1] : 'bench',
+    }
+}
+
+function readPedsDeclaration(kind: DeclarationKind, moniker: string): ResolvedDeclaration {
+    const url = `${PEDS_ROOT}/${kind}/${moniker}.md`
     const top = readDeclaration(url)
     const factoids: string[] = []
     const references: Reference[] = []
@@ -75,6 +96,7 @@ function readDeclarationFile(
     explodeDeclaration(url, factoids, references, visited, seen_refs)
 
     return {
+        moniker,
         url,
         title: top.title,
         factoids,
@@ -112,17 +134,6 @@ function explodeDeclaration(
 function readDeclaration(url: string): Declaration {
     const txt = readUrl(url)
     return parseDeclaration(url, txt)
-}
-
-function findDeclarationFile(capdir: string, name: '.platform' | '.power'): string | undefined {
-    let dir = capdir
-    while (true) {
-        const file = Path.join(dir, name)
-        if (Fs.existsSync(file)) return file
-        const parent = Path.dirname(dir)
-        if (parent == dir) return undefined
-        dir = parent
-    }
 }
 
 function readUrl(url: string): string {
@@ -243,8 +254,16 @@ function mkPlatformTxt(cap: Core.Capture, plt: ResolvedDeclaration): string {
     return mkDeclarationTxt(plt, refs)
 }
 
-function mkPowerTxt(pwr: ResolvedDeclaration | undefined): string {
-    if (!pwr) return ''
+function mkActivityTxt(act: ResolvedDeclaration): string {
+    return `
+
+## Activity
+
+${mkDeclarationTxt(act, act.references)}
+`
+}
+
+function mkPowerTxt(pwr: ResolvedDeclaration): string {
     return `
 
 ## Power Source
@@ -265,7 +284,7 @@ function mkDeclarationTxt(decl: ResolvedDeclaration, refs: Reference[]): string 
     return out.join('\n')
 }
 
-function mkGen(cap: Core.Capture, plt: ResolvedDeclaration, pwr: ResolvedDeclaration | undefined, generated: Date): string {
+function mkGen(cap: Core.Capture, act: ResolvedDeclaration, plt: ResolvedDeclaration, pwr: ResolvedDeclaration, generated: Date): string {
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
@@ -303,7 +322,7 @@ ${notes}
 
     return `
 
-<p align="right"><sub>captured on ${cap_date}<br>generated on ${gen_date}</sub></p>
+<p align="right"><sub>captured on ${cap_date}<br>generated on ${gen_date}</sub></p>${mkActivityTxt(act)}
 
 ## Platform
 
@@ -333,6 +352,7 @@ ${mkVoltageTxt(vstats)}
 
 function jsonDeclaration(decl: ResolvedDeclaration) {
     return {
+        moniker: decl.moniker,
         url: decl.url,
         title: decl.title,
         factoids: decl.factoids.map(s => s.replace(/^-\s+/, '')),
@@ -342,8 +362,9 @@ function jsonDeclaration(decl: ResolvedDeclaration) {
 
 function mkJson(
     cap: Core.Capture,
+    act: ResolvedDeclaration,
     plt: ResolvedDeclaration,
-    pwr: ResolvedDeclaration | undefined,
+    pwr: ResolvedDeclaration,
     subtitle: string,
     generated: Date,
 ) {
@@ -364,8 +385,9 @@ function mkJson(
     const evt_files = getEvtFiles(cap)
     const bld_dir = getBuildDir(cap)
     return {
+        activity: jsonDeclaration(act),
         platform: jsonDeclaration(plt),
-        power: pwr ? jsonDeclaration(pwr) : undefined,
+        power: jsonDeclaration(pwr),
         capture: {
             name: Path.basename(cap.rootdir),
             subtitle,
