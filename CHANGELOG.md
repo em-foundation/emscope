@@ -1,10 +1,20 @@
 ## VERSION-26.0.0
 
-- works with _new_ captures containing a `.platform` and `.power` declarations
-- initial support of `em-foundation/bluejoule-adv` repo
-- will **NOT** work with the `em-foundation/BlueJoule` repo
-- `pack -a` also generates `about.json` for programmatic consumption
-- human-readable `ABOUT.md` file is now fully-generated
+- new-generation BlueJoule capture model
+- supports `bluejoule-adv`
+- supports `bluejoule-gatt`
+- resolves activity declarations through `PEDS`
+- resolves platform declarations through `PEDS`
+- resolves power declarations through `PEDS`
+- generates fully-expanded `ABOUT.md`
+- generates consumer-facing `about.json`
+- adds schema version, generator version, units, and capture ID
+- adds event count, duration, energy, and standard deviations
+- adds measured voltage statistics and droop
+- corrects event-period and daily-energy scoring
+- avoids rewriting unchanged ABOUT artifacts
+- supports multiple `event-*.png` images
+- not backward-compatible with the original `em-foundation/BlueJoule` repo
 
 ## VERSION-25.6.1
 
