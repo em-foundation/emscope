@@ -13,11 +13,11 @@ export function exec(opts: any) {
     const json = !!opts.json
     if (opts.whatIf !== undefined) {
         const ev_rate = (opts.whatIf === true) ? 1 : (opts.whatIf as number)
-        json ? printResultsJson(cap, aobj, ev_rate, opts.eventInfo) : printResults(cap, aobj, ev_rate, opts.score, opts.eventInfo)
+        json ? printResultsJson(cap, aobj, ev_rate) : printResults(cap, aobj, ev_rate, opts.score)
         return
     }
     if (opts.score) {
-        json ? printResultsJson(cap, aobj, 1, opts.eventInfo) : printResults(cap, aobj, 1, true, opts.eventInfo)
+        json ? printResultsJson(cap, aobj, 1) : printResults(cap, aobj, 1, true)
         return
     }
     if (opts.eventInfo) {
@@ -72,18 +72,22 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
     const scale = 1 / markers.length
-    let avg = 0
+    let avg_egy = 0
+    let avg_dur = 0
     let lab = 'A'
     for (const m of markers) {
         const egy = cap.energyWithin(m)
-        avg += egy * scale
-        const dur = (cap.current_sig.offToSecs(m.width) * 1000).toFixed(2).padStart(5, ' ')
+        const dur_s = cap.current_sig.offToSecs(m.width)
+        avg_egy += egy * scale
+        avg_dur += dur_s * scale
+        const dur = (dur_s * 1000).toFixed(2).padStart(5, ' ')
         const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
         Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.uJoules(egy)}, duration = ${dur} ms`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
-    Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.uJoules(avg)}`)
+    Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.uJoules(avg_egy)}`)
+    Core.infoMsg(`average duration over ${markers.length} event(s): ${Core.toEng(avg_dur, 's')}`)
 }
 
 function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
@@ -99,23 +103,29 @@ function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
         }
     })
     const totalEnergy = events.reduce((sum, e) => sum + e.energy, 0)
+    const totalDuration = events.reduce((sum, e) => sum + e.duration, 0)
     const avgEnergy = events.length > 0 ? totalEnergy / events.length : 0
+    const avgDuration = events.length > 0 ? totalDuration / events.length : 0
     console.log(JSON.stringify({
         type: 'event_info',
         eventCount: events.length,
         averageEnergy: avgEnergy,
+        averageDuration: avgDuration,
         events,
     }))
 }
 
-function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean, event_based = false) {
+function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    const evt_egy = averageEventEnergy(cap, aobj.events)
+    const evt_dur = averageEventDuration(cap, aobj.events)
+    Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
     score_only || Core.infoMsg(`event period:        ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power:  ${Core.toEng(sleep_pwr, 'W')}`)
+    score_only || Core.infoMsg(`average event energy: ${Core.uJoules(evt_egy)}`)
+    score_only || Core.infoMsg(`average event duration: ${Core.toEng(evt_dur, 's')}`)
     score_only || Core.infoMsg('----')
-    const egy_1e = event_based ? averageEventEnergy(cap, aobj.events) : representativeSpanEnergy(cap, aobj, sleep_pwr)
-    const egy_1c = (sleep_pwr * ev_rate) + egy_1e
-    score_only || Core.infoMsg(`representative event: ${Core.uJoules(egy_1e)}`)
+    const egy_1c = (sleep_pwr * (ev_rate - evt_dur)) + evt_egy
     score_only || Core.infoMsg(`energy per period:    ${Core.uJoules(egy_1c)}`)
     const egy_1d = egy_1c * 86400 / ev_rate
     score_only || Core.infoMsg(`energy per day:       ${Core.joules(egy_1d)}`)
@@ -125,31 +135,29 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
     Core.infoMsg(`${ems.toFixed(2)} EM•eralds`)
 }
 
-function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, event_based = false) {
+function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    const egy_1e = event_based ? averageEventEnergy(cap, aobj.events) : representativeSpanEnergy(cap, aobj, sleep_pwr)
-    const egy_1c = (sleep_pwr * ev_rate) + egy_1e
+    const evt_egy = averageEventEnergy(cap, aobj.events)
+    const evt_dur = averageEventDuration(cap, aobj.events)
+    Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
+    const egy_1c = (sleep_pwr * (ev_rate - evt_dur)) + evt_egy
     const egy_1d = egy_1c * 86400 / ev_rate
     const egy_1m = egy_1d * 30
     const ems = 2400 / egy_1m
     console.log(JSON.stringify({
         type: 'score',
-        basis: event_based ? 'events' : 'span',
+        basis: 'events',
         emeralds: parseFloat(ems.toFixed(2)),
         cycleRate: ev_rate,
         sleepCurrent: aobj.sleep.avg,
         sleepPower: sleep_pwr,
         voltage: cap.avg_voltage,
-        eventEnergy: egy_1e,
+        eventEnergy: evt_egy,
+        eventDuration: evt_dur,
         energyPerCycle: egy_1c,
         energyPerDay: egy_1d,
         energyPerMonth: egy_1m,
     }))
-}
-
-function representativeSpanEnergy(cap: Core.Capture, aobj: Core.Analysis, sleep_pwr: number) {
-    const egy_1s = cap.energyWithin(aobj.span) / cap.current_sig.offToSecs(aobj.span.width)
-    return egy_1s - sleep_pwr
 }
 
 function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]) {
@@ -157,6 +165,15 @@ function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]) {
     let total = 0
     for (const m of markers) {
         total += cap.energyWithin(m)
+    }
+    return total / markers.length
+}
+
+function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]) {
+    Core.fail('no events found', markers.length == 0)
+    let total = 0
+    for (const m of markers) {
+        total += cap.current_sig.offToSecs(m.width)
     }
     return total / markers.length
 }
