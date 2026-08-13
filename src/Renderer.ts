@@ -71,23 +71,19 @@ function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
 }
 
 function printEventInfo(cap: Core.Capture, markers: Core.Marker[]) {
-    const scale = 1 / markers.length
-    let avg_egy = 0
-    let avg_dur = 0
+    const stats = cap.eventStats(markers)
     let lab = 'A'
     for (const m of markers) {
         const egy = cap.energyWithin(m)
         const dur_s = cap.current_sig.offToSecs(m.width)
-        avg_egy += egy * scale
-        avg_dur += dur_s * scale
         const dur = (dur_s * 1000).toFixed(2).padStart(5, ' ')
         const off_s = cap.current_sig.offToSecs(m.offset).toFixed(2).padStart(5, ' ')
         Core.infoMsg(`${lab} :: time = ${off_s} s, energy = ${Core.uJoules(egy)}, duration = ${dur} ms`)
         lab = String.fromCharCode(lab.charCodeAt(0) + 1)
     }
     Core.infoMsg('----')
-    Core.infoMsg(`average energy over ${markers.length} event(s): ${Core.uJoules(avg_egy)}`)
-    Core.infoMsg(`average duration over ${markers.length} event(s): ${Core.toEng(avg_dur, 's')}`)
+    Core.infoMsg(`energy over ${stats.count} event(s): ${Core.uJoules(stats.energy_avg)} avg, ${Core.uJoules(stats.energy_std)} std`)
+    Core.infoMsg(`duration over ${stats.count} event(s): ${Core.toEng(stats.duration_avg, 's')} avg, ${Core.toEng(stats.duration_std, 's')} std`)
 }
 
 function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
@@ -102,23 +98,23 @@ function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
             duration,
         }
     })
-    const totalEnergy = events.reduce((sum, e) => sum + e.energy, 0)
-    const totalDuration = events.reduce((sum, e) => sum + e.duration, 0)
-    const avgEnergy = events.length > 0 ? totalEnergy / events.length : 0
-    const avgDuration = events.length > 0 ? totalDuration / events.length : 0
+    const stats = cap.eventStats(markers)
     console.log(JSON.stringify({
         type: 'event_info',
-        eventCount: events.length,
-        averageEnergy: avgEnergy,
-        averageDuration: avgDuration,
+        eventCount: stats.count,
+        averageEnergy: stats.energy_avg,
+        standardDeviationEnergy: stats.energy_std,
+        averageDuration: stats.duration_avg,
+        standardDeviationDuration: stats.duration_std,
         events,
     }))
 }
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    const evt_egy = averageEventEnergy(cap, aobj.events)
-    const evt_dur = averageEventDuration(cap, aobj.events)
+    const stats = cap.eventStats(aobj.events)
+    const evt_egy = stats.energy_avg
+    const evt_dur = stats.duration_avg
     Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
     score_only || Core.infoMsg(`event period:        ${Core.secsToHms(ev_rate)}`)
     score_only || Core.infoMsg(`average sleep power:  ${Core.toEng(sleep_pwr, 'W')}`)
@@ -137,8 +133,9 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
 
 function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
     const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
-    const evt_egy = averageEventEnergy(cap, aobj.events)
-    const evt_dur = averageEventDuration(cap, aobj.events)
+    const stats = cap.eventStats(aobj.events)
+    const evt_egy = stats.energy_avg
+    const evt_dur = stats.duration_avg
     Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
     const egy_1c = (sleep_pwr * (ev_rate - evt_dur)) + evt_egy
     const egy_1d = egy_1c * 86400 / ev_rate
@@ -158,24 +155,6 @@ function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: numbe
         energyPerDay: egy_1d,
         energyPerMonth: egy_1m,
     }))
-}
-
-function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]) {
-    Core.fail('no events found', markers.length == 0)
-    let total = 0
-    for (const m of markers) {
-        total += cap.energyWithin(m)
-    }
-    return total / markers.length
-}
-
-function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]) {
-    Core.fail('no events found', markers.length == 0)
-    let total = 0
-    for (const m of markers) {
-        total += cap.current_sig.offToSecs(m.width)
-    }
-    return total / markers.length
 }
 
 function printSleepInfo(cap: Core.Capture, si: Core.SleepInfo) {

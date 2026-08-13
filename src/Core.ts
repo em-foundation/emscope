@@ -6,6 +6,13 @@ export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, optio
 export type CaptureDevice = 'JS220' | 'Otii3' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
+export type EventStats = {
+    count: number
+    duration_avg: number
+    duration_std: number
+    energy_avg: number
+    energy_std: number
+}
 export type MinMaxMeanBin = [number, number, number]
 export type SleepInfo = { avg: number, std: number, off: number }
 
@@ -148,6 +155,22 @@ export class Capture {
             off += 1
         }
         return sum
+    }
+    eventStats(markers: Marker[]): EventStats {
+        fail('no events found', markers.length == 0)
+
+        const durations = markers.map(m => m.width / this.sampling_rate)
+        const energies = markers.map(m => this.energyWithin(m))
+        const duration_avg = mean(durations)
+        const energy_avg = mean(energies)
+
+        return {
+            count: markers.length,
+            duration_avg,
+            duration_std: std(durations, duration_avg),
+            energy_avg,
+            energy_std: std(energies, energy_avg),
+        }
     }
     save() {
         Fs.rmSync(this.#apath, { force: true })
@@ -358,6 +381,19 @@ export function infoMsg(msg: string) {
 
 export function joules(j: number): string {
     return toEng(j, 'J', 0)
+}
+
+function mean(data: number[]): number {
+    return data.reduce((sum, x) => sum + x, 0) / data.length
+}
+
+function std(data: number[], avg: number): number {
+    let sum_sq = 0
+    for (const x of data) {
+        const d = x - avg
+        sum_sq += d * d
+    }
+    return Math.sqrt(sum_sq / data.length)
 }
 
 export function parseHms(s: string): number {
