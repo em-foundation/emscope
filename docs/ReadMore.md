@@ -163,31 +163,31 @@ $ emscope view -e
 
 ```console
 $ emscope view -j
-    wrote 'ti-23-lp-slsdk-J-events.jls'
+    wrote 'events.jls'
     launching the Joulescope File Viewer...
 ```
 
 > [!NOTE]
-> The `-j, --jls-file` option launches the **Joulescope File Viewer** (installed earlier) with a generated `.jls` file containing the raw signal data, annotated with markers delineating each of the active events listed earlier.
+> The `-j, --jls-file` option launches the **Joulescope File Viewer** with a generated `.jls` file annotated with the detected events.
 >
 > <p align="center">
 >    <img src="images/joulescope.png" alt="Joulescope File Viewer" width="850">
 > </p>
 
 > [!TIP]
-> Somewhat daunting at first, take some time to familiarize yourself with the **Joulescope File Viewer**.&thinsp; As you start zooming in on portions of the capture &ndash; and perhaps find yourself a little lost &ndash; simply exit the program and re-run the `emscope view -j` command.
+> Re-run `emscope view -j` at any time to regenerate and reopen the annotated event capture.
 
 ---
 
 ```console
 $ emscope view -jB
-    wrote 'ti-23-lp-slsdk-J-event-B.jls'
+    wrote 'event-B.jls'
     launching the Joulescope File Viewer...
-    generated 'ti-23-lp-slsdk-J-event-B.png'
+    generated 'event-B.png'
 ```
 
 > [!NOTE]
-> This form of the `-j, --jls-file` option focuses upon a _single_ event designated through an alphabetic identifier seen [earlier](#view-e) in the output of the `emscope view -e` command.&thinsp; This variant also generates a screenshot of the event, suitable for publication.
+> Append an event identifier from [`view -e`](#view-e) to focus the viewer on one event and generate its PNG image.
 >
 > <p align="center">
 >    <img src="images/event.png" alt="EM•Scope Event Image" width="850">
@@ -309,11 +309,10 @@ $ emscope view -w 2:00
 
 ```console
 $ emscope view --score
-    28.13 EM•eralds
+    28.78 EM•eralds
+
 $ emscope view -w 5 --score
-    113.79 EM•eralds
 $ emscope view -w 2:00 --score
-    421.07 EM•eralds
 ```
 
 > [!NOTE]
@@ -321,7 +320,7 @@ $ emscope view -w 2:00 --score
 >
 > <p align="center"><b>EM&bull;eralds = 80 / <i>Joules per day</i></b></p>
 >
-> Benchmark interpretation and comparisons will move to [bluejoule.org](https://bluejoule.org).
+> Benchmark interpretation and comparisons belong at [bluejoule.org](https://bluejoule.org).
 
 ---
 
