@@ -50,6 +50,7 @@ interface VoltageStats {
     min: number
     max: number
     std: number
+    droop: number
 }
 
 function readDeclarationFile(
@@ -352,6 +353,7 @@ function mkJson(
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
     const egy1_e = averageEventEnergy(cap, aobj.events)
+    const evt_dur = averageEventDuration(cap, aobj.events)
     const egy1_s = sl_pwr + egy1_e
     const egy1_d = egy1_s * 86400
     const egy10_s = (sl_pwr * 10) + egy1_e
@@ -367,6 +369,9 @@ function mkJson(
             device: cap.device,
             created: cap.creation_date.toISOString(),
             generated: generated.toISOString(),
+            duration: cap.duration,
+            sampling_rate: cap.sampling_rate,
+            sample_count: cap.sample_count,
             avg_voltage: sl_v,
             voltage: vstats ? {
                 source: 'measured',
@@ -377,6 +382,11 @@ function mkJson(
             },
             images: evt_files,
             build_artifacts: Fs.existsSync(bld_dir) ? '../build' : undefined,
+        },
+        events: {
+            count: aobj.events.length,
+            duration_avg: evt_dur,
+            energy_avg: egy1_e,
         },
         sleep: {
             current_avg: sl_avg,
@@ -440,6 +450,7 @@ function getVoltageStats(cap: Core.Capture): VoltageStats | undefined {
         min,
         max,
         std: Math.sqrt(variance),
+        droop: avg - min,
     }
 }
 
@@ -460,6 +471,15 @@ function averageEventEnergy(cap: Core.Capture, markers: Core.Marker[]): number {
     let total = 0
     for (const m of markers) {
         total += cap.energyWithin(m)
+    }
+    return total / markers.length
+}
+
+function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]): number {
+    Core.fail('no events found', markers.length == 0)
+    let total = 0
+    for (const m of markers) {
+        total += m.width / cap.sampling_rate
     }
     return total / markers.length
 }
