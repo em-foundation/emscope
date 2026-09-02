@@ -2,7 +2,7 @@ import Fs from 'fs'
 import Path from 'path'
 import Yaml from 'js-yaml'
 
-export type Analysis = { span: Marker, events: Marker[], sleep: SleepInfo, options: string[], version: string }
+export type Analysis = { span: Marker, events: Marker[], event_width?: number, sleep: SleepInfo, options: string[], version: string }
 export type CaptureDevice = 'JS220' | 'Otii3' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
@@ -16,6 +16,8 @@ export type EventStats = {
 export type BoundaryInfo = {
     event_window: {
         count: number
+        sample_width?: number
+        duration?: number
         first_sample_offset: number
         last_sample_end: number
         duration_total: number
@@ -205,6 +207,8 @@ export class Capture {
         return {
             event_window: {
                 count: evt_stats.count,
+                sample_width: aobj.event_width,
+                duration: aobj.event_width === undefined ? undefined : aobj.event_width / sr,
                 first_sample_offset: Math.min(...aobj.events.map(m => m.offset)),
                 last_sample_end: Math.max(...aobj.events.map(m => m.offset + m.width)),
                 duration_total: evt_dur_total,

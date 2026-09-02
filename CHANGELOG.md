@@ -13,6 +13,10 @@
 - reuses shared boundary / closure calculation from `AboutFile`
 - adds boundary / closure diagnostics to `emscope view --sleep-info`
 - adds boundary / closure diagnostics to `emscope view --sleep-info --json`
+- constrains sleep-window selection to the final accounting scope after trim
+- adds `emscope scan --event-window <milliseconds>` for fixed event scoring windows
+- persists fixed event-window width in `analysis.yaml`
+- adds fixed event-window `sample_width` and `duration` metadata to generated `about.json`
 
 ## VERSION-26.0.0
 

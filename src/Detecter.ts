@@ -1,6 +1,7 @@
 import * as Core from './Core'
 
 type Params = {
+    event_win?: number
     gap?: number
     min_dur?: number
     min_egy?: number
@@ -23,6 +24,7 @@ export function exec(opts: any) {
             }
         }
     } else {
+        params.event_win = opts.eventWindow
         params.gap = opts.gap
         params.min_dur = opts.minDuration
         params.min_egy = opts.minEnergy
@@ -66,6 +68,13 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         options.push(`--gap ${params.gap}`)
 
     }
+    let event_width: number | undefined
+    if (params.event_win !== undefined) {
+        event_width = rsig.secsToOff(params.event_win / 1000)
+        Core.fail('event window too small', event_width < 1)
+        markers = fixedMarkers(rsig, markers, event_width)
+        options.push(`--event-window ${params.event_win}`)
+    }
     if (params.min_dur != undefined) {
         const min_wid = rsig.secsToOff(params.min_dur / 1000)
         markers = markers.filter(m => m.width >= min_wid)
@@ -85,13 +94,16 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         options.push(`--trim ${params.trim}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
-    return { span: span, events: markers, sleep: si, options: options, version: Core.version() }
+    return { span: span, events: markers, event_width: event_width, sleep: si, options: options, version: Core.version() }
 }
 
 function applyOption(params: Params, opt: string) {
     const a = opt.split(' ')
     const val = Number(a[1])
     switch (a[0]) {
+        case '--event-window':
+            params.event_win = val
+            break
         case '--gap':
             params.gap = val
             break
@@ -123,6 +135,15 @@ function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): 
             continue
         }
         last.width = (m.offset + m.width) - last.offset
+    }
+    return res
+}
+
+function fixedMarkers(sig: Core.Signal, markers: Core.Marker[], width: number): Core.Marker[] {
+    let res = new Array<Core.Marker>()
+    for (const m of markers) {
+        Core.fail('event window exceeds capture duration', (m.offset + width) > sig.data.length)
+        res.push({ offset: m.offset, width: width })
     }
     return res
 }
