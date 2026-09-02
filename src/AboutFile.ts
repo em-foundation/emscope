@@ -56,42 +56,6 @@ interface VoltageStats {
     droop: number
 }
 
-interface BoundaryInfo {
-    event_window: {
-        count: number
-        first_sample_offset: number
-        last_sample_end: number
-        duration_total: number
-        duration_avg: number
-        duration_std: number
-    }
-    sleep_window: {
-        sample_offset: number
-        sample_width: number
-        start: number
-        end: number
-        duration: number
-    }
-    accounting_scope: {
-        sample_offset: number
-        sample_width: number
-        start: number
-        end: number
-        duration: number
-        measured_current_avg: number
-        measured_power_avg: number
-    }
-    partition: {
-        event_count: number
-        event_duration_total: number
-        sleep_duration: number
-        event_energy_total: number
-        modeled_energy: number
-        modeled_power_avg: number
-    }
-    closure_residual: number
-    floor_residual: number
-}
 
 type DeclarationKind = 'activities' | 'platforms' | 'power'
 
@@ -330,7 +294,7 @@ function mkGen(cap: Core.Capture, act: ResolvedDeclaration, plt: ResolvedDeclara
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
     const evt_stats = cap.eventStats(aobj.events)
-    const bnd = getBoundaryInfo(cap, evt_stats)
+    const bnd = cap.boundaryInfo(aobj)
     const egy1_e = evt_stats.energy_avg
     const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
@@ -420,7 +384,7 @@ function mkJson(
     const sl_std = aobj.sleep.std
     const sl_pwr = sl_v * sl_avg
     const evt_stats = cap.eventStats(aobj.events)
-    const bnd = getBoundaryInfo(cap, evt_stats)
+    const bnd = cap.boundaryInfo(aobj)
     const egy1_e = evt_stats.energy_avg
     const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
@@ -506,105 +470,6 @@ function sameJson(file: string, obj: any): boolean {
     } catch {
         return false
     }
-}
-
-function getBoundaryInfo(cap: Core.Capture, evt_stats: Core.EventStats): BoundaryInfo {
-    const aobj = cap.analysis!
-    const span = aobj.span
-    const sl = aobj.sleep
-    const sr = cap.sampling_rate
-    const sl_avg = sl.avg
-    const sl_v = cap.avg_voltage
-    const sl_pwr = sl_v * sl_avg
-    const evt_dur_total = aobj.events.reduce((sum, m) => sum + m.width, 0) / sr
-    const span_dur = span.width / sr
-    const sleep_dur = span_dur - evt_dur_total
-    Core.fail('event windows exceed accounting scope', sleep_dur < 0)
-
-    const evt_energy_total = aobj.events.reduce((sum, m) => sum + cap.energyWithin(m), 0)
-    const modeled_energy = evt_energy_total + sl_pwr * sleep_dur
-    const measured_energy = cap.energyWithin(span)
-    const measured_power = measured_energy / span_dur
-    const modeled_power = modeled_energy / span_dur
-    const gap_cur = gapCurrentAvg(cap, span, aobj.events)
-
-    return {
-        event_window: {
-            count: evt_stats.count,
-            first_sample_offset: Math.min(...aobj.events.map(m => m.offset)),
-            last_sample_end: Math.max(...aobj.events.map(m => m.offset + m.width)),
-            duration_total: evt_dur_total,
-            duration_avg: evt_stats.duration_avg,
-            duration_std: evt_stats.duration_std,
-        },
-        sleep_window: {
-            sample_offset: sl.off,
-            sample_width: sl.width,
-            start: sl.off / sr,
-            end: (sl.off + sl.width) / sr,
-            duration: sl.width / sr,
-        },
-        accounting_scope: {
-            sample_offset: span.offset,
-            sample_width: span.width,
-            start: span.offset / sr,
-            end: (span.offset + span.width) / sr,
-            duration: span_dur,
-            measured_current_avg: measured_energy / (sl_v * span_dur),
-            measured_power_avg: measured_power,
-        },
-        partition: {
-            event_count: evt_stats.count,
-            event_duration_total: evt_dur_total,
-            sleep_duration: sleep_dur,
-            event_energy_total: evt_energy_total,
-            modeled_energy,
-            modeled_power_avg: modeled_power,
-        },
-        closure_residual: Math.abs(modeled_power - measured_power) / Math.abs(measured_power),
-        floor_residual: sl_avg - gap_cur,
-    }
-}
-
-function gapCurrentAvg(cap: Core.Capture, span: Core.Marker, events: Core.Marker[]): number {
-    const sorted = [...events].sort((a, b) => a.offset - b.offset)
-    let off = span.offset
-    let end = span.offset + span.width
-    let sum = 0
-    let count = 0
-
-    for (const evt of sorted) {
-        const evt_beg = Math.max(evt.offset, off)
-        const evt_end = Math.min(evt.offset + evt.width, end)
-        if (evt_beg > off) {
-            const [s, c] = sumCurrent(cap, off, evt_beg)
-            sum += s
-            count += c
-        }
-        off = Math.max(off, evt_end)
-    }
-
-    if (off < end) {
-        const [s, c] = sumCurrent(cap, off, end)
-        sum += s
-        count += c
-    }
-
-    Core.fail('no non-event samples found in accounting scope', count == 0)
-    return sum / count
-}
-
-function sumCurrent(cap: Core.Capture, beg: number, end: number): [number, number] {
-    const data = cap.current_sig.data
-    let sum = 0
-    let count = 0
-    for (let i = beg; i < end; i++) {
-        const v = data[i]
-        if (!Number.isFinite(v)) continue
-        sum += v
-        count += 1
-    }
-    return [sum, count]
 }
 
 function getVoltageStats(cap: Core.Capture): VoltageStats | undefined {

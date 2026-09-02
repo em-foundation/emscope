@@ -13,6 +13,42 @@ export type EventStats = {
     energy_avg: number
     energy_std: number
 }
+export type BoundaryInfo = {
+    event_window: {
+        count: number
+        first_sample_offset: number
+        last_sample_end: number
+        duration_total: number
+        duration_avg: number
+        duration_std: number
+    }
+    sleep_window: {
+        sample_offset: number
+        sample_width: number
+        start: number
+        end: number
+        duration: number
+    }
+    accounting_scope: {
+        sample_offset: number
+        sample_width: number
+        start: number
+        end: number
+        duration: number
+        measured_current_avg: number
+        measured_power_avg: number
+    }
+    partition: {
+        event_count: number
+        event_duration_total: number
+        sleep_duration: number
+        event_energy_total: number
+        modeled_energy: number
+        modeled_power_avg: number
+    }
+    closure_residual: number
+    floor_residual: number
+}
 export type MinMaxMeanBin = [number, number, number]
 export type SleepInfo = { avg: number, std: number, off: number, width: number }
 
@@ -145,6 +181,64 @@ export class Capture {
         Fs.writeFileSync(this.#apath, ytxt)
         infoMsg(`wrote '${Capture.#AFILE}'`)
     }
+    boundaryInfo(aobj: Analysis = this.analysis!): BoundaryInfo {
+        fail(`no prior analysis: run 'emscope scan ...'`, aobj === undefined)
+        const evt_stats = this.eventStats(aobj.events)
+        const span = aobj.span
+        const sl = aobj.sleep
+        const sr = this.sampling_rate
+        const sl_avg = sl.avg
+        const sl_v = this.avg_voltage
+        const sl_pwr = sl_v * sl_avg
+        const evt_dur_total = aobj.events.reduce((sum, m) => sum + m.width, 0) / sr
+        const span_dur = span.width / sr
+        const sleep_dur = span_dur - evt_dur_total
+        fail('event windows exceed accounting scope', sleep_dur < 0)
+
+        const evt_energy_total = aobj.events.reduce((sum, m) => sum + this.energyWithin(m), 0)
+        const modeled_energy = evt_energy_total + sl_pwr * sleep_dur
+        const measured_energy = this.energyWithin(span)
+        const measured_power = measured_energy / span_dur
+        const modeled_power = modeled_energy / span_dur
+        const gap_cur = this.gapCurrentAvg(span, aobj.events)
+
+        return {
+            event_window: {
+                count: evt_stats.count,
+                first_sample_offset: Math.min(...aobj.events.map(m => m.offset)),
+                last_sample_end: Math.max(...aobj.events.map(m => m.offset + m.width)),
+                duration_total: evt_dur_total,
+                duration_avg: evt_stats.duration_avg,
+                duration_std: evt_stats.duration_std,
+            },
+            sleep_window: {
+                sample_offset: sl.off,
+                sample_width: sl.width,
+                start: sl.off / sr,
+                end: (sl.off + sl.width) / sr,
+                duration: sl.width / sr,
+            },
+            accounting_scope: {
+                sample_offset: span.offset,
+                sample_width: span.width,
+                start: span.offset / sr,
+                end: (span.offset + span.width) / sr,
+                duration: span_dur,
+                measured_current_avg: measured_energy / (sl_v * span_dur),
+                measured_power_avg: measured_power,
+            },
+            partition: {
+                event_count: evt_stats.count,
+                event_duration_total: evt_dur_total,
+                sleep_duration: sleep_dur,
+                event_energy_total: evt_energy_total,
+                modeled_energy,
+                modeled_power_avg: modeled_power,
+            },
+            closure_residual: Math.abs(modeled_power - measured_power) / Math.abs(measured_power),
+            floor_residual: sl_avg - gap_cur,
+        }
+    }
     energyWithin(m: Marker): number {
         const dt = 1 / this.sampling_rate
         const data = this.current_ds.data
@@ -172,6 +266,33 @@ export class Capture {
             energy_std: std(energies, energy_avg),
         }
     }
+    gapCurrentAvg(span: Marker, events: Marker[]): number {
+        const sorted = [...events].sort((a, b) => a.offset - b.offset)
+        let off = span.offset
+        let end = span.offset + span.width
+        let sum = 0
+        let count = 0
+
+        for (const evt of sorted) {
+            const evt_beg = Math.max(evt.offset, off)
+            const evt_end = Math.min(evt.offset + evt.width, end)
+            if (evt_beg > off) {
+                const [s, c] = this.sumCurrent(off, evt_beg)
+                sum += s
+                count += c
+            }
+            off = Math.max(off, evt_end)
+        }
+
+        if (off < end) {
+            const [s, c] = this.sumCurrent(off, end)
+            sum += s
+            count += c
+        }
+
+        fail('no non-event samples found in accounting scope', count == 0)
+        return sum / count
+    }
     save() {
         Fs.rmSync(this.#apath, { force: true })
         this.current_ds.save(this.#workdir, 'current')
@@ -181,6 +302,18 @@ export class Capture {
         const ytxt = Yaml.dump(yobj, { indent: 4, flowLevel: 4 })
         Fs.writeFileSync(this.#cpath, ytxt)
         infoMsg(`wrote '${Capture.#CFILE}'`)
+    }
+    sumCurrent(beg: number, end: number): [number, number] {
+        const data = this.current_sig.data
+        let sum = 0
+        let count = 0
+        for (let i = beg; i < end; i++) {
+            const v = data[i]
+            if (!Number.isFinite(v)) continue
+            sum += v
+            count += 1
+        }
+        return [sum, count]
     }
     voltageAt(offset: number): number {
         return this.voltage == -1 ? this.voltage_ds.data[offset] : this.voltage
