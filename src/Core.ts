@@ -14,7 +14,7 @@ export type EventStats = {
     energy_std: number
 }
 export type MinMaxMeanBin = [number, number, number]
-export type SleepInfo = { avg: number, std: number, off: number }
+export type SleepInfo = { avg: number, std: number, off: number, width: number }
 
 const TAB = '    '
 
@@ -435,5 +435,3 @@ export function version(): string {
     const jobj = JSON.parse(Fs.readFileSync(path, 'utf-8'))
     return jobj.version
 }
-
-

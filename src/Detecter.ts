@@ -38,7 +38,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
-    const si = measureSleep(asig, params.sleep_win)
+    const si = measureSleep(asig, rsig, params.sleep_win)
     const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
     let active = false
@@ -125,11 +125,12 @@ function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): 
     }
     return res
 }
-function measureSleep(osig: Core.Signal, sleep_win_ms: number = 500): Core.SleepInfo {
+function measureSleep(osig: Core.Signal, rsig: Core.Signal, sleep_win_ms: number = 500): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
     let off = 0
+    let width = 0
     const win_wid = osig.secsToOff(sleep_win_ms / 1000)
     Core.fail('sleep window too small', win_wid < 2)
     Core.fail('sleep window exceeds capture duration', win_wid > osig.data.length)
@@ -142,11 +143,13 @@ function measureSleep(osig: Core.Signal, sleep_win_ms: number = 500): Core.Sleep
         if (cur < min_cur) {
             min_cur = cur
             std = wsig.std()
-            off = m.offset
+            const rm = win.scale(rsig).toMarker()
+            off = rm.offset
+            width = rm.width
         }
         win.slide(m.width / 2)
     }
-    return { avg: min_cur, std: std, off: off }
+    return { avg: min_cur, std: std, off: off, width: width }
 }
 
 function trimEvents(cap: Core.Capture, markers: Core.Marker[], count: number): [Core.Marker, Core.Marker[]] {
