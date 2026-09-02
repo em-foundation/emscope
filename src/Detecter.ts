@@ -14,23 +14,15 @@ const NO_CURRENT = 0
 export function exec(opts: any) {
     const cap = Core.Capture.load(opts.capture)
     let params: Params = {}
-    if (opts.refresh) {
-        if (cap.analysis) {
-            for (const opt of cap.analysis?.options) {
-                applyOption(params, opt)
-            }
-            if (Number.isNaN(params.trim)) {
-                params.trim = cap.analysis.events.length
-            }
+    if (opts.refresh && cap.analysis) {
+        for (const opt of cap.analysis.options) {
+            applyOption(params, opt)
         }
-    } else {
-        params.event_win = opts.eventWindow
-        params.gap = opts.gap
-        params.min_dur = opts.minDuration
-        params.min_egy = opts.minEnergy
-        params.sleep_win = opts.sleepWindow
-        params.trim = opts.trim
+        if (Number.isNaN(params.trim)) {
+            params.trim = cap.analysis.events.length
+        }
     }
+    applyOpts(params, opts)
     const aobj = analyze(cap, params)
     cap.bind(aobj)
 }
@@ -95,6 +87,15 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, event_width: event_width, sleep: si, options: options, version: Core.version() }
+}
+
+function applyOpts(params: Params, opts: any) {
+    if (opts.eventWindow !== undefined) params.event_win = opts.eventWindow
+    if (opts.gap !== undefined) params.gap = opts.gap
+    if (opts.minDuration !== undefined) params.min_dur = opts.minDuration
+    if (opts.minEnergy !== undefined) params.min_egy = opts.minEnergy
+    if (opts.sleepWindow !== undefined) params.sleep_win = opts.sleepWindow
+    if (opts.trim !== undefined) params.trim = opts.trim
 }
 
 function applyOption(params: Params, opt: string) {

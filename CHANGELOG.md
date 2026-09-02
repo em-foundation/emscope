@@ -1,3 +1,14 @@
+## VERSION-26.1.1
+
+- updates `emscope scan --refresh` to preserve saved scan options while allowing command-line overrides
+- supports recursive capture migration with `--refresh` and `-C`
+- keeps `capture.yaml` and raw capture data unchanged during refresh
+- rejects stale boundary / closure analysis
+- detects missing sleep-window and fixed event-window metadata
+- directs stale captures to re-run `emscope scan --refresh`
+- reports small signed `floor_residual` values in nA
+- leaves JSON residual values unchanged
+
 ## VERSION-26.1.0
 
 - aligns capture reports with the boundary / closure model from BlueJoule Specification v1.2

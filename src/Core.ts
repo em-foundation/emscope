@@ -183,8 +183,14 @@ export class Capture {
         Fs.writeFileSync(this.#apath, ytxt)
         infoMsg(`wrote '${Capture.#AFILE}'`)
     }
-    boundaryInfo(aobj: Analysis = this.analysis!): BoundaryInfo {
+    validateBoundaryAnalysis(aobj: Analysis = this.analysis!) {
         fail(`no prior analysis: run 'emscope scan ...'`, aobj === undefined)
+        fail(`legacy analysis.yaml lacks boundary metadata; run 'emscope scan --refresh'`, versionLessThan(aobj.version, '26.1.0'))
+        fail(`legacy analysis.yaml lacks boundary metadata; run 'emscope scan --refresh'`, aobj.sleep?.width === undefined)
+        fail(`legacy analysis.yaml lacks boundary metadata; run 'emscope scan --refresh --event-window <ms>'`, aobj.event_width === undefined)
+    }
+    boundaryInfo(aobj: Analysis = this.analysis!): BoundaryInfo {
+        this.validateBoundaryAnalysis(aobj)
         const evt_stats = this.eventStats(aobj.events)
         const span = aobj.span
         const sl = aobj.sleep
@@ -518,6 +524,19 @@ export function infoMsg(msg: string) {
 
 export function joules(j: number): string {
     return toEng(j, 'J', 0)
+}
+
+function versionLessThan(a: string, b: string): boolean {
+    const aa = a.split('.').map(Number)
+    const bb = b.split('.').map(Number)
+    const n = Math.max(aa.length, bb.length)
+    for (let i = 0; i < n; i++) {
+        const av = aa[i] ?? 0
+        const bv = bb[i] ?? 0
+        if (av < bv) return true
+        if (av > bv) return false
+    }
+    return false
 }
 
 function mean(data: number[]): number {

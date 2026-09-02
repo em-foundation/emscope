@@ -179,6 +179,7 @@ function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]) {
 }
 
 function printSleepInfo(cap: Core.Capture, aobj: Core.Analysis) {
+    cap.validateBoundaryAnalysis(aobj)
     const si = aobj.sleep
     const info = cap.boundaryInfo(aobj)
     Core.infoMsg(`sleep current = ${Core.uAmps(si.avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(si.std).trim()}`)
@@ -189,10 +190,11 @@ function printSleepInfo(cap: Core.Capture, aobj: Core.Analysis) {
     Core.infoMsg(`measured current = ${Core.uAmps(info.accounting_scope.measured_current_avg).trim()}`)
     Core.infoMsg(`modeled current = ${Core.uAmps(info.partition.modeled_power_avg / cap.avg_voltage).trim()}`)
     Core.infoMsg(`closure residual = ${pct(info.closure_residual)}`)
-    Core.infoMsg(`floor residual = ${Core.uAmps(info.floor_residual).trim()}`)
+    Core.infoMsg(`floor residual = ${residualCurrent(info.floor_residual)}`)
 }
 
 function printSleepInfoJson(cap: Core.Capture, aobj: Core.Analysis) {
+    cap.validateBoundaryAnalysis(aobj)
     const si = aobj.sleep
     const info = cap.boundaryInfo(aobj)
     console.log(JSON.stringify({
@@ -209,6 +211,14 @@ function printSleepInfoJson(cap: Core.Capture, aobj: Core.Analysis) {
     }))
 }
 
+
+function residualCurrent(val: number): string {
+    const sign = val >= 0 ? '+' : '-'
+    if (Math.abs(val) < 1e-6) {
+        return `${sign}${(Math.abs(val) * 1e9).toFixed(1)} nA`
+    }
+    return `${sign}${Core.uAmps(Math.abs(val)).trim()}`
+}
 
 function secs(val: number): string {
     return `${val.toFixed(3)} s`
