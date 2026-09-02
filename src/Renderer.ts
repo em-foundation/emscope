@@ -180,19 +180,21 @@ function averageEventDuration(cap: Core.Capture, markers: Core.Marker[]) {
 
 function printSleepInfo(cap: Core.Capture, aobj: Core.Analysis) {
     const si = aobj.sleep
-    const info = getBoundaryInfo(cap, aobj)
+    const info = cap.boundaryInfo(aobj)
     Core.infoMsg(`sleep current = ${Core.uAmps(si.avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(si.std).trim()}`)
     Core.infoMsg(`sleep window = ${secs(info.sleep_window.start)} .. ${secs(info.sleep_window.end)} (${secs(info.sleep_window.duration)})`)
     Core.infoMsg(`accounting window = ${secs(info.accounting_scope.start)} .. ${secs(info.accounting_scope.end)} (${secs(info.accounting_scope.duration)})`)
+    Core.infoMsg(`event duration = ${secs(info.event_window.duration_total)}`)
+    Core.infoMsg(`event duty = ${pct(info.event_window.duration_total / info.accounting_scope.duration)}`)
     Core.infoMsg(`measured current = ${Core.uAmps(info.accounting_scope.measured_current_avg).trim()}`)
-    Core.infoMsg(`modeled current = ${Core.uAmps(info.partition.modeled_current_avg).trim()}`)
+    Core.infoMsg(`modeled current = ${Core.uAmps(info.partition.modeled_power_avg / cap.avg_voltage).trim()}`)
     Core.infoMsg(`closure residual = ${pct(info.closure_residual)}`)
     Core.infoMsg(`floor residual = ${Core.uAmps(info.floor_residual).trim()}`)
 }
 
 function printSleepInfoJson(cap: Core.Capture, aobj: Core.Analysis) {
     const si = aobj.sleep
-    const info = getBoundaryInfo(cap, aobj)
+    const info = cap.boundaryInfo(aobj)
     console.log(JSON.stringify({
         type: 'sleep_info',
         sleepCurrent: si.avg,
@@ -207,95 +209,6 @@ function printSleepInfoJson(cap: Core.Capture, aobj: Core.Analysis) {
     }))
 }
 
-function getBoundaryInfo(cap: Core.Capture, aobj: Core.Analysis) {
-    const span = aobj.span
-    const sl = aobj.sleep
-    const sr = cap.sampling_rate
-    const sl_v = cap.avg_voltage
-    const sl_pwr = sl_v * sl.avg
-    const evt_dur_total = aobj.events.reduce((sum, m) => sum + m.width, 0) / sr
-    const span_dur = span.width / sr
-    const sleep_dur = span_dur - evt_dur_total
-    Core.fail('event windows exceed accounting scope', sleep_dur < 0)
-
-    const evt_energy_total = aobj.events.reduce((sum, m) => sum + cap.energyWithin(m), 0)
-    const modeled_energy = evt_energy_total + sl_pwr * sleep_dur
-    const measured_energy = cap.energyWithin(span)
-    const measured_power = measured_energy / span_dur
-    const modeled_power = modeled_energy / span_dur
-    const gap_cur = gapCurrentAvg(cap, span, aobj.events)
-
-    return {
-        sleep_window: {
-            sample_offset: sl.off,
-            sample_width: sl.width,
-            start: sl.off / sr,
-            end: (sl.off + sl.width) / sr,
-            duration: sl.width / sr,
-        },
-        accounting_scope: {
-            sample_offset: span.offset,
-            sample_width: span.width,
-            start: span.offset / sr,
-            end: (span.offset + span.width) / sr,
-            duration: span_dur,
-            measured_current_avg: measured_energy / (sl_v * span_dur),
-            measured_power_avg: measured_power,
-        },
-        partition: {
-            event_count: aobj.events.length,
-            event_duration_total: evt_dur_total,
-            sleep_duration: sleep_dur,
-            event_energy_total: evt_energy_total,
-            modeled_energy,
-            modeled_current_avg: modeled_energy / (sl_v * span_dur),
-            modeled_power_avg: modeled_power,
-        },
-        closure_residual: Math.abs(modeled_power - measured_power) / Math.abs(measured_power),
-        floor_residual: sl.avg - gap_cur,
-    }
-}
-
-function gapCurrentAvg(cap: Core.Capture, span: Core.Marker, events: Core.Marker[]): number {
-    const sorted = [...events].sort((a, b) => a.offset - b.offset)
-    let off = span.offset
-    let end = span.offset + span.width
-    let sum = 0
-    let count = 0
-
-    for (const evt of sorted) {
-        const evt_beg = Math.max(evt.offset, off)
-        const evt_end = Math.min(evt.offset + evt.width, end)
-        if (evt_beg > off) {
-            const [s, c] = sumCurrent(cap, off, evt_beg)
-            sum += s
-            count += c
-        }
-        off = Math.max(off, evt_end)
-    }
-
-    if (off < end) {
-        const [s, c] = sumCurrent(cap, off, end)
-        sum += s
-        count += c
-    }
-
-    Core.fail('no non-event samples found in accounting scope', count == 0)
-    return sum / count
-}
-
-function sumCurrent(cap: Core.Capture, beg: number, end: number): [number, number] {
-    const data = cap.current_sig.data
-    let sum = 0
-    let count = 0
-    for (let i = beg; i < end; i++) {
-        const v = data[i]
-        if (!Number.isFinite(v)) continue
-        sum += v
-        count += 1
-    }
-    return [sum, count]
-}
 
 function secs(val: number): string {
     return `${val.toFixed(3)} s`

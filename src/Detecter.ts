@@ -38,7 +38,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
-    const si = measureSleep(asig, rsig, params.sleep_win)
+    let si = measureSleep(asig, rsig, params.sleep_win)
     const min_thresh = si.avg + si.std
     const max_thresh = 1e-3
     let active = false
@@ -81,6 +81,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     let span = rsig.window(rsig.data.length).toMarker()
     if (params.trim) {
         [span, markers] = trimEvents(cap, markers, params.trim!)
+        si = measureSleep(asig, rsig, params.sleep_win, span)
         options.push(`--trim ${params.trim}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
@@ -125,20 +126,24 @@ function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): 
     }
     return res
 }
-function measureSleep(osig: Core.Signal, rsig: Core.Signal, sleep_win_ms: number = 500): Core.SleepInfo {
+function measureSleep(osig: Core.Signal, rsig: Core.Signal, sleep_win_ms: number = 500, span?: Core.Marker): Core.SleepInfo {
     let min_cur = Number.POSITIVE_INFINITY
     let std = 0
     let p95 = 0
     let off = 0
     let width = 0
     const win_wid = osig.secsToOff(sleep_win_ms / 1000)
+    const sf = Math.round(rsig.sample_rate / osig.sample_rate)
+    const beg = span ? Math.ceil(span.offset / sf) : 0
+    const end = span ? Math.floor((span.offset + span.width) / sf) : osig.data.length
     Core.fail('sleep window too small', win_wid < 2)
-    Core.fail('sleep window exceeds capture duration', win_wid > osig.data.length)
-    const win = osig.window(win_wid)
+    Core.fail('sleep window exceeds accounting scope', win_wid > (end - beg))
+    const win = osig.window(win_wid, beg)
     while (win.valid()) {
+        const m = win.toMarker()
+        if ((m.offset + m.width) > end) break
         const wsig = win.toSignal()
         const cur = wsig.avg()
-        const m = win.toMarker()
         if (cur < NO_CURRENT) continue
         if (cur < min_cur) {
             min_cur = cur

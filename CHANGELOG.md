@@ -1,3 +1,19 @@
+## VERSION-26.1.0
+
+- aligns capture reports with the boundary / closure model from BlueJoule Specification v1.2
+- adds explicit boundary metadata to generated `about.json`
+- adds event-window summary metadata
+- adds declared sleep-window metadata
+- adds accounting-scope metadata
+- adds event/sleep partition metadata
+- adds `closure_residual` as a capture self-consistency check
+- adds signed `floor_residual` for sleep-floor review
+- adds boundary / closure summary table to generated `ABOUT.md`
+- factors boundary / closure calculation into `Core`
+- reuses shared boundary / closure calculation from `AboutFile`
+- adds boundary / closure diagnostics to `emscope view --sleep-info`
+- adds boundary / closure diagnostics to `emscope view --sleep-info --json`
+
 ## VERSION-26.0.0
 
 - new-generation BlueJoule capture model
