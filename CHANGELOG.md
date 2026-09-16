@@ -1,3 +1,13 @@
+## VERSION-26.2.0
+
+- adds `view --query` for `about.json`
+- supports recursive queries with `-C`
+- reports current / stale `about.json`
+- refreshes ABOUT timestamps without rewriting
+- continues `-C` after capture failures
+- makes `pack -z` idempotent
+- applies event windows after trim
+
 ## VERSION-26.1.1
 
 - updates `emscope scan --refresh` to preserve saved scan options while allowing command-line overrides
