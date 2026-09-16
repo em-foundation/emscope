@@ -17,9 +17,14 @@ export async function exec(opts: any) {
         return
     }
     if (opts.zipFile) {
+        const zpath = Path.join(capdir, 'emscope-capture.zip')
+        if (Fs.existsSync(zpath)) {
+            Core.infoMsg(`'emscope-capture.zip' already exists`)
+            return
+        }
         const zip = new AdmZip()
         zip.addLocalFolder(Path.join(capdir, '.emscope'), '.emscope')
-        zip.writeZip(Path.join(capdir, 'emscope-capture.zip'))
+        zip.writeZip(zpath)
         return
     }
     Core.fail(`no options found: run 'emscope pack -h'`)
@@ -77,13 +82,7 @@ function restoreLfs(repo: string, gpath: string, zpath: string) {
 function toggleLfs(capdir: string, opts: any) {
     const repo = findRepoDir(capdir)
     const zpath = Path.join(capdir, 'emscope-capture.zip')
-    if (!Fs.existsSync(zpath)) {
-        if (opts.status) {
-            Core.infoMsg(`'emscope-capture.zip' is missing`)
-            return
-        }
-        Core.fail(`'emscope-capture.zip' is missing`)
-    }
+    Core.fail(`'emscope-capture.zip' is missing`, !Fs.existsSync(zpath))
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     const gpath = `${prefix}/emscope-capture.zip`
     const desc_flag = isLfsDesc(zpath)

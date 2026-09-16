@@ -495,9 +495,20 @@ export function decimate<T>(factor: number, data: T[]): T[] {
     return data.filter((_, i) => i % factor === 0)
 }
 
+export class FailError extends Error { }
+
+let fail_hook: ((msg: string) => void) | undefined
+
+export function setFailHook(fxn?: (msg: string) => void) {
+    fail_hook = fxn
+}
+
 export function fail(msg: string, cond: boolean = true) {
     if (cond) {
         console.log(`*** ${msg} ***`)
+        if (fail_hook) {
+            fail_hook(msg)
+        }
         process.exit(1)
     }
 }

@@ -66,10 +66,8 @@ CMD.command('pack')
     .option('--restore', `restores the 'emscope.zip' LFS descriptor (debug only)`)
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Exporter.exec, opts, cmd.parent!.opts()))
 
-try {
-    CMD.parse(process.argv)
-} catch (err) {
+CMD.parseAsync(process.argv).catch(err => {
     console.log(err)
     process.exit(1)
-}
+})
 
