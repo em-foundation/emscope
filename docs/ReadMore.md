@@ -6,7 +6,7 @@
     <img src="images/tagline.png" alt="EM•Scope TagLine" width="750">
 </p>
 
-<p align="center"><sub>This introduction reflects EM&bull;Scope 26.1.1.</sub></p>
+<p align="center"><sub>This introduction reflects EM&bull;Scope 26.2.0.</sub></p>
 
 ---
 
@@ -101,6 +101,19 @@ $ emscope scan --refresh --event-window 5
 <br>
 
 ### 🟠&ensp;viewing captured information &emsp; <p align="right"><sup><a href="#toc">top ⤴️</a></sup></p>
+
+```console
+$ emscope view --query boundary.event_window.duration
+    'about.json' is current
+    boundary.event_window.duration = 0.005
+```
+
+> [!NOTE]
+> The `--query` option reads selected properties directly from `about.json`.&thinsp; With `-C`, it provides a lightweight way to inspect capture metadata across a repository without unpacking raw capture data.
+>
+> Run `emscope view --query` with no properties to check whether `about.json` is current relative to `analysis.yaml`.
+
+---
 
 ```console
 $ emscope view -s
