@@ -77,7 +77,13 @@ function restoreLfs(repo: string, gpath: string, zpath: string) {
 function toggleLfs(capdir: string, opts: any) {
     const repo = findRepoDir(capdir)
     const zpath = Path.join(capdir, 'emscope-capture.zip')
-    Core.fail(`no 'emscope-capture.zip' file found in the capture directory`, !Fs.existsSync(zpath))
+    if (!Fs.existsSync(zpath)) {
+        if (opts.status) {
+            Core.infoMsg(`'emscope-capture.zip' is missing`)
+            return
+        }
+        Core.fail(`'emscope-capture.zip' is missing`)
+    }
     const prefix = Path.relative(repo, capdir).replaceAll('\\', '/')
     const gpath = `${prefix}/emscope-capture.zip`
     const desc_flag = isLfsDesc(zpath)
