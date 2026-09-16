@@ -16,7 +16,12 @@ export function update(capdir: string) {
     const obj = mkJson(cap, act, plt, pwr, subtitle, generated)
     const md_file = Path.join(cap.rootdir, 'ABOUT.md')
     const json_file = Path.join(cap.rootdir, 'about.json')
-    if (Fs.existsSync(md_file) && Fs.existsSync(json_file) && sameJson(json_file, obj)) return
+    if (Fs.existsSync(md_file) && Fs.existsSync(json_file) && sameJson(json_file, obj)) {
+        const now = new Date()
+        Fs.utimesSync(md_file, now, now)
+        Fs.utimesSync(json_file, now, now)
+        return
+    }
 
     const out = `<!-- GENERATED FILE — DO NOT EDIT -->
 

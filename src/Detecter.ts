@@ -60,13 +60,6 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         options.push(`--gap ${params.gap}`)
 
     }
-    let event_width: number | undefined
-    if (params.event_win !== undefined) {
-        event_width = rsig.secsToOff(params.event_win / 1000)
-        Core.fail('event window too small', event_width < 1)
-        markers = fixedMarkers(rsig, markers, event_width)
-        options.push(`--event-window ${params.event_win}`)
-    }
     if (params.min_dur != undefined) {
         const min_wid = rsig.secsToOff(params.min_dur / 1000)
         markers = markers.filter(m => m.width >= min_wid)
@@ -84,6 +77,13 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         [span, markers] = trimEvents(cap, markers, params.trim!)
         si = measureSleep(asig, rsig, params.sleep_win, span)
         options.push(`--trim ${params.trim}`)
+    }
+    let event_width: number | undefined
+    if (params.event_win !== undefined) {
+        event_width = rsig.secsToOff(params.event_win / 1000)
+        Core.fail('event window too small', event_width < 1)
+        markers = fixedMarkers(rsig, markers, event_width)
+        options.push(`--event-window ${params.event_win}`)
     }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, event_width: event_width, sleep: si, options: options, version: Core.version() }

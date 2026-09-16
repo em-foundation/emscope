@@ -1,5 +1,6 @@
 import * as Core from './Core'
 
+import * as QueryView from './QueryView'
 import * as Writer from './Writer'
 
 import ChildProc from 'child_process'
@@ -7,6 +8,10 @@ import Os from 'os'
 import Path from 'path'
 
 export function exec(opts: any) {
+    if (opts.query !== undefined) {
+        QueryView.exec(opts)
+        return
+    }
     const cap = Core.Capture.load(opts.capture)
     Core.fail(`no prior analysis: run 'emscope scan ...'`, cap.analysis === undefined)
     const aobj = cap.analysis!
