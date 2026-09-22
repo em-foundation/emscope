@@ -30,7 +30,13 @@ export function exec(opts: any) {
         return
     }
     if (opts.jlsFile) {
-        execJls(cap, aobj, opts.jlsFile === true ? '' : (opts.jlsFile as string))
+        execJls(
+            cap,
+            aobj,
+            opts.jlsFile === true ? '' : (opts.jlsFile as string),
+            opts.jlsStart,
+            opts.jlsEnd,
+        )
         return
     }
     if (opts.sleepInfo) {
@@ -40,31 +46,63 @@ export function exec(opts: any) {
     Core.fail(`no options found: run 'emscope view -h'`)
 }
 
-function execJls(cap: Core.Capture, aobj: Core.Analysis, eid: string) {
+function execJls(
+    cap: Core.Capture,
+    aobj: Core.Analysis,
+    eid: string,
+    start_ms?: number,
+    end_ms?: number,
+) {
     let jfile = `events`
     let span = aobj.span
     let events = aobj.events
+
+    Core.fail('--jls-start/--jls-end require an event ID', !eid && (start_ms !== undefined || end_ms !== undefined))
+
     if (eid) {
         const eidx = eid.charCodeAt(0) - 'A'.charCodeAt(0)
         Core.fail(`event '${eid}' not found`, aobj.events[eidx] === undefined)
+
         const ev = aobj.events[eidx]
         const rsig = cap.current_sig
-        const dur = rsig.offToSecs(ev.width)
-        const wid = rsig.secsToOff(Math.ceil((dur + 2e-3) * 1000) / 1000)
+        const dur_ms = rsig.offToSecs(ev.width) * 1000
+        const beg_ms = start_ms ?? 0
+        const lim_ms = end_ms ?? dur_ms
+
+        Core.fail('--jls-start must be >= 0', beg_ms < 0)
+        Core.fail('--jls-end must be > --jls-start', lim_ms <= beg_ms)
+        Core.fail(`--jls-end exceeds event duration (${dur_ms.toFixed(3)} ms)`, lim_ms > dur_ms)
+
+        const beg = ev.offset + rsig.secsToOff(beg_ms / 1000)
+        const end = ev.offset + rsig.secsToOff(lim_ms / 1000)
+        const pad = rsig.secsToOff(1e-3)
+        const crop: Core.Marker = { offset: beg, width: end - beg }
+
         jfile = `event-${eid}`
-        span = { offset: ev.offset - rsig.secsToOff(1e-3), width: wid }
-        events = [ev]
+        span = {
+            offset: Math.max(0, crop.offset - pad),
+            width: crop.width + (2 * pad),
+        }
+        events = [crop]
     }
+
     const jpath = Path.join(cap.rootdir, `${jfile}.jls`)
     Writer.saveSignal(cap, jfile, span, events)
+
     const plat = Os.platform()
     const exe =
         plat == 'win32' ? `C:/Program Files/Joulescope/joulescope.exe` :
             plat == 'linux' ? 'joulescope_launcher' :
                 plat == 'darwin' ? '/Applications/joulescope.app/Contents/MacOS/joulescope_launcher' :
                     ''
+
     Core.fail(`unsupported os platform: ${plat}`, exe == '')
-    const p = ChildProc.spawn(exe, [jpath], { detached: true, stdio: 'ignore' })
+
+    const p = ChildProc.spawn(exe, [Path.resolve(jpath)], {
+        cwd: cap.rootdir,
+        detached: true,
+        stdio: 'ignore',
+    })
     Core.infoMsg('launching the Joulescope File Viewer...')
     if (eid) {
         Core.infoMsg(`generated '${jfile}.png'`)

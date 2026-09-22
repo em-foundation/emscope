@@ -1,3 +1,10 @@
+## VERSION-26.2.2
+
+- labels generated rate-specific results as projections in `about.json`
+- adds `--jls-start` / `--jls-end` event display-window controls
+- supports fractional millisecond JLS crop offsets
+- writes recursively generated event PNGs into each capture directory
+
 ## VERSION-26.2.1
 
 - uses average non-event current for sleep scoring

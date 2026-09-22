@@ -350,13 +350,13 @@ ${mkVoltageTxt(vstats)}
 |:---:|:---:|:---:|:---:|:---:|
 | ${secs(bnd.accounting_scope.duration)} | ${secs(bnd.sleep_window.duration)} | ${pct(bnd.partition.event_duration_total / bnd.accounting_scope.duration)} | ${pct(bnd.closure_residual)} | ${Core.uAmps(bnd.floor_residual)} |
 
-### 🟠&ensp;1&thinsp;s event period
+### 🟠&ensp;1&thinsp;s score
 
 | &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;event energy (std)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|:---:|
 | ${Core.uJoules(egy1_e)} | ${Core.uJoules(evt_stats.energy_std)} | ${Core.uJoules(egy1_s)} | ${Core.joules(egy1_d)} | ${ems1.toFixed(2)} |
 
-### 🟠&ensp;10&thinsp;s event period
+### 🟠&ensp;10&thinsp;s projection
 
 | &emsp;&emsp;event energy (avg)&emsp;&emsp; | &emsp;&emsp;event energy (std)&emsp;&emsp; | &emsp;&emsp;energy per period&emsp;&emsp; | &emsp;&emsp;energy per day&emsp;&emsp; | &emsp;&emsp;&emsp;**EM&bull;eralds**&emsp;&emsp;&emsp;
 |:---:|:---:|:---:|:---:|:---:|
@@ -448,14 +448,14 @@ function mkJson(
             power_avg: sl_pwr,
         },
         boundary: bnd,
-        periods: {
-            one_second: {
+        projections: {
+            'adv-1s': {
                 event_energy: egy1_e,
                 energy_per_period: egy1_s,
                 energy_per_day: egy1_d,
                 emeralds: 80 / egy1_d,
             },
-            ten_seconds: {
+            'adv-10s': {
                 event_energy: egy1_e,
                 energy_per_period: egy10_s,
                 energy_per_day: egy10_d,
