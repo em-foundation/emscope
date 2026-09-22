@@ -1,3 +1,9 @@
+## VERSION-26.2.1
+
+- uses average non-event current for sleep scoring
+- keeps minimum sleep-window statistics as diagnostics
+- updates sleep reporting to distinguish representative and minimum sleep
+
 ## VERSION-26.2.0
 
 - adds `view --query` for `about.json`

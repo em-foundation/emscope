@@ -121,7 +121,8 @@ function printEventInfoJson(cap: Core.Capture, markers: Core.Marker[]) {
 }
 
 function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, score_only: boolean) {
-    const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    const info = cap.boundaryInfo(aobj)
+    const sleep_pwr = info.partition.sleep_current_avg * cap.avg_voltage
     const evt_egy = averageEventEnergy(cap, aobj.events)
     const evt_dur = averageEventDuration(cap, aobj.events)
     Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
@@ -141,7 +142,8 @@ function printResults(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number, s
 }
 
 function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: number) {
-    const sleep_pwr = aobj.sleep.avg * cap.avg_voltage
+    const info = cap.boundaryInfo(aobj)
+    const sleep_pwr = info.partition.sleep_current_avg * cap.avg_voltage
     const evt_egy = averageEventEnergy(cap, aobj.events)
     const evt_dur = averageEventDuration(cap, aobj.events)
     Core.fail('event period shorter than average event duration', ev_rate < evt_dur)
@@ -154,7 +156,7 @@ function printResultsJson(cap: Core.Capture, aobj: Core.Analysis, ev_rate: numbe
         basis: 'events',
         emeralds: parseFloat(ems.toFixed(2)),
         cycleRate: ev_rate,
-        sleepCurrent: aobj.sleep.avg,
+        sleepCurrent: info.partition.sleep_current_avg,
         sleepPower: sleep_pwr,
         voltage: cap.avg_voltage,
         eventEnergy: evt_egy,
@@ -187,9 +189,10 @@ function printSleepInfo(cap: Core.Capture, aobj: Core.Analysis) {
     cap.validateBoundaryAnalysis(aobj)
     const si = aobj.sleep
     const info = cap.boundaryInfo(aobj)
-    Core.infoMsg(`sleep current = ${Core.uAmps(si.avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(si.std).trim()}`)
-    Core.infoMsg(`sleep window = ${secs(info.sleep_window.start)} .. ${secs(info.sleep_window.end)} (${secs(info.sleep_window.duration)})`)
+    Core.infoMsg(`sleep current = ${Core.uAmps(info.partition.sleep_current_avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(info.partition.sleep_current_std).trim()}`)
     Core.infoMsg(`accounting window = ${secs(info.accounting_scope.start)} .. ${secs(info.accounting_scope.end)} (${secs(info.accounting_scope.duration)})`)
+    Core.infoMsg(`minimum sleep current = ${Core.uAmps(si.avg).trim()} @ ${cap.avg_voltage.toFixed(1)} V, standard deviation = ${Core.uAmps(si.std).trim()}`)
+    Core.infoMsg(`minimum sleep window = ${secs(info.sleep_window.start)} .. ${secs(info.sleep_window.end)} (${secs(info.sleep_window.duration)})`)
     Core.infoMsg(`event duration = ${secs(info.event_window.duration_total)}`)
     Core.infoMsg(`event duty = ${pct(info.event_window.duration_total / info.accounting_scope.duration)}`)
     Core.infoMsg(`measured current = ${Core.uAmps(info.accounting_scope.measured_current_avg).trim()}`)
@@ -204,10 +207,12 @@ function printSleepInfoJson(cap: Core.Capture, aobj: Core.Analysis) {
     const info = cap.boundaryInfo(aobj)
     console.log(JSON.stringify({
         type: 'sleep_info',
-        sleepCurrent: si.avg,
-        standardDeviation: si.std,
+        sleepCurrent: info.partition.sleep_current_avg,
+        standardDeviation: info.partition.sleep_current_std,
         voltage: cap.avg_voltage,
-        sleepPower: si.avg * cap.avg_voltage,
+        sleepPower: info.partition.sleep_current_avg * cap.avg_voltage,
+        minimumSleepCurrent: si.avg,
+        minimumSleepStandardDeviation: si.std,
         sleepWindow: info.sleep_window,
         accountingScope: info.accounting_scope,
         partition: info.partition,

@@ -295,11 +295,11 @@ function mkGen(cap: Core.Capture, act: ResolvedDeclaration, plt: ResolvedDeclara
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
     const vstats = getVoltageStats(cap)
-    const sl_avg = aobj.sleep.avg
-    const sl_std = aobj.sleep.std
-    const sl_pwr = sl_v * sl_avg
     const evt_stats = cap.eventStats(aobj.events)
     const bnd = cap.boundaryInfo(aobj)
+    const sl_avg = bnd.partition.sleep_current_avg
+    const sl_std = bnd.partition.sleep_current_std
+    const sl_pwr = sl_v * sl_avg
     const egy1_e = evt_stats.energy_avg
     const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)
@@ -385,11 +385,11 @@ function mkJson(
     const aobj = cap.analysis!
     const sl_v = cap.avg_voltage
     const vstats = getVoltageStats(cap)
-    const sl_avg = aobj.sleep.avg
-    const sl_std = aobj.sleep.std
-    const sl_pwr = sl_v * sl_avg
     const evt_stats = cap.eventStats(aobj.events)
     const bnd = cap.boundaryInfo(aobj)
+    const sl_avg = bnd.partition.sleep_current_avg
+    const sl_std = bnd.partition.sleep_current_std
+    const sl_pwr = sl_v * sl_avg
     const egy1_e = evt_stats.energy_avg
     const evt_dur = evt_stats.duration_avg
     Core.fail('1 s event period shorter than average event duration', 1 < evt_dur)

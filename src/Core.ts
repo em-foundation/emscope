@@ -44,6 +44,8 @@ export type BoundaryInfo = {
         event_count: number
         event_duration_total: number
         sleep_duration: number
+        sleep_current_avg: number
+        sleep_current_std: number
         event_energy_total: number
         modeled_energy: number
         modeled_power_avg: number
@@ -197,7 +199,8 @@ export class Capture {
         const sr = this.sampling_rate
         const sl_avg = sl.avg
         const sl_v = this.avg_voltage
-        const sl_pwr = sl_v * sl_avg
+        const gap = this.gapCurrentStats(span, aobj.events)
+        const sl_pwr = sl_v * gap.avg
         const evt_dur_total = aobj.events.reduce((sum, m) => sum + m.width, 0) / sr
         const span_dur = span.width / sr
         const sleep_dur = span_dur - evt_dur_total
@@ -208,7 +211,6 @@ export class Capture {
         const measured_energy = this.energyWithin(span)
         const measured_power = measured_energy / span_dur
         const modeled_power = modeled_energy / span_dur
-        const gap_cur = this.gapCurrentAvg(span, aobj.events)
 
         return {
             event_window: {
@@ -241,12 +243,14 @@ export class Capture {
                 event_count: evt_stats.count,
                 event_duration_total: evt_dur_total,
                 sleep_duration: sleep_dur,
+                sleep_current_avg: gap.avg,
+                sleep_current_std: gap.std,
                 event_energy_total: evt_energy_total,
                 modeled_energy,
                 modeled_power_avg: modeled_power,
             },
             closure_residual: Math.abs(modeled_power - measured_power) / Math.abs(measured_power),
-            floor_residual: sl_avg - gap_cur,
+            floor_residual: sl_avg - gap.avg,
         }
     }
     energyWithin(m: Marker): number {
@@ -277,31 +281,41 @@ export class Capture {
         }
     }
     gapCurrentAvg(span: Marker, events: Marker[]): number {
+        return this.gapCurrentStats(span, events).avg
+    }
+
+    gapCurrentStats(span: Marker, events: Marker[]): { avg: number, std: number } {
         const sorted = [...events].sort((a, b) => a.offset - b.offset)
+        const data = this.current_sig.data
         let off = span.offset
-        let end = span.offset + span.width
+        const end = span.offset + span.width
         let sum = 0
+        let sum_sq = 0
         let count = 0
+
+        const accumulate = (beg: number, end: number) => {
+            for (let i = beg; i < end; i++) {
+                const v = data[i]
+                if (!Number.isFinite(v)) continue
+                sum += v
+                sum_sq += v * v
+                count += 1
+            }
+        }
 
         for (const evt of sorted) {
             const evt_beg = Math.max(evt.offset, off)
             const evt_end = Math.min(evt.offset + evt.width, end)
-            if (evt_beg > off) {
-                const [s, c] = this.sumCurrent(off, evt_beg)
-                sum += s
-                count += c
-            }
+            if (evt_beg > off) accumulate(off, evt_beg)
             off = Math.max(off, evt_end)
         }
 
-        if (off < end) {
-            const [s, c] = this.sumCurrent(off, end)
-            sum += s
-            count += c
-        }
+        if (off < end) accumulate(off, end)
 
         fail('no non-event samples found in accounting scope', count == 0)
-        return sum / count
+        const avg = sum / count
+        const variance = Math.max(0, (sum_sq / count) - (avg * avg))
+        return { avg, std: Math.sqrt(variance) }
     }
     save() {
         Fs.rmSync(this.#apath, { force: true })
