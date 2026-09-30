@@ -89,6 +89,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         markers = fixedMarkers(rsig, markers, event_width)
         options.push(`--event-window ${params.event_win}`)
     }
+    excluded = padExcludedMarkers(rsig, excluded, width)
     excluded = subtractMarkers(clipMarkers(excluded, span), markers)
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, excluded: excluded, event_width: event_width, sleep: si, options: options, version: Core.version() }
@@ -126,6 +127,13 @@ function applyOption(params: Params, opt: string) {
             params.trim = val
             break
     }
+}
+
+function padExcludedMarkers(sig: Core.Signal, markers: Core.Marker[], pad: number): Core.Marker[] {
+    return markers.map(m => {
+        const end = Math.min(sig.data.length, m.offset + m.width + pad)
+        return { offset: m.offset, width: end - m.offset }
+    })
 }
 
 function clipMarkers(markers: Core.Marker[], span: Core.Marker): Core.Marker[] {
