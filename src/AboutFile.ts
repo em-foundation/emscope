@@ -448,13 +448,15 @@ function mkJson(
             power_avg: sl_pwr,
         },
         boundary: bnd,
-        projections: {
+        measured: {
             'adv-1s': {
                 event_energy: egy1_e,
                 energy_per_period: egy1_s,
                 energy_per_day: egy1_d,
                 emeralds: 80 / egy1_d,
             },
+        },
+        projections: {
             'adv-10s': {
                 event_energy: egy1_e,
                 energy_per_period: egy10_s,
