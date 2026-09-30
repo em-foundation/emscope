@@ -2,7 +2,7 @@ import Fs from 'fs'
 import Path from 'path'
 import Yaml from 'js-yaml'
 
-export type Analysis = { span: Marker, events: Marker[], event_width?: number, sleep: SleepInfo, options: string[], version: string }
+export type Analysis = { span: Marker, events: Marker[], excluded?: Marker[], event_width?: number, sleep: SleepInfo, options: string[], version: string }
 export type CaptureDevice = 'JS220' | 'Otii3' | 'PPK2'
 export type F32 = Float32Array<ArrayBufferLike>
 export type Marker = { offset: number, width: number }
@@ -199,18 +199,22 @@ export class Capture {
         const sr = this.sampling_rate
         const sl_avg = sl.avg
         const sl_v = this.avg_voltage
-        const gap = this.gapCurrentStats(span, aobj.events)
+        const excluded = aobj.excluded ?? []
+        const gap = this.gapCurrentStats(span, [...aobj.events, ...excluded])
         const sl_pwr = sl_v * gap.avg
         const evt_dur_total = aobj.events.reduce((sum, m) => sum + m.width, 0) / sr
+        const exc_dur_total = excluded.reduce((sum, m) => sum + m.width, 0) / sr
         const span_dur = span.width / sr
-        const sleep_dur = span_dur - evt_dur_total
-        fail('event windows exceed accounting scope', sleep_dur < 0)
+        const acct_dur = span_dur - exc_dur_total
+        const sleep_dur = acct_dur - evt_dur_total
+        fail('excluded/event windows exceed accounting scope', sleep_dur < 0)
 
         const evt_energy_total = aobj.events.reduce((sum, m) => sum + this.energyWithin(m), 0)
+        const exc_energy_total = excluded.reduce((sum, m) => sum + this.energyWithin(m), 0)
         const modeled_energy = evt_energy_total + sl_pwr * sleep_dur
-        const measured_energy = this.energyWithin(span)
-        const measured_power = measured_energy / span_dur
-        const modeled_power = modeled_energy / span_dur
+        const measured_energy = this.energyWithin(span) - exc_energy_total
+        const measured_power = measured_energy / acct_dur
+        const modeled_power = modeled_energy / acct_dur
 
         return {
             event_window: {
@@ -235,8 +239,8 @@ export class Capture {
                 sample_width: span.width,
                 start: span.offset / sr,
                 end: (span.offset + span.width) / sr,
-                duration: span_dur,
-                measured_current_avg: measured_energy / (sl_v * span_dur),
+                duration: acct_dur,
+                measured_current_avg: measured_energy / (sl_v * acct_dur),
                 measured_power_avg: measured_power,
             },
             partition: {

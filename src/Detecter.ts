@@ -54,6 +54,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
             }
         }
     }
+    let excluded = new Array<Core.Marker>()
     let options = new Array<string>()
     if (params.gap !== undefined) {
         markers = combineMarkers(rsig, markers, rsig.secsToOff(params.gap! / 1000))
@@ -62,11 +63,14 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     }
     if (params.min_dur != undefined) {
         const min_wid = rsig.secsToOff(params.min_dur / 1000)
+        excluded.push(...markers.filter(m => m.width < min_wid))
         markers = markers.filter(m => m.width >= min_wid)
         options.push(`--min-duration ${params.min_dur}`)
     }
     if (params.min_egy != undefined) {
-        markers = markers.filter(m => cap.energyWithin(m) >= params.min_egy! / 1_000_000)
+        const min_egy = params.min_egy! / 1_000_000
+        excluded.push(...markers.filter(m => cap.energyWithin(m) < min_egy))
+        markers = markers.filter(m => cap.energyWithin(m) >= min_egy)
         options.push(`--min-energy ${params.min_egy}`)
     }
     if (params.sleep_win !== undefined) {
@@ -85,8 +89,9 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         markers = fixedMarkers(rsig, markers, event_width)
         options.push(`--event-window ${params.event_win}`)
     }
+    excluded = subtractMarkers(clipMarkers(excluded, span), markers)
     Core.infoMsg(`found ${markers.length} event(s)`)
-    return { span: span, events: markers, event_width: event_width, sleep: si, options: options, version: Core.version() }
+    return { span: span, events: markers, excluded: excluded, event_width: event_width, sleep: si, options: options, version: Core.version() }
 }
 
 function applyOpts(params: Params, opts: any) {
@@ -121,6 +126,41 @@ function applyOption(params: Params, opt: string) {
             params.trim = val
             break
     }
+}
+
+function clipMarkers(markers: Core.Marker[], span: Core.Marker): Core.Marker[] {
+    const beg = span.offset
+    const end = span.offset + span.width
+    let res = new Array<Core.Marker>()
+    for (const m of markers) {
+        const mbeg = Math.max(m.offset, beg)
+        const mend = Math.min(m.offset + m.width, end)
+        if (mend > mbeg) res.push({ offset: mbeg, width: mend - mbeg })
+    }
+    return res
+}
+
+function subtractMarkers(markers: Core.Marker[], masks: Core.Marker[]): Core.Marker[] {
+    let res = new Array<Core.Marker>()
+    for (const m of markers) {
+        let parts = [m]
+        for (const mask of masks) {
+            let next = new Array<Core.Marker>()
+            const mask_end = mask.offset + mask.width
+            for (const part of parts) {
+                const part_end = part.offset + part.width
+                if (mask_end <= part.offset || mask.offset >= part_end) {
+                    next.push(part)
+                    continue
+                }
+                if (mask.offset > part.offset) next.push({ offset: part.offset, width: mask.offset - part.offset })
+                if (mask_end < part_end) next.push({ offset: mask_end, width: part_end - mask_end })
+            }
+            parts = next
+        }
+        res.push(...parts)
+    }
+    return res
 }
 
 function combineMarkers(sig: Core.Signal, markers: Core.Marker[], gap: number): Core.Marker[] {
