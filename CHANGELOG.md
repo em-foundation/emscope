@@ -1,3 +1,9 @@
+## VERSION-26.2.3
+
+- excludes filtered activity from sleep and accounting
+- pads excluded activity by one detector bin to avoid boundary leakage
+- distinguishes measured 1 s results from 10 s projections in `about.json`
+
 ## VERSION-26.2.2
 
 - labels generated rate-specific results as projections in `about.json`
