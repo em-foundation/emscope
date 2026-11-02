@@ -42,6 +42,7 @@ CMD.command('scan')
     .option('--event-window <milliseconds>', 'use a fixed event scoring window', parseFloat)
     .option('-s, --sleep-window <milliseconds>', 'compute sleep using a smaller/bigger analysis window', parseFloat)
     .option('-t --trim <event count>', 'remove extra events', parseFloat)
+    .option('--diagnostics', 'print analysis diagnostics without saving analysis.yaml')
     .option('--refresh', '(re-)scan using the last set of options')
     .action((opts: any, cmd: Commander.Command) => CmdApply.execCmd(Detecter.exec, opts, cmd.parent!.opts()))
 

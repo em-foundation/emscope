@@ -23,18 +23,27 @@ export function exec(opts: any) {
         }
     }
     applyOpts(params, opts)
-    const aobj = analyze(cap, params)
-    cap.bind(aobj)
+    const aobj = analyze(cap, params, opts.diagnostics)
+    if (!opts.diagnostics) cap.bind(aobj)
 }
 
-export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
+export function analyze(cap: Core.Capture, params: Params = {}, diagnostics = false): Core.Analysis {
     Core.infoMsg('analyzing captured data...')
     const rsig = cap.current_sig
     const width = rsig.secsToOff(250e-6)
     const asig = rsig.mapMean(width)
     let si = measureSleep(asig, rsig, params.sleep_win)
-    const min_thresh = si.avg + si.std
+    const report = (stage: string, markers: Core.Marker[]) => {
+        if (!diagnostics) return
+        console.log(`[scan] ${stage}: ${markers.length} region(s)`)
+        for (const [index, m] of markers.entries()) {
+            console.log(`[scan] ${index + 1}: start=${(m.offset / rsig.sample_rate).toFixed(6)}s duration=${(1000 * m.width / rsig.sample_rate).toFixed(3)}ms energy=${(cap.energyWithin(m) * 1e6).toFixed(3)}uJ`)
+        }
+    }
+    if (diagnostics) console.log('[scan] parameters', JSON.stringify(params))
     const max_thresh = 1e-3
+    // Keep sleep-floor drift below the activity boundary.
+    const min_thresh = Math.max(si.avg + si.std, max_thresh * 0.01)
     let active = false
     let start = -1
     let markers = new Array<Core.Marker>()
@@ -54,6 +63,7 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
             }
         }
     }
+    if (diagnostics) console.log('[scan] raw regions', markers.length, 'threshold_A', min_thresh)
     let excluded = new Array<Core.Marker>()
     let options = new Array<string>()
     if (params.gap !== undefined) {
@@ -61,12 +71,14 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         options.push(`--gap ${params.gap}`)
 
     }
+    report('after gap merging', markers)
     if (params.min_dur != undefined) {
         const min_wid = rsig.secsToOff(params.min_dur / 1000)
         excluded.push(...markers.filter(m => m.width < min_wid))
         markers = markers.filter(m => m.width >= min_wid)
         options.push(`--min-duration ${params.min_dur}`)
     }
+    report('after duration filtering', markers)
     if (params.min_egy != undefined) {
         const min_egy = params.min_egy! / 1_000_000
         excluded.push(...markers.filter(m => cap.energyWithin(m) < min_egy))
@@ -78,10 +90,14 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
     }
     let span = rsig.window(rsig.data.length).toMarker()
     if (params.trim) {
-        [span, markers] = trimEvents(cap, markers, params.trim!)
+        const candidates = markers
+        ;[span, markers] = trimEvents(cap, candidates, params.trim!)
+        const selected = new Set(markers)
+        excluded.push(...candidates.filter(m => !selected.has(m)))
         si = measureSleep(asig, rsig, params.sleep_win, span)
         options.push(`--trim ${params.trim}`)
     }
+    report('after filtering and trimming, before fixed windows', markers)
     let event_width: number | undefined
     if (params.event_win !== undefined) {
         event_width = rsig.secsToOff(params.event_win / 1000)
@@ -90,7 +106,27 @@ export function analyze(cap: Core.Capture, params: Params = {}): Core.Analysis {
         options.push(`--event-window ${params.event_win}`)
     }
     excluded = padExcludedMarkers(rsig, excluded, width)
-    excluded = subtractMarkers(clipMarkers(excluded, span), markers)
+    excluded = subtractMarkers(combineMarkers(rsig, clipMarkers(excluded, span).sort((a, b) => a.offset - b.offset), 0), markers)
+    report('final scoring windows', markers)
+    report('excluded activity', excluded)
+    if (diagnostics) {
+        console.log('[scan] accounting span', JSON.stringify(span), 'quiet window', JSON.stringify(si))
+        const masks = [...markers, ...excluded].sort((a, b) => a.offset - b.offset)
+        let off = span.offset
+        const end = span.offset + span.width
+        const gaps: Core.Marker[] = []
+        for (const m of masks) {
+            const beg = Math.max(span.offset, Math.min(end, m.offset))
+            const stop = Math.max(span.offset, Math.min(end, m.offset + m.width))
+            if (beg > off) gaps.push({ offset: off, width: beg - off })
+            off = Math.max(off, stop)
+        }
+        if (off < end) gaps.push({ offset: off, width: end - off })
+        report('regions counted as sleep', gaps)
+        const stats = cap.gapCurrentStats(span, masks)
+        console.log('[scan] scored sleep power_uW', stats.avg * cap.avg_voltage * 1e6)
+        console.log('[scan] diagnostics only; analysis.yaml unchanged')
+    }
     Core.infoMsg(`found ${markers.length} event(s)`)
     return { span: span, events: markers, excluded: excluded, event_width: event_width, sleep: si, options: options, version: Core.version() }
 }
@@ -214,7 +250,7 @@ function measureSleep(osig: Core.Signal, rsig: Core.Signal, sleep_win_ms: number
         if ((m.offset + m.width) > end) break
         const wsig = win.toSignal()
         const cur = wsig.avg()
-        if (cur < NO_CURRENT) continue
+        if (cur < NO_CURRENT) { win.slide(m.width / 2); continue }
         if (cur < min_cur) {
             min_cur = cur
             std = wsig.std()
@@ -233,7 +269,7 @@ function trimEvents(cap: Core.Capture, markers: Core.Marker[], count: number): [
     const margin = rsig.secsToOff(.5)
     const end_idx = markers.findLastIndex(m => (m.offset + margin) < rsig.data.length)
     const beg_idx = end_idx - count
-    Core.fail('insufficient number of events', markers[beg_idx].offset < margin)
+    Core.fail('insufficient number of events', beg_idx < 0 || markers[beg_idx].offset < margin)
     const wid = rsig.secsToOff(count)
     const off = markers[beg_idx].offset - margin
     const span = rsig.window(wid, off).toMarker()
