@@ -1,6 +1,6 @@
 {
     "name": "@em-foundation/emscope",
-    "version": "26.2.3",
+    "version": "26.2.4",
     "description": "benchmark energy efficiency in resource-constrained embedded systems",
     "bin": {
         "emscope": "dist/emscope"

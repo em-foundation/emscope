@@ -1,3 +1,8 @@
+## VERSION-26.2.4
+
+- adds `pack -a --peds-dir` for a local PEDS checkout and `--peds-ref` for a GitHub branch, tag, or commit
+- resolves relative inherited declarations from the selected PEDS source, including in recursive runs with `-C`
+
 ## VERSION-26.2.3
 
 - excludes filtered activity from sleep and accounting
