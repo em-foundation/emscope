@@ -3,14 +3,18 @@ import * as Core from './Core'
 import * as ChildProc from 'child_process'
 import * as Fs from 'fs'
 import * as Path from 'path'
+import { pathToFileURL } from 'url'
 
 
-export function update(capdir: string) {
+export function update(capdir: string, pedsRef = 'main', pedsDir?: string) {
+    const root = pedsDir === undefined
+        ? `https://github.com/em-foundation/PEDS/blob/${encodeURIComponent(pedsRef)}`
+        : pathToFileURL(Path.resolve(pedsDir) + Path.sep).href.replace(/\/$/, '')
     const cap = Core.Capture.load(capdir)
     const ids = getDeclarationIds(cap)
-    const act = readPedsDeclaration('activities', ids.activity)
-    const plt = readPedsDeclaration('platforms', ids.platform)
-    const pwr = readPedsDeclaration('power', ids.power)
+    const act = readPedsDeclaration(root, 'activities', ids.activity)
+    const plt = readPedsDeclaration(root, 'platforms', ids.platform)
+    const pwr = readPedsDeclaration(root, 'power', ids.power)
     const subtitle = mkSubtitle(cap)
     const generated = new Date()
     const obj = mkJson(cap, act, plt, pwr, subtitle, generated)
@@ -70,8 +74,6 @@ interface DeclarationIds {
     power: string
 }
 
-const PEDS_ROOT = 'https://github.com/em-foundation/PEDS/blob/main'
-
 function getDeclarationIds(cap: Core.Capture): DeclarationIds {
     let dir = cap.rootdir
     while (Path.basename(dir) != 'captures') {
@@ -91,8 +93,8 @@ function getDeclarationIds(cap: Core.Capture): DeclarationIds {
     }
 }
 
-function readPedsDeclaration(kind: DeclarationKind, moniker: string): ResolvedDeclaration {
-    const url = `${PEDS_ROOT}/${kind}/${moniker}.md`
+function readPedsDeclaration(root: string, kind: DeclarationKind, moniker: string): ResolvedDeclaration {
+    const url = `${root}/${kind}/${moniker}.md`
     const top = readDeclaration(url)
     const factoids: string[] = []
     const references: Reference[] = []
@@ -148,6 +150,7 @@ function readUrl(url: string): string {
     const cmd = is_win ? 'curl.exe' : 'curl'
     const args = is_win ? ['-fsSL', '--tlsv1.2', '--ssl-no-revoke', raw] : ['-fsSL', raw]
     try {
+        if (url.startsWith('file:')) return Fs.readFileSync(new URL(url), 'utf8')
         return ChildProc.execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
     } catch (e: any) {
         Core.fail(`unable to read declaration: ${url}`)

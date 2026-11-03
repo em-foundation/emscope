@@ -8,12 +8,15 @@ import Path from 'path'
 
 export async function exec(opts: any) {
     const capdir = Path.resolve(opts.capture)
+    Core.fail('--peds-ref and --peds-dir require pack -a',
+        (opts.pedsRef !== undefined || opts.pedsDir !== undefined)
+        && (!opts.aboutFile || !!opts.status || !!opts.restore || !!opts.unpack))
     if (opts.status || opts.restore || opts.unpack) {
         toggleLfs(capdir, opts)
         return
     }
     if (opts.aboutFile) {
-        AboutFile.update(capdir)
+        AboutFile.update(capdir, opts.pedsRef, opts.pedsDir)
         return
     }
     if (opts.zipFile) {
